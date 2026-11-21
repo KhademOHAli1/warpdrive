@@ -15,7 +15,7 @@ import { directorySites } from "@/features/locations/schema";
 import type { OperationsRole } from "./contracts";
 
 function knownRole(role: AnyPgColumn) {
-  return sql`${role} IN ('warehouse_viewer', 'warehouse_manager', 'asset_viewer', 'asset_manager', 'buyer', 'cost_viewer')`;
+  return sql`${role} IN ('warehouse_viewer', 'warehouse_manager', 'asset_viewer', 'asset_manager', 'buyer', 'cost_viewer', 'quality_operator')`;
 }
 
 export const operationsSiteGrants = pgTable(

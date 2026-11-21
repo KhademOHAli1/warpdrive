@@ -7,6 +7,7 @@ import { maxBomEdges, maxBomReleases } from "../bom/limits";
 import { planBom } from "../bom/planning";
 import { canHoldInventory } from "../catalog/eligibility";
 import { catalogItemPolicy } from "../catalog/policy";
+import { qualityPlanForBuild } from "../quality/gates";
 import { inventoryStockLimit } from "../schema";
 import { autoAllocateProductionMaterial } from "./allocations";
 import { inventoryProductionBuilds, type ProductionBuildRow } from "./buildSchema";
@@ -87,6 +88,11 @@ async function insertBuild(
 ): Promise<ProductionBuildRow> {
   const policy = await catalogItemPolicy(tx, release.part.id);
   if (!canHoldInventory(policy) || policy?.flags.assembly !== true) failProduction("state");
+  if (
+    !policy.flags.trackable &&
+    (await qualityPlanForBuild(tx, { releaseId: release.id })) !== null
+  )
+    failProduction("serial");
   const [build] = await tx
     .insert(inventoryProductionBuilds)
     .values({

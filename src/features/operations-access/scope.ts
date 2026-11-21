@@ -31,6 +31,7 @@ export function operationsSiteCapabilities(
     canManageAssets,
     canBuy: isAdmin || roles.has("buyer"),
     canViewCosts: isAdmin || roles.has("cost_viewer"),
+    canInspectQuality: isAdmin || roles.has("quality_operator"),
   };
 }
 

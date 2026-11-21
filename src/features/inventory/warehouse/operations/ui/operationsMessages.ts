@@ -389,6 +389,11 @@ export const movementKindMessages = {
     "Fremdgefertigte Ausgabe freigegeben",
     "خروجی تولید برون‌سپاری آزاد شد",
   ],
+  "quality-release": [
+    "Serial passed quality inspection",
+    "Seriennummer nach Qualitätsprüfung freigegeben",
+    "شماره سریال در بازرسی کیفیت قبول شد",
+  ],
   "production-reversal": [
     "Production posting reversed",
     "Fertigungsbuchung storniert",

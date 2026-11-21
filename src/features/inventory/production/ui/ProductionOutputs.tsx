@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useLocale } from "@/features/i18n/LocaleProvider";
+import { inspectionMessages } from "../../quality/ui/inspectionMessages";
 import { subcontractMessages } from "../../subcontract/ui/messages";
 import type { ProductionDetail, ProductionOutput } from "../contracts";
 import type { ProductionMessages } from "./messages";
@@ -83,18 +84,22 @@ function OutputRow({
   t: ProductionMessages;
 }) {
   const number = useProductionNumber();
-  const labels = subcontractMessages[useLocale()];
+  const locale = useLocale();
+  const labels = subcontractMessages[locale];
+  const inspection = inspectionMessages[locale];
   const linked = build.subcontract;
   const receipt = linked?.outputs.find(({ outputId }) => outputId === output.id);
   const changingWip = linked === null && build.canManage && output.status === "wip";
   const needsRelease = receipt !== undefined && output.status === "wip";
+  const qualityPending = output.quality?.some(({ status }) => status !== "passed") === true;
   const canReverse =
     linked === null &&
+    !qualityPending &&
     build.canManage &&
     (build.status === "issued" || build.status === "on_hold" || build.status === "closed") &&
     (output.status === "completed" || output.status === "scrapped");
   const variant =
-    output.status === "completed"
+    output.status === "completed" && !qualityPending
       ? "success"
       : output.status === "scrapped"
         ? "destructive"
@@ -116,7 +121,13 @@ function OutputRow({
             <ProductionTime value={output.createdAt} />
           </p>
         </div>
-        <Badge variant={variant}>{needsRelease ? labels.pendingRelease : t[output.status]}</Badge>
+        <Badge variant={variant}>
+          {needsRelease
+            ? labels.pendingRelease
+            : qualityPending
+              ? inspection.pending
+              : t[output.status]}
+        </Badge>
       </div>
       {output.lot !== null && (
         <p className="break-words text-sm" data-production-output-lot={output.lot}>
@@ -129,13 +140,21 @@ function OutputRow({
             {t.serials} <bdi>({number(output.serials.length)})</bdi>
           </summary>
           <ul className="mt-1 flex flex-wrap gap-1.5">
-            {output.serials.map((serial) => (
-              <li key={serial} data-production-output-serial={serial}>
-                <Badge variant="outline" className="whitespace-normal break-all">
-                  <bdi>{serial}</bdi>
-                </Badge>
-              </li>
-            ))}
+            {output.serials.map((serial) => {
+              const status = output.quality?.find((row) => row.serial === serial)?.status;
+              return (
+                <li
+                  key={serial}
+                  data-production-output-serial={serial}
+                  data-production-serial-quality={status}
+                >
+                  <Badge variant="outline" className="whitespace-normal break-all">
+                    <bdi>{serial}</bdi>
+                    {status === undefined ? null : ` · ${inspection[status]}`}
+                  </Badge>
+                </li>
+              );
+            })}
           </ul>
         </details>
       )}

@@ -39,12 +39,26 @@ export async function requireLegacyBuildMaterials(tx: Db, bom: ApprovedBomLine[]
 
 export async function requirePinnedLegacyBuildMaterials(tx: Db, orderId: string) {
   const [release] = await tx
-    .select({ bom: inventoryProductReleases.bom })
+    .select({
+      bom: inventoryProductReleases.bom,
+      qualityPlanVersionId: inventoryProductReleases.qualityPlanVersionId,
+    })
     .from(inventoryBuildReleases)
     .innerJoin(
       inventoryProductReleases,
       eq(inventoryProductReleases.id, inventoryBuildReleases.releaseId),
     )
     .where(eq(inventoryBuildReleases.orderId, orderId));
-  if (release !== undefined) await requireLegacyBuildMaterials(tx, release.bom);
+  if (release !== undefined) {
+    requireUngatedLegacyRelease(release.qualityPlanVersionId);
+    await requireLegacyBuildMaterials(tx, release.bom);
+  }
+}
+
+export function requireUngatedLegacyRelease(qualityPlanVersionId: string | null) {
+  if (qualityPlanVersionId !== null) {
+    throw new InventoryDomainError(
+      "Plan a serialized production build and pass its tests before allocating this stock to the order.",
+    );
+  }
 }

@@ -981,6 +981,13 @@
       "when": 1795293279020,
       "tag": "0139_inventory_subcontract_manufacturing",
       "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1795295519519,
+      "tag": "0140_inventory_quality_inspections",
+      "breakpoints": true
     }
   ]
 }

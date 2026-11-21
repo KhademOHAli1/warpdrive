@@ -21,6 +21,11 @@ import {
   writeProductionStock,
 } from "../production/stock";
 import { purchaseOrders, purchaseReceiptLines } from "../purchasing/schema";
+import {
+  hasPendingBuildInspection,
+  qualityPlanForBuild,
+  registerQualityTarget,
+} from "../quality/gates";
 import { lockInventoryStock } from "../stock";
 import { earliestExpiryFirst, readStockPositionRows } from "../warehouse/balances";
 import { addOperationEvent } from "../warehouse/operations/shared";
@@ -246,6 +251,7 @@ async function releaseHeldStock(
   tx: Db,
   actorId: string,
   command: Release,
+  build: ProductionBuildRow,
   { output, position }: Awaited<ReturnType<typeof readReceivedOutput>>,
 ) {
   const [updated] = await tx
@@ -264,6 +270,12 @@ async function releaseHeldStock(
     )
     .returning({ id: inventoryProductionOutputs.id });
   if (updated === undefined) failProduction("stale");
+
+  const planVersionId = await qualityPlanForBuild(tx, build);
+  if (planVersionId !== null) {
+    await registerQualityTarget(tx, build, output.id, position, planVersionId);
+    return;
+  }
 
   const [released] = await tx
     .update(inventoryStockPositions)
@@ -325,9 +337,11 @@ export async function releaseSubcontractOutput(
   }
 
   // The PO receipt already credited stock. Only make its existing position available.
-  await releaseHeldStock(tx, actorId, command, received);
+  await releaseHeldStock(tx, actorId, command, build, received);
   const completed = build.completed + received.output.quantity;
-  const closed = completed + build.scrapped === build.quantity;
+  const closed =
+    completed + build.scrapped === build.quantity &&
+    !(await hasPendingBuildInspection(tx, build.id));
   await tx
     .update(inventoryProductionBuilds)
     .set({ completed, status: closed ? "closed" : build.status })

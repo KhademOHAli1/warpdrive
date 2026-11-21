@@ -15,7 +15,7 @@ export const subcontractManufacturingEntry = classifyInventory(
     "sourceReview:src/features/inventory/subcontract/custodyBalance.ts#b6b684a4e91be0b6f69371ee2e2c0c901e9782a46e35f874b8cd67269e2cbf12",
     "sourceReview:src/features/inventory/subcontract/reads.ts#216582a48b2b5cf10dae9641cd7b6d42fcd614fdc11e3d293637d054ccdd5833",
     "sourceReview:src/features/inventory/subcontract/schema.ts#b4a73b61d6940d3badd6165b6141e1e821e772deae2da348b060355ecf56bf70",
-    "sourceReview:src/features/inventory/subcontract/settle.ts#ee3fe7d2f6601b010fd9581f4b769c785cd5a2784dede60d657edfe1b7197a97",
+    "sourceReview:src/features/inventory/subcontract/settle.ts#cbb57480695f009656bfeb4a54bf47d959b0e6ea4c903903805f2786f1c04808",
     "sourceReview:src/features/inventory/subcontract/ui/SubcontractEditors.tsx#0a386aba3b8a441e5997a6bbd31d2c213ea4677083f9f4c7ea9902019efac4ff",
     "table:inventory_subcontract_consumptions",
     "table:inventory_subcontract_dispatches",

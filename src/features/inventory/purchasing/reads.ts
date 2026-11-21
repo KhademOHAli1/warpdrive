@@ -1,4 +1,4 @@
-import { and, asc, eq, exists, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, exists, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
@@ -8,6 +8,7 @@ import { currentOperationsActor } from "@/features/operations-access/scope";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { lockInventoryCatalog } from "../catalog/policy";
 import { inventoryProductionBuilds, inventoryProductionOutputs } from "../production/buildSchema";
+import { inventoryQualityTargets } from "../quality/schema";
 import { inventoryReleaseGrants } from "../releases/schema";
 import {
   inventorySubcontractDispatches,
@@ -121,6 +122,11 @@ async function projectOrderReceipts(tx: Db, orderIds: string[]) {
         positionId: table.positionId,
       },
       outputStatus: inventoryProductionOutputs.status,
+      heldForInspection: sql<boolean>`EXISTS (
+        SELECT 1 FROM ${inventoryQualityTargets}
+        WHERE ${inventoryQualityTargets.positionId} = ${inventorySubcontractReceipts.positionId}
+          AND ${ne(inventoryQualityTargets.status, "passed")}
+      )`,
     })
     .from(table)
     .leftJoin(
@@ -143,9 +149,10 @@ async function projectOrderReceipts(tx: Db, orderIds: string[]) {
     rows.map(({ postedAt, ...row }) => ({
       ...row,
       postedAt: postedAt.toISOString(),
-      lines: (lineGroups.get(row.id) ?? []).map(({ line, outputStatus }) => ({
+      lines: (lineGroups.get(row.id) ?? []).map(({ line, outputStatus, heldForInspection }) => ({
         ...line,
         ...(outputStatus === "wip" ? { heldForRelease: true as const } : {}),
+        ...(heldForInspection ? { heldForInspection: true as const } : {}),
       })),
     })),
     ({ orderId }) => orderId,
@@ -305,7 +312,10 @@ async function readOrdersForSite(
         canReceive: site.canReceive && pending,
         ...(subcontracts.pendingCustody.has(order.id) ||
         orderReceipts.some((receipt) =>
-          receipt.lines.some(({ heldForRelease }) => heldForRelease === true),
+          receipt.lines.some(
+            ({ heldForRelease, heldForInspection }) =>
+              heldForRelease === true || heldForInspection === true,
+          ),
         )
           ? { subcontractCancellationBlocked: true as const }
           : {}),

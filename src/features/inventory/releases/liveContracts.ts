@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Result } from "@/types/result";
+import { type QualityPlanVersion, qualityPlanDraft } from "../quality/contracts";
 import {
   type ReleaseArtifactKind,
   releaseArtifactKinds,
@@ -21,7 +22,22 @@ export const releaseMetadataCommand = z.discriminatedUnion("type", [
       .toUpperCase()
       .regex(/^[A-Z0-9][A-Z0-9._-]{0,19}$/),
   }),
-  z.strictObject({ type: z.literal("approve"), ...releaseTarget }),
+  z.strictObject({
+    type: z.literal("approve"),
+    ...releaseTarget,
+    expectedQualityPlanVersionId: id.nullable().optional(),
+  }),
+  z.strictObject({
+    type: z.literal("createQualityPlanVersion"),
+    itemId: id,
+    requestId: id,
+    ...qualityPlanDraft,
+  }),
+  z.strictObject({
+    type: z.literal("setQualityPlan"),
+    ...releaseTarget,
+    planVersionId: id.nullable(),
+  }),
   z.strictObject({ type: z.literal("setRequirement"), itemId: id, required: z.boolean() }),
   z.strictObject({
     type: z.literal("setGrant"),
@@ -52,6 +68,7 @@ export type ReleaseCommandResult = Result<
   {
     artifactId?: string;
     releaseId?: string;
+    planVersionId?: string;
     post?: { url: string; fields: Record<string, string> };
   },
   string
@@ -66,6 +83,7 @@ export type ReleaseView = {
   createdBy: ReleaseStaff;
   approvedAt: string | null;
   approvedBy: ReleaseStaff | null;
+  qualityPlanVersionId?: string | null;
   artifacts: {
     id: string;
     kind: ReleaseArtifactKind;
@@ -87,6 +105,7 @@ export type ReleaseWorkspace = {
   canApprove: boolean;
   canManage: boolean;
   releases: ReleaseView[];
+  qualityPlanVersions?: QualityPlanVersion[];
   grants: { userId: string; name: string; role: ReleaseRole }[];
   staff: ReleaseStaff[];
 };

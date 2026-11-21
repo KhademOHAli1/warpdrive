@@ -1,6 +1,14 @@
 "use client";
 
-import { ClipboardList, Factory, LibraryBig, ListTree, Truck, Warehouse } from "lucide-react";
+import {
+  ClipboardCheck,
+  ClipboardList,
+  Factory,
+  LibraryBig,
+  ListTree,
+  Truck,
+  Warehouse,
+} from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { LocationDirectoryLink } from "@/features/locations/LocationDirectoryLink";
@@ -9,6 +17,7 @@ import { bomMessages } from "../bom/ui/messages";
 import { catalogMessages } from "../catalog/ui/catalogMessages";
 import { productionMessages } from "../production/ui/messages";
 import { purchaseMessages } from "../purchasing/ui/messages";
+import { inspectionMessages } from "../quality/ui/inspectionMessages";
 import { sourcingMessages } from "../sourcing/ui/messages";
 import { warehouseMessages } from "../warehouse/ui/warehouseMessages";
 
@@ -46,6 +55,24 @@ function PurchaseOrdersLink() {
   );
 }
 
+function QualityInspectionsLink() {
+  const locale = useLocale();
+  const scope = trpc.operationsAccess.scope.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: "always",
+  });
+  const canInspect =
+    !scope.isError &&
+    scope.data?.ok === true &&
+    scope.data.value.sites.some(({ canInspectQuality }) => canInspectQuality);
+  if (!canInspect) return null;
+  return (
+    <Link href="/inventory/quality" prefetch={false} className={linkStyle}>
+      <ClipboardCheck aria-hidden="true" className="size-4" /> {inspectionMessages[locale].title}
+    </Link>
+  );
+}
+
 export function InventoryCatalogLinks({ fixture = false }: { fixture?: boolean }) {
   const locale = useLocale();
   return (
@@ -64,6 +91,7 @@ export function InventoryCatalogLinks({ fixture = false }: { fixture?: boolean }
           <Link href="/inventory/production" prefetch={false} className={linkStyle}>
             <Factory aria-hidden="true" className="size-4" /> {productionMessages[locale].title}
           </Link>
+          <QualityInspectionsLink />
           <SourcingCatalogLink />
           <PurchaseOrdersLink />
         </>

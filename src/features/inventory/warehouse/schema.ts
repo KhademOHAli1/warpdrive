@@ -57,7 +57,8 @@ export type WarehouseStockEventKind =
   | "production-reversal"
   | "production-dispatch"
   | "production-return"
-  | "production-accept";
+  | "production-accept"
+  | "quality-release";
 
 export type WarehouseTransferStatus = "draft" | "in_transit" | "received" | "cancelled";
 
@@ -249,6 +250,9 @@ export const inventoryStockEvents = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
+    uniqueIndex("inventory_quality_release_position_key")
+      .on(table.positionId)
+      .where(sql`${table.kind} = 'quality-release'`),
     index("inventory_stock_events_item_time_idx").on(table.itemId, table.createdAt),
     index("inventory_stock_events_position_idx").on(table.positionId),
     index("inventory_stock_events_source_position_idx").on(table.sourcePositionId),
@@ -282,7 +286,7 @@ export const inventoryStockEvents = pgTable(
         'transfer-draft', 'transfer-dispatch', 'transfer-receive', 'transfer-cancel', 'correction', 'correction-reversal',
         'stock-split', 'stock-merge', 'component-install', 'component-remove', 'stock-disassemble',
         'production-reserve', 'production-release', 'production-consume', 'production-output',
-        'production-reversal', 'production-dispatch', 'production-return', 'production-accept')`,
+        'production-reversal', 'production-dispatch', 'production-return', 'production-accept', 'quality-release')`,
     ),
     check(
       "inventory_stock_event_previous_state_check",

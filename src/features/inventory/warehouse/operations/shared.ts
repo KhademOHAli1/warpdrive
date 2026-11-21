@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { catalogItemPolicy } from "../../catalog/policy";
+import { isQualityControlledPosition } from "../../quality/gates";
 import type { lockInventoryStock } from "../../stock";
 import { managedWarehouseLocation, type WarehouseAccess } from "../access";
 import { inventoryStockEvents, inventoryStockPositions } from "../schema";
@@ -54,7 +55,11 @@ export async function readPosition(tx: Db, id: string) {
     .from(inventoryStockPositions)
     .where(eq(inventoryStockPositions.id, id));
   if (position === undefined) failOperations("unavailable");
-  if (await isSubcontractControlledPosition(tx, position)) failOperations("incompatibleStock");
+  if (
+    (await isSubcontractControlledPosition(tx, position)) ||
+    (await isQualityControlledPosition(tx, position))
+  )
+    failOperations("incompatibleStock");
   return position;
 }
 

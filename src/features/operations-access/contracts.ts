@@ -7,6 +7,7 @@ export const operationsRoles = [
   "asset_manager",
   "buyer",
   "cost_viewer",
+  "quality_operator",
 ] as const;
 export type OperationsRole = (typeof operationsRoles)[number];
 

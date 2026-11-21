@@ -17,6 +17,7 @@ import { inventoryPartProfiles } from "../catalog/schema";
 import { inventoryProductionBuilds, inventoryProductionOutputs } from "../production/buildSchema";
 import type { ProductionIntent } from "../production/contracts";
 import { readProductionWorkspace, runProductionCommand } from "../production/service";
+import { seedHistoricalDraftRelease } from "../releases/releases.test-helpers";
 import {
   type ApprovedBomLine,
   inventoryProductReleases,
@@ -57,9 +58,7 @@ const buy = (h: TestDb, who: NativeSessionRef, body: Record<string, unknown>) =>
 async function approved(h: TestDb, f: Fixture, itemId: string, bom: ApprovedBomLine[]) {
   const releaseId = randomUUID();
   const createdBy = f.admin.userId;
-  await h.db
-    .insert(inventoryProductReleases)
-    .values({ id: releaseId, itemId, createdBy, revision: "A" });
+  await seedHistoricalDraftRelease(h.db, { id: releaseId, itemId, createdBy, revision: "A" });
   const file = {
     releaseId,
     createdBy,

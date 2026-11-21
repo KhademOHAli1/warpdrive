@@ -9,6 +9,8 @@ export * from "@/features/inventory/catalog/schema";
 export * from "@/features/inventory/production/buildSchema";
 export * from "@/features/inventory/production/materialSchema";
 export * from "@/features/inventory/purchasing/schema";
+export * from "@/features/inventory/quality/planSchema";
+export * from "@/features/inventory/quality/schema";
 export * from "@/features/inventory/releases/schema";
 export * from "@/features/inventory/schema";
 export * from "@/features/inventory/sourcing/schema";

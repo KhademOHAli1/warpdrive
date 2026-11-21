@@ -12,6 +12,10 @@ import { deals, pipelines, sessions, stages, users } from "@/db/schema";
 import { agencyProjectSettings } from "@/features/agency-projects/schema/agencyProjectSettings";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import {
+  readHistoricalProductReleases,
+  seedHistoricalDraftRelease,
+} from "@/features/inventory/releases/releases.test-helpers";
+import {
   inventoryBuildReleases,
   inventoryProductReleases,
   inventoryReleaseArtifacts,
@@ -332,7 +336,7 @@ async function legacySnapshot(h: TestDb) {
       h.db.select().from(inventoryOrders).orderBy(inventoryOrders.id),
       h.db.select().from(inventoryOrderMaterials).orderBy(inventoryOrderMaterials.orderId),
       h.db.select().from(inventoryBuildReleases).orderBy(inventoryBuildReleases.orderId),
-      h.db.select().from(inventoryProductReleases).orderBy(inventoryProductReleases.id),
+      readHistoricalProductReleases(h.db),
       h.db.select().from(inventoryReleaseArtifacts).orderBy(inventoryReleaseArtifacts.id),
       h.db.select().from(inventoryMovements).orderBy(inventoryMovements.id),
       h.db.select().from(inventoryCommandReceipts).orderBy(inventoryCommandReceipts.requestId),
@@ -382,9 +386,12 @@ async function previousBuild(
   const orderId = randomUUID();
   const createdBy = actor.userId;
   const bomEntry = { sku: "PCB-LEGACY", quantity: 2 };
-  await h.db
-    .insert(inventoryProductReleases)
-    .values({ id: releaseId, itemId: productId, revision: "A", createdBy });
+  await seedHistoricalDraftRelease(h.db, {
+    id: releaseId,
+    itemId: productId,
+    revision: "A",
+    createdBy,
+  });
   const metadata = {
     releaseId,
     createdBy,

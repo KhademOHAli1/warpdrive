@@ -18,10 +18,12 @@ import { Select } from "@/components/ui/Select";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { BomCsvGuide } from "../../bom/ui/BomCsvGuide";
+import type { QualityPlanVersion } from "../../quality/contracts";
 import { type ReleaseArtifactKind, releaseArtifactKinds } from "../contracts";
 import type { ReleaseView } from "../liveContracts";
 import { manufacturingReleaseLiveMessages } from "./manufacturingReleaseLiveMessages";
 import { manufacturingReleaseMessages } from "./manufacturingReleaseMessages";
+import { qualityPlanMessages } from "./qualityPlanMessages";
 
 export function NewManufacturingDraft({
   pending,
@@ -132,11 +134,13 @@ const requiredKinds: readonly ReleaseArtifactKind[] = ["pcbFabrication", "manufa
 
 export function ApproveManufacturingRelease({
   release,
+  pinnedQualityPlan,
   canApprove,
   pending,
   approve,
 }: {
   release: ReleaseView;
+  pinnedQualityPlan: QualityPlanVersion | undefined;
   canApprove: boolean;
   pending: boolean;
   approve: () => Promise<boolean>;
@@ -144,11 +148,13 @@ export function ApproveManufacturingRelease({
   const locale = useLocale();
   const t = manufacturingReleaseMessages[locale];
   const live = manufacturingReleaseLiveMessages[locale];
+  const quality = qualityPlanMessages[locale];
   const [open, setOpen] = useState(false);
   const descriptionId = useId();
   const missing = requiredKinds.filter(
     (kind) => !release.artifacts.some((artifact) => artifact.kind === kind),
   );
+  const planUnavailable = release.qualityPlanVersionId != null && pinnedQualityPlan === undefined;
   return (
     <div className="space-y-2">
       {missing.length > 0 && (
@@ -166,7 +172,7 @@ export function ApproveManufacturingRelease({
           <AlertDialogTrigger asChild>
             <Button
               size="sm"
-              disabled={pending || missing.length > 0}
+              disabled={pending || missing.length > 0 || planUnavailable}
               aria-describedby={missing.length > 0 ? descriptionId : undefined}
             >
               {t.approve}
@@ -175,12 +181,22 @@ export function ApproveManufacturingRelease({
           <AlertDialogContent className={`${BLOCK_CLASS} ph-no-capture`}>
             <AlertDialogHeader>
               <AlertDialogTitle>{live.approveTitle}</AlertDialogTitle>
-              <AlertDialogDescription>{live.approveDescription}</AlertDialogDescription>
+              <AlertDialogDescription>
+                {live.approveDescription}
+                {pinnedQualityPlan !== undefined && (
+                  <span className="mt-2 block">
+                    <bdi className="font-medium">
+                      {quality.version(pinnedQualityPlan.name, String(pinnedQualityPlan.version))}
+                    </bdi>
+                    <span className="mt-1 block">{quality.approvalHold}</span>
+                  </span>
+                )}
+              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={pending}>{live.cancel}</AlertDialogCancel>
               <Button
-                disabled={pending}
+                disabled={pending || missing.length > 0 || planUnavailable}
                 onClick={() => {
                   // Leave the result visible alongside the package, including approval errors.
                   setOpen(false);

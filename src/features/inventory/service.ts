@@ -6,7 +6,11 @@ import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { lockDirectory } from "@/features/locations/service";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { currentInventoryActor, lockInventoryOrderDeal, readInventoryDeal } from "./access";
-import { requireLegacyBuildMaterials, requirePinnedLegacyBuildMaterials } from "./bom/legacyBuilds";
+import {
+  requireLegacyBuildMaterials,
+  requirePinnedLegacyBuildMaterials,
+  requireUngatedLegacyRelease,
+} from "./bom/legacyBuilds";
 import { canHoldInventory } from "./catalog/eligibility";
 import { catalogItemPolicy, createLegacyPartProfile, lockInventoryCatalog } from "./catalog/policy";
 import { type InventoryCommand, type InventoryResult, inventoryCommand } from "./contracts";
@@ -161,6 +165,7 @@ async function changeCatalog(
 async function productionMaterials(tx: Db, item: Item) {
   const release = await findActiveRelease(tx, item.id);
   if (release !== null) {
+    requireUngatedLegacyRelease(release.qualityPlanVersionId);
     await requireLegacyBuildMaterials(tx, release.bom);
     return {
       releaseId: release.id,

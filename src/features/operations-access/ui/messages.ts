@@ -3,7 +3,7 @@ import type { OperationsRole } from "../contracts";
 
 const en = {
   title: "Operations access",
-  description: "Assign warehouse, asset, purchasing and cost roles by site.",
+  description: "Assign warehouse, asset, purchasing, cost and quality roles by site.",
   site: "Site",
   chooseSite: "Select a site",
   archived: "Archived",
@@ -37,6 +37,7 @@ const en = {
     asset_manager: "Asset manager",
     buyer: "Buyer",
     cost_viewer: "Cost viewer",
+    quality_operator: "Quality operator",
   } satisfies Record<OperationsRole, string>,
 };
 
@@ -44,7 +45,8 @@ type Messages = typeof en;
 
 const de = {
   title: "Betriebszugriff",
-  description: "Weisen Sie Rollen für Lager, Betriebsmittel, Einkauf und Kosten je Standort zu.",
+  description:
+    "Weisen Sie Rollen für Lager, Betriebsmittel, Einkauf, Kosten und Qualität je Standort zu.",
   site: "Standort",
   chooseSite: "Standort auswählen",
   archived: "Archiviert",
@@ -80,12 +82,13 @@ const de = {
     asset_manager: "Betriebsmittel verwalten",
     buyer: "Einkauf",
     cost_viewer: "Kosten einsehen",
+    quality_operator: "Qualitätsprüfung",
   },
 } satisfies Messages;
 
 const fa = {
   title: "دسترسی به عملیات",
-  description: "نقش‌های انبار، دارایی، خرید و هزینه را برای هر سایت تعیین کنید.",
+  description: "نقش‌های انبار، دارایی، خرید، هزینه و کنترل کیفیت را برای هر سایت تعیین کنید.",
   site: "سایت",
   chooseSite: "انتخاب سایت",
   archived: "بایگانی‌شده",
@@ -119,6 +122,7 @@ const fa = {
     asset_manager: "مدیریت دارایی",
     buyer: "خریدار",
     cost_viewer: "مشاهدهٔ هزینه‌ها",
+    quality_operator: "بازرس کنترل کیفیت",
   },
 } satisfies Messages;
 

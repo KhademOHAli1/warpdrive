@@ -9,7 +9,6 @@ export const inventorySourcingEntry = classifyInventory(
     "derived:src/features/inventory/sourcing/ui/SourcingView.tsx",
     "sourceReview:drizzle/0135_inventory_sourcing.sql#fa01c8092ed3474698ffc7d6c24333d23392b363f5653c6baccbe626d73d7ce1",
     "sourceReview:src/app/(app)/inventory/sourcing/page.tsx#57afea02d162dd0139f2224540e89e31aa6706db153d8e226f5267c23f54f1a8",
-    "sourceReview:src/features/inventory/router.ts#45eb6afc092fe6c87e8974c6aa7ff619e6bd147faf751c73051c896e49080128",
     "sourceReview:src/features/inventory/sourcing/changes.ts#4b492c00f571d56abe61b3a2120800614e5ae6b5fa757fc1b514d6bd6ee375b6",
     "sourceReview:src/features/inventory/sourcing/reads.ts#9e4a25fa93632b25c03d9af0a395f7a005f7b9dea5b437602d875ac3626359fd",
     "sourceReview:src/features/inventory/sourcing/router.ts#0319fbc1b20dcea1312ceff60cbdb863aecb2ed7909712b54f0e3436313c8519",

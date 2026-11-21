@@ -10,7 +10,11 @@ import { inventoryBuildReleases, inventoryProductReleases, inventoryReleaseGrant
 export const releaseUnavailable = "This manufacturing release is unavailable for this account.";
 
 type ItemMode = "view" | "edit" | "approve" | "manage";
-type ProductRelease = typeof inventoryProductReleases.$inferSelect;
+const releaseIdentity = {
+  id: inventoryProductReleases.id,
+  itemId: inventoryProductReleases.itemId,
+  status: inventoryProductReleases.status,
+};
 
 function unavailable(): never {
   throw new InventoryDomainError(releaseUnavailable);
@@ -63,7 +67,7 @@ export async function authorizeBuildRelease(
   if (actor.projectsGuestOnly || !(await inventoryProjectsEnabled(tx))) unavailable();
   const [row] = await tx
     .select({
-      release: inventoryProductReleases,
+      release: releaseIdentity,
       itemId: inventoryItems.id,
       sku: inventoryItems.sku,
       name: inventoryItems.name,
@@ -98,7 +102,7 @@ export async function authorizeArtifactRelease(
   mode: "view" | "edit",
   signal: AbortSignal,
   orderId?: string,
-): Promise<ProductRelease> {
+) {
   if (orderId !== undefined) {
     if (mode !== "view") unavailable();
     const { release } = await authorizeBuildRelease(tx, actor, orderId, signal);
@@ -106,7 +110,7 @@ export async function authorizeArtifactRelease(
     return release;
   }
   const [release] = await tx
-    .select()
+    .select(releaseIdentity)
     .from(inventoryProductReleases)
     .where(eq(inventoryProductReleases.id, releaseId));
   if (release === undefined) unavailable();

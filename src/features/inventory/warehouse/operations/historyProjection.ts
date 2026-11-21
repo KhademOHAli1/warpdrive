@@ -94,7 +94,7 @@ function eventRows(access: WarehouseAccess): SQL {
       CASE WHEN event.kind IN ('reconcile', 'state') THEN 0 ELSE event.on_hand_delta END AS on_hand_delta,
       event.reserved_delta, event.incoming_delta,
       CASE WHEN event.kind IN ('reconcile', 'state') THEN nullif(event.on_hand_delta, 0)
-        WHEN event.kind = 'production-accept' THEN details.previous_on_hand END AS affected_quantity,
+        WHEN event.kind IN ('production-accept', 'quality-release') THEN details.previous_on_hand END AS affected_quantity,
       event.previous_state, event.state, details.previous_on_hand,
       CASE WHEN (${canSeeReference}) AND (NOT (${isStructuralEvent}) OR (${canSeeStructure}))
         THEN details.reason END AS reason,

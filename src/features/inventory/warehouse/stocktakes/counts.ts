@@ -86,6 +86,7 @@ function stockChangingEvents() {
     ne(events.reservedDelta, 0),
     eq(events.kind, "state"),
     eq(events.kind, "production-accept"),
+    eq(events.kind, "quality-release"),
   );
 }
 

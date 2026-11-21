@@ -127,6 +127,7 @@ export type PurchaseReceiptLine = {
   reason: string | null;
   positionId: string | null;
   heldForRelease?: true;
+  heldForInspection?: true;
 };
 export type PurchaseReceipt = {
   id: string;

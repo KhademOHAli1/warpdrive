@@ -23,6 +23,7 @@ import { executeManufacturingReleaseAction, readManufacturingReleasesAction } fr
 import { ManufacturingReleasePermissions } from "./ManufacturingReleasePermissions";
 import { manufacturingReleaseLiveMessages } from "./manufacturingReleaseLiveMessages";
 import { manufacturingReleaseMessages } from "./manufacturingReleaseMessages";
+import { qualityPlanMessages } from "./qualityPlanMessages";
 import {
   ApproveManufacturingRelease,
   NewManufacturingDraft,
@@ -34,6 +35,7 @@ import {
   ReleaseBom,
   ReleasePackageHeading,
 } from "./ReleasePackageContent";
+import { ReleaseQualityPlan } from "./ReleaseQualityPlan";
 
 type Upload = { type: "upload"; releaseId: string; kind: ReleaseArtifactKind; file: File };
 type EditorCommand = ReleaseCommand | Upload;
@@ -206,6 +208,8 @@ function ManufacturingReleaseWorkspace({
         <LiveReleasePackage
           key={selected.id}
           release={selected}
+          itemId={workspace.itemId}
+          qualityPlanVersions={workspace.qualityPlanVersions}
           canEdit={workspace.canEdit}
           canApprove={workspace.canApprove}
           pending={pending}
@@ -282,12 +286,16 @@ function LiveReleaseHistory({
 
 function LiveReleasePackage({
   release,
+  itemId,
+  qualityPlanVersions,
   canEdit,
   canApprove,
   pending,
   run,
 }: {
   release: ReleaseView;
+  itemId: string;
+  qualityPlanVersions: ReleaseWorkspace["qualityPlanVersions"];
   canEdit: boolean;
   canApprove: boolean;
   pending: boolean;
@@ -295,8 +303,12 @@ function LiveReleasePackage({
 }) {
   const locale = useLocale();
   const t = manufacturingReleaseMessages[locale];
+  const quality = qualityPlanMessages[locale];
   const draft = release.status === "draft";
   const mutable = draft && canEdit;
+  const pinnedQualityPlan = qualityPlanVersions?.find(
+    ({ id }) => id === release.qualityPlanVersionId,
+  );
   return (
     <section className="space-y-3 border-t pt-3">
       <ReleasePackageHeading release={release} />
@@ -324,13 +336,49 @@ function LiveReleasePackage({
           }
         />
       )}
+      {qualityPlanVersions !== undefined && (
+        <ReleaseQualityPlan
+          pinned={pinnedQualityPlan}
+          pinnedId={release.qualityPlanVersionId ?? null}
+          versions={qualityPlanVersions}
+          pending={pending}
+          edit={
+            mutable
+              ? {
+                  select: (planVersionId) => {
+                    if (planVersionId === (release.qualityPlanVersionId ?? null)) return;
+                    void run(
+                      { type: "setQualityPlan", releaseId: release.id, planVersionId },
+                      quality.saved,
+                    );
+                  },
+                  create: async (name, steps, requestId) =>
+                    (await run(
+                      { type: "createQualityPlanVersion", itemId, requestId, name, steps },
+                      quality.created,
+                    )) !== null,
+                }
+              : undefined
+          }
+        />
+      )}
       {draft && (
         <ApproveManufacturingRelease
           release={release}
+          pinnedQualityPlan={pinnedQualityPlan}
           pending={pending}
           canApprove={canApprove}
           approve={async () =>
-            (await run({ type: "approve", releaseId: release.id }, t.notices.approve)) !== null
+            (await run(
+              {
+                type: "approve",
+                releaseId: release.id,
+                ...(release.qualityPlanVersionId === undefined
+                  ? {}
+                  : { expectedQualityPlanVersionId: release.qualityPlanVersionId }),
+              },
+              t.notices.approve,
+            )) !== null
           }
         />
       )}

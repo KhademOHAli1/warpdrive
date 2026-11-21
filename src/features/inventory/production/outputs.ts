@@ -1,5 +1,10 @@
 import { and, asc, eq, gt, or, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import {
+  hasPendingBuildInspection,
+  qualityPlanForBuild,
+  registerQualityTarget,
+} from "../quality/gates";
 import { lockInventoryStock } from "../stock";
 import { readStockPositionRows } from "../warehouse/balances";
 import {
@@ -158,6 +163,7 @@ async function publishProductionStock(
   output: Output,
   command: Operation<"finalizeBatch">,
   stock: ProductionStockLocks,
+  planVersionId: string | null,
 ) {
   // Establish every zero balance first. A duplicate serial aborts the entire batch,
   // including consumed inputs, settled output metadata, and the command receipt.
@@ -172,6 +178,7 @@ async function publishProductionStock(
         lot: command.lot,
         serial,
         buildOutputId: output.id,
+        state: planVersionId === null ? ("available" as const) : ("hold" as const),
         onHand: 0,
         reserved: 0,
       })),
@@ -185,6 +192,8 @@ async function publishProductionStock(
       onHandDelta: position.serial === null ? output.quantity : 1,
       reservedDelta: 0,
     });
+    if (planVersionId !== null)
+      await registerQualityTarget(tx, build, output.id, position, planVersionId);
   }
 }
 
@@ -202,6 +211,10 @@ export async function finalizeProductionBatch(
   )
     failProduction("state");
   validateOutputIdentities(build, output, command);
+  const planVersionId =
+    command.disposition === "completed" ? await qualityPlanForBuild(tx, build) : null;
+  if (planVersionId !== null && command.serials.length !== output.quantity)
+    failProduction("serial");
   const materials = await readBuildMaterials(tx, build.id);
   const stock = await lockInventoryStock(tx, [
     build.itemId,
@@ -232,15 +245,17 @@ export async function finalizeProductionBatch(
     serials: command.serials,
   });
   if (command.disposition === "completed")
-    await publishProductionStock(tx, actorId, build, output, command, stock);
+    await publishProductionStock(tx, actorId, build, output, command, stock, planVersionId);
   const completed = build.completed + (command.disposition === "completed" ? output.quantity : 0);
   const scrapped = build.scrapped + (command.disposition === "scrapped" ? output.quantity : 0);
+  const canClose =
+    completed + scrapped === build.quantity && !(await hasPendingBuildInspection(tx, build.id));
   await tx
     .update(inventoryProductionBuilds)
     .set({
       completed,
       scrapped,
-      status: completed + scrapped === build.quantity ? "closed" : build.status,
+      status: canClose ? "closed" : build.status,
     })
     .where(eq(inventoryProductionBuilds.id, build.id));
 }

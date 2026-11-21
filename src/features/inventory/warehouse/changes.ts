@@ -2,6 +2,7 @@ import { and, eq, gt, lt } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { type CatalogItemPolicy, catalogItemPolicy } from "../catalog/policy";
 import { purchaseOrderLines } from "../purchasing/schema";
+import { isQualityControlledPosition } from "../quality/gates";
 import { InventoryStockError, lockInventoryStock, postInventoryMovement } from "../stock";
 import {
   failWarehouse,
@@ -406,7 +407,11 @@ async function setPositionState(tx: Db, actorId: string, target: Target, command
   const position = await readPosition(tx, id);
   if (position === undefined) failWarehouse("unavailable");
   if (position.locationId !== target.location.id) failWarehouse("conflict");
-  if (await isSubcontractControlledPosition(tx, position)) failWarehouse("conflict");
+  if (
+    (await isSubcontractControlledPosition(tx, position)) ||
+    (await isQualityControlledPosition(tx, position))
+  )
+    failWarehouse("conflict");
   if (position.state === state) {
     if (quantity > position.onHand) failWarehouse("insufficientStock");
     return id;

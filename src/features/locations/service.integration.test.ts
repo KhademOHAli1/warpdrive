@@ -12,6 +12,10 @@ import { deals, pipelines, sessions, stages, users } from "@/db/schema";
 import { agencyProjectSettings } from "@/features/agency-projects/schema/agencyProjectSettings";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import {
+  readHistoricalProductReleases,
+  seedHistoricalDraftRelease,
+} from "@/features/inventory/releases/releases.test-helpers";
+import {
   inventoryBuildReleases,
   inventoryProductReleases,
   inventoryReleaseArtifacts,
@@ -390,7 +394,7 @@ async function inventorySnapshot(h: TestDb) {
       h.db.select().from(inventoryOrderMaterials).orderBy(inventoryOrderMaterials.orderId),
       h.db.select().from(inventoryOrderTasks).orderBy(inventoryOrderTasks.position),
       h.db.select().from(inventoryBuildReleases).orderBy(inventoryBuildReleases.orderId),
-      h.db.select().from(inventoryProductReleases).orderBy(inventoryProductReleases.id),
+      readHistoricalProductReleases(h.db),
       h.db.select().from(inventoryReleaseArtifacts).orderBy(inventoryReleaseArtifacts.id),
     ]);
   return { items, orders, movements, receipts, materials, tasks, pins, releases, artifacts };
@@ -441,9 +445,12 @@ async function priorRelease(h: TestDb, admin: NativeSessionRef, productId: strin
   } as const;
   const bom = [{ sku: component.sku, quantity: 2 }];
   await h.db.insert(inventoryItems).values({ ...component, kind: "component", revision: "A" });
-  await h.db
-    .insert(inventoryProductReleases)
-    .values({ id: releaseId, itemId: productId, revision: "A", ...actor });
+  await seedHistoricalDraftRelease(h.db, {
+    id: releaseId,
+    itemId: productId,
+    revision: "A",
+    ...actor,
+  });
   // Seed approved file metadata under the incumbent triggers. The upgrade concerns database retention.
   await h.db.insert(inventoryReleaseArtifacts).values([
     {

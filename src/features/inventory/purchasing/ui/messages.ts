@@ -36,6 +36,7 @@ const en = {
   subcontractLine: "Subcontracted production",
   openSubcontractBuild: "Open production build",
   awaitingSubcontractRelease: "Held for production release",
+  awaitingQualityInspection: "Held for quality inspection",
   subcontractReceiptHold: "Accepted subcontract items stay on hold until Production releases them.",
   subcontractCancellationBlocked:
     "Resolve held deliveries and material at the subcontractor before cancelling this order.",
@@ -128,6 +129,7 @@ const de: Words = {
   subcontractLine: "Fremdfertigung",
   openSubcontractBuild: "Fertigungsauftrag öffnen",
   awaitingSubcontractRelease: "Gesperrt bis zur Fertigungsfreigabe",
+  awaitingQualityInspection: "Gesperrt bis zur Qualitätsfreigabe",
   subcontractReceiptHold:
     "Angenommene Fremdfertigungsware bleibt bis zur Fertigungsfreigabe gesperrt.",
   subcontractCancellationBlocked:
@@ -218,6 +220,7 @@ const fa: Words = {
   subcontractLine: "تولید پیمانکاری",
   openSubcontractBuild: "باز کردن سفارش ساخت",
   awaitingSubcontractRelease: "در انتظار تأیید تولید",
+  awaitingQualityInspection: "در انتظار بازرسی کیفیت",
   subcontractReceiptHold: "اقلام پذیرفته‌شده از پیمانکار تا تأیید تولید در وضعیت نگهداری می‌مانند.",
   subcontractCancellationBlocked:
     "پیش از لغو سفارش، وضعیت محموله‌های در انتظار تأیید و مواد نزد پیمانکار را تعیین کنید.",

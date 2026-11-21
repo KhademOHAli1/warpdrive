@@ -51,6 +51,14 @@ function ProductionHeader({ build, busy, open, t }: DetailViewProps) {
       material.positions.some(({ free }) => free > 0),
   );
   const actions = buildCommands[build.status].filter((type) => {
+    if (
+      type === "cancelBuild" &&
+      build.outputs.some(
+        ({ quality }) => quality?.some(({ status }) => status !== "passed") === true,
+      )
+    ) {
+      return false;
+    }
     if (linked === null) return true;
     if (type === "cancelBuild") return subcontractAllowsCancel(build);
     if (type === "autoAllocate")

@@ -8,6 +8,7 @@ import { type BomGraph, readBomGraph } from "../bom/graph";
 import { readBomNodes, readBomReleaseDirectory } from "../bom/reads";
 import { inventoryPartProfiles } from "../catalog/schema";
 import { inventoryProjectsEnabled } from "../projectBridge";
+import { inventoryQualityTargets } from "../quality/schema";
 import { inventoryItems, inventoryTemplates } from "../schema";
 import { readSubcontractDetail } from "../subcontract/reads";
 import type { WarehouseAccess } from "../warehouse/access";
@@ -181,6 +182,28 @@ async function materialAndOutputs(
     .where(eq(inventoryProductionOutputs.buildId, build.id))
     .orderBy(desc(inventoryProductionOutputs.createdAt), desc(inventoryProductionOutputs.id))
     .limit(500);
+  const inspections = await tx
+    .select({
+      outputId: inventoryQualityTargets.outputId,
+      serial: inventoryQualityTargets.serial,
+      status: inventoryQualityTargets.status,
+    })
+    .from(inventoryQualityTargets)
+    .where(
+      and(
+        eq(inventoryQualityTargets.buildId, build.id),
+        inArray(
+          inventoryQualityTargets.outputId,
+          outputs.map(({ id }) => id),
+        ),
+      ),
+    );
+  const byOutput = new Map<string, NonNullable<ProductionDetail["outputs"][number]["quality"]>>();
+  for (const { outputId, ...inspection } of inspections) {
+    const group = byOutput.get(outputId) ?? [];
+    group.push(inspection);
+    byOutput.set(outputId, group);
+  }
   const inputRows = await tx
     .select({
       input: inventoryProductionInputs,
@@ -253,6 +276,7 @@ async function materialAndOutputs(
       status: output.status,
       lot: output.lot,
       serials: output.serials,
+      ...(byOutput.has(output.id) ? { quality: byOutput.get(output.id) } : {}),
       reason: output.reason,
       createdAt: output.createdAt.toISOString(),
       inputs: inputRows

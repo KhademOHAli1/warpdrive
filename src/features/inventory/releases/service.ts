@@ -10,8 +10,13 @@ import { makeStorageClient, type StorageClient } from "@/features/files/storage"
 import type { HydratedActor } from "@/server/hydrateActor";
 import { err, ok, type Result } from "@/types/result";
 import { currentInventoryActor } from "../access";
-import { lockInventoryCatalog } from "../catalog/policy";
+import { catalogItemPolicy, lockInventoryCatalog } from "../catalog/policy";
 import { InventoryDomainError } from "../errors";
+import {
+  createQualityPlanVersion,
+  readQualityPlanVersions,
+  requireQualityPlanVersion,
+} from "../quality/plans";
 import { inventoryItems } from "../schema";
 import { authorizeBuildRelease, releaseUnavailable, requireItemReleaseAccess } from "./access";
 import {
@@ -102,6 +107,9 @@ async function releaseViews(tx: Db, itemId: string, releaseId?: string): Promise
       createdBy: { id: releaseCreator.id, name: releaseCreator.name },
       approvedAt: inventoryProductReleases.approvedAt,
       approvedBy: { id: releaseApprover.id, name: releaseApprover.name },
+      // The classic CRM build view can only pin ungated releases.
+      qualityPlanVersionId:
+        releaseId === undefined ? inventoryProductReleases.qualityPlanVersionId : sql<null>`NULL`,
       bom: inventoryProductReleases.bom,
     })
     .from(inventoryProductReleases)
@@ -201,6 +209,7 @@ export async function readReleaseWorkspace(
       canApprove: permissions.approve,
       canManage: permissions.manage,
       releases,
+      qualityPlanVersions: await readQualityPlanVersions(tx, itemId),
       ...administration,
     };
   });
@@ -238,7 +247,10 @@ async function requireApprovalTarget(
 ) {
   await requireItemReleaseAccess(tx, actor, itemId, "approve");
   const [release] = await tx
-    .select({ status: inventoryProductReleases.status })
+    .select({
+      status: inventoryProductReleases.status,
+      qualityPlanVersionId: inventoryProductReleases.qualityPlanVersionId,
+    })
     .from(inventoryProductReleases)
     .where(
       and(eq(inventoryProductReleases.id, releaseId), eq(inventoryProductReleases.itemId, itemId)),
@@ -248,7 +260,12 @@ async function requireApprovalTarget(
   return release;
 }
 
-async function readApprovalCandidate(tx: Db, actor: HydratedActor, releaseId: string) {
+async function readApprovalCandidate(
+  tx: Db,
+  actor: HydratedActor,
+  releaseId: string,
+  expectedQualityPlanVersionId: string | null,
+) {
   const [candidate] = await tx
     .select({ itemId: inventoryProductReleases.itemId })
     .from(inventoryProductReleases)
@@ -258,7 +275,13 @@ async function readApprovalCandidate(tx: Db, actor: HydratedActor, releaseId: st
   await lockReleaseProduct(tx, itemId, "share");
   const release = await requireApprovalTarget(tx, actor, itemId, releaseId, "share");
   if (release.status === "released") return null;
-  return { itemId, ...(await approvalManifest(tx, releaseId)) };
+  if (release.qualityPlanVersionId !== expectedQualityPlanVersionId)
+    fail("The test plan changed. Review the pinned version before approving.");
+  return {
+    itemId,
+    qualityPlanVersionId: release.qualityPlanVersionId,
+    ...(await approvalManifest(tx, releaseId)),
+  };
 }
 
 async function approvalManifest(tx: Db, releaseId: string) {
@@ -317,11 +340,12 @@ async function approveRelease(
   db: Db,
   who: NativeSessionRef,
   releaseId: string,
+  expectedQualityPlanVersionId: string | null,
   signal: AbortSignal,
   storage?: StorageClient,
 ) {
   const preflight = await withReleaseActor(db, who, signal, (tx, actor) =>
-    readApprovalCandidate(tx, actor, releaseId),
+    readApprovalCandidate(tx, actor, releaseId, expectedQualityPlanVersionId),
   );
   if (!preflight.ok) return preflight;
   if (preflight.value === null) return ok({ releaseId });
@@ -355,8 +379,17 @@ async function approveRelease(
     await requireApprovalGraphAccess(tx, actor, graph);
 
     const manifest = await approvalManifest(tx, releaseId);
-    if (!isDeepStrictEqual(manifest.files, verifiedManifest.files)) {
+    if (
+      release.qualityPlanVersionId !== verifiedManifest.qualityPlanVersionId ||
+      !isDeepStrictEqual(manifest.files, verifiedManifest.files)
+    ) {
       fail("The package changed during verification. Review its files and approve again.");
+    }
+    if (
+      release.qualityPlanVersionId !== null &&
+      (await catalogItemPolicy(tx, itemId))?.flags.trackable !== true
+    ) {
+      fail("Enable serial tracking for this product before approving a test plan.");
     }
     await tx
       .update(inventoryProductReleases)
@@ -425,22 +458,64 @@ async function setReleaseGrant(
     });
 }
 
+async function setReleaseQualityPlan(
+  tx: Db,
+  actor: HydratedActor,
+  { releaseId, planVersionId }: Extract<ReleaseMetadataCommand, { type: "setQualityPlan" }>,
+) {
+  const [candidate] = await tx
+    .select({ itemId: inventoryProductReleases.itemId })
+    .from(inventoryProductReleases)
+    .where(eq(inventoryProductReleases.id, releaseId));
+  if (candidate === undefined) fail();
+  const { itemId } = candidate;
+  await lockReleaseProduct(tx, itemId, "update");
+  await requireItemReleaseAccess(tx, actor, itemId, "edit");
+  const [draft] = await tx
+    .select({ id: inventoryProductReleases.id })
+    .from(inventoryProductReleases)
+    .where(
+      and(eq(inventoryProductReleases.id, releaseId), eq(inventoryProductReleases.status, "draft")),
+    )
+    .for("update");
+  if (draft === undefined) fail("The approved release is sealed.");
+  if (planVersionId !== null) await requireQualityPlanVersion(tx, itemId, planVersionId);
+  await tx
+    .update(inventoryProductReleases)
+    .set({ qualityPlanVersionId: planVersionId })
+    .where(eq(inventoryProductReleases.id, releaseId));
+  return { releaseId };
+}
+
 export async function executeReleaseMetadata(
   db: Db,
   who: NativeSessionRef,
   input: ReleaseMetadataCommand,
   signal: AbortSignal,
   storage?: StorageClient,
-): Promise<ReleaseResult<{ releaseId?: string }>> {
+): Promise<ReleaseResult<{ releaseId?: string; planVersionId?: string }>> {
   const parsed = releaseMetadataCommand.safeParse(input);
   if (!parsed.success) return err("Check the manufacturing release details.");
   const command = parsed.data;
-  if (command.type === "approve")
-    return approveRelease(db, who, command.releaseId, signal, storage);
+  if (command.type === "approve") {
+    return approveRelease(
+      db,
+      who,
+      command.releaseId,
+      command.expectedQualityPlanVersionId ?? null,
+      signal,
+      storage,
+    );
+  }
   return withReleaseActor(db, who, signal, async (tx, actor) => {
+    if (command.type === "setQualityPlan") return setReleaseQualityPlan(tx, actor, command);
     await lockReleaseProduct(tx, command.itemId, "update");
     if (command.type === "createDraft")
       return createDraft(tx, actor, command.itemId, command.revision);
+    if (command.type === "createQualityPlanVersion") {
+      await requireItemReleaseAccess(tx, actor, command.itemId, "edit");
+      return createQualityPlanVersion(tx, actor.id, command);
+    }
     await requireItemReleaseAccess(tx, actor, command.itemId, "manage");
     if (command.type === "setRequirement") {
       await tx

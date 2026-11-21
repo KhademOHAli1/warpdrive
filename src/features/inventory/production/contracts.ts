@@ -180,6 +180,7 @@ export type ProductionOutput = {
   serials: string[];
   reason: string | null;
   createdAt: string;
+  quality?: { serial: string; status: "pending" | "failed" | "passed" }[];
   inputs: { part: BomPart; position: ProductionPosition; quantity: number; eventId: string }[];
 };
 

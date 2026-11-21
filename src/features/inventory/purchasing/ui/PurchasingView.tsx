@@ -391,6 +391,7 @@ function ReceiptLineRow({
     <tr
       data-purchase-receipt-disposition={row.disposition}
       data-purchase-held-for-release={row.heldForRelease}
+      data-purchase-held-for-inspection={row.heldForInspection}
     >
       <td className={dataCell}>
         <bdi>{line === undefined ? "—" : `${line.partCode} · ${line.revision}`}</bdi>
@@ -417,6 +418,9 @@ function ReceiptLineRow({
         </Badge>
         {row.heldForRelease === true && (
           <p className="mt-1 text-xs text-muted-foreground">{t.awaitingSubcontractRelease}</p>
+        )}
+        {row.heldForInspection === true && (
+          <p className="mt-1 text-xs text-muted-foreground">{t.awaitingQualityInspection}</p>
         )}
         {row.reason !== null && (
           <p className="mt-1 max-w-48 break-words text-xs text-muted-foreground">

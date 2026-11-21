@@ -4,6 +4,7 @@ import { inventoryBomRouter } from "./bom/router";
 import { inventoryCatalogRouter } from "./catalog/router";
 import { inventoryProductionRouter } from "./production/router";
 import { inventoryPurchasingRouter } from "./purchasing/router";
+import { inventoryQualityRouter } from "./quality/router";
 import { readInventoryWorkspace } from "./reads";
 import { manufacturingReleaseRouter } from "./releases/router";
 import { inventorySourcingRouter } from "./sourcing/router";
@@ -14,6 +15,7 @@ export const inventoryRouter = router({
   catalog: inventoryCatalogRouter,
   production: inventoryProductionRouter,
   purchasing: inventoryPurchasingRouter,
+  quality: inventoryQualityRouter,
   releases: manufacturingReleaseRouter,
   sourcing: inventorySourcingRouter,
   warehouse: inventoryWarehouseRouter,

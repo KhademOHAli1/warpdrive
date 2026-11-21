@@ -16,6 +16,7 @@ import {
 import { users } from "@/db/schema/identity";
 import type { CatalogUnit } from "../catalog/contracts";
 import type { InventoryBomLine, InventoryTemplate } from "../contracts";
+import { inventoryQualityPlanVersions } from "../quality/planSchema";
 import { inventoryItems, inventoryOrders } from "../schema";
 import { type ReleaseArtifactKind, releaseFixtureMaxFileBytes } from "./contracts";
 
@@ -66,11 +67,17 @@ export const inventoryProductReleases = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     approvedBy: uuid("approved_by").references(() => users.id),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
+    qualityPlanVersionId: uuid("quality_plan_version_id"),
     bom: jsonb("bom").$type<ApprovedBomLine[]>().notNull().default(sql`'[]'::jsonb`),
   },
   (table) => [
     unique("inventory_product_releases_item_revision_key").on(table.itemId, table.revision),
     unique("inventory_product_releases_id_item_key").on(table.id, table.itemId),
+    foreignKey({
+      name: "inventory_product_releases_quality_plan_fk",
+      columns: [table.qualityPlanVersionId, table.itemId],
+      foreignColumns: [inventoryQualityPlanVersions.id, inventoryQualityPlanVersions.itemId],
+    }),
     index("inventory_product_releases_active_idx")
       .on(table.itemId, table.approvedAt.desc(), table.id.desc())
       .where(sql`${table.status} = 'released'`),

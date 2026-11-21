@@ -133,6 +133,7 @@ test("separates site combinations and only grants warehouse actions to the wareh
             canManageAssets: false,
             canBuy: true,
             canViewCosts: false,
+            canInspectQuality: false,
           },
           {
             siteId: remote.siteId,
@@ -142,6 +143,7 @@ test("separates site combinations and only grants warehouse actions to the wareh
             canManageAssets: false,
             canBuy: false,
             canViewCosts: true,
+            canInspectQuality: false,
           },
         ]),
       },
@@ -158,6 +160,7 @@ test("separates site combinations and only grants warehouse actions to the wareh
             canManageAssets: false,
             canBuy: false,
             canViewCosts: false,
+            canInspectQuality: false,
           },
           {
             siteId: remote.siteId,
@@ -167,6 +170,7 @@ test("separates site combinations and only grants warehouse actions to the wareh
             canManageAssets: true,
             canBuy: false,
             canViewCosts: false,
+            canInspectQuality: false,
           },
         ]),
       },

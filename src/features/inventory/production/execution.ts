@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import { hasPendingBuildInspection } from "../quality/gates";
 import { lockInventoryStock } from "../stock";
 import {
   autoAllocateProductionMaterial,
@@ -69,6 +70,7 @@ async function cancelBuild(
   build: ProductionBuildRow,
   { reason, requestId }: { reason: string; requestId: string },
 ) {
+  if (await hasPendingBuildInspection(tx, build.id)) failProduction("state");
   const materials = await readBuildMaterials(tx, build.id);
   const stock = await lockInventoryStock(
     tx,
