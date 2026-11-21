@@ -18,7 +18,7 @@ export const purchaseOrdersEntry = classifyInventory(
     "sourceReview:src/features/inventory/purchasing/scope.ts#66924217a46b7a89fe10678467cc7485c1a6c26cdd945af7ca4cd01331f9dd5c",
     "sourceReview:src/features/inventory/purchasing/service.ts#26c4c191255d89dcb024b5c9e90db8269e161f33efe7b963ad5896db401bb027",
     "sourceReview:src/features/inventory/purchasing/ui/PurchaseEditors.tsx#b614fec9fc511e33325a30a81f809d81479168c5323d7aef1813ae1116d7c3f8",
-    "sourceReview:src/features/inventory/purchasing/ui/PurchasingView.tsx#411df8230ce396b8d90dea67300c07ec6563b96493f74ce24b94d1e6f1da7c21",
+    "sourceReview:src/features/inventory/purchasing/ui/PurchasingView.tsx#c608ef1b6c180f01ca5cb6611cc1a801005c43cf88572c71eade08b85c9b5aa1",
     "table:inventory_purchase_order_line_costs",
     "table:inventory_purchase_order_lines",
     "table:inventory_purchase_orders",

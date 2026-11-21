@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FileAttachments } from "@/features/files/FileAttachments";
 import { useFormatters } from "@/lib/useFormatters";
+import { useHydrated } from "@/lib/useHydrated";
 import { CatalogField, CatalogSelect } from "../../catalog/ui/CatalogFields";
 import type {
   PurchaseOrder,
@@ -23,6 +24,19 @@ const titleClass = "text-base font-semibold";
 const headingCell = "px-3 py-2 text-start text-xs font-medium text-muted-foreground";
 const dataCell = "px-3 py-2.5 text-start align-top text-sm";
 const narrowCell = `${dataCell} whitespace-nowrap tabular-nums`;
+
+function usePurchaseDisplay() {
+  const format = useFormatters();
+  const hydrated = useHydrated();
+  // Server and browser regional formatters can differ during the initial render.
+  return {
+    currency: (value: string, currency: string) =>
+      hydrated ? format.currency(value, currency) : value,
+    number: (value: number) => (hydrated ? format.number(value) : String(value)),
+    dateOnly: (value: string) => (hydrated ? format.dateOnly(value) : value),
+    dateTime: (value: string) => (hydrated ? format.dateTime(value) : value.slice(0, 10)),
+  };
+}
 
 function StatusBadge({ status, t }: { status: PurchaseOrderStatus; t: PurchaseMessages }) {
   return <Badge variant={status === "received" ? "success" : "outline"}>{t[status]}</Badge>;
@@ -72,7 +86,7 @@ function OrderList({
   open: OpenPurchaseEditor;
   t: PurchaseMessages;
 }) {
-  const { dateOnly } = useFormatters();
+  const { dateOnly } = usePurchaseDisplay();
   return (
     <section className="min-w-0 self-start rounded-lg border bg-card">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-3">
@@ -196,7 +210,7 @@ function OrderActions({
 }
 
 function OrderMetadata({ order, t }: { order: PurchaseOrder; t: PurchaseMessages }) {
-  const { dateOnly } = useFormatters();
+  const { dateOnly } = usePurchaseDisplay();
   return (
     <dl className="grid gap-3 text-sm sm:grid-cols-3">
       <div>
@@ -245,7 +259,7 @@ function PriceCells({
   line: PurchaseOrderLine;
   t: PurchaseMessages;
 }) {
-  const { currency } = useFormatters();
+  const { currency } = usePurchaseDisplay();
   if (price === undefined) {
     return (
       <td colSpan={3} className={dataCell}>
@@ -270,7 +284,7 @@ function PriceCells({
 }
 
 function OrderLines({ order, t }: { order: PurchaseOrder; t: PurchaseMessages }) {
-  const { number } = useFormatters();
+  const { number } = usePurchaseDisplay();
   const prices =
     order.pricing === undefined
       ? undefined
@@ -372,7 +386,7 @@ function ReceiptLineRow({
   line: PurchaseOrderLine | undefined;
   t: PurchaseMessages;
 }) {
-  const format = useFormatters();
+  const format = usePurchaseDisplay();
   return (
     <tr
       data-purchase-receipt-disposition={row.disposition}
@@ -423,7 +437,7 @@ function Receipts({
   canAttach: boolean;
   t: PurchaseMessages;
 }) {
-  const { dateTime } = useFormatters();
+  const { dateTime } = usePurchaseDisplay();
   const orderLines = new Map(order.lines.map((line) => [line.id, line]));
   return (
     <section className="rounded-lg border bg-card">
