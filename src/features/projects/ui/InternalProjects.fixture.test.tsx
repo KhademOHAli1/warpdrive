@@ -107,7 +107,7 @@ test("creates, assigns, and moves the same work item through list and board", as
   expect(drag.end).toBeDefined();
   act(() => {
     drag.end?.({
-      active: { id: item?.id },
+      active: { id: item?.id, data: { current: undefined } },
       over: { id: fixtureInProgressStateId },
     } as DndKit.DragEndEvent);
   });

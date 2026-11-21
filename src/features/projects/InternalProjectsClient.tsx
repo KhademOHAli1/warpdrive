@@ -49,6 +49,15 @@ export function InternalProjectsClient(props: Screen & { actorId: string }) {
       reloadPlanning={(projectId) =>
         utils.client.internalProjects.planning.workspace.query({ projectId })
       }
+      writePlanning={(projectId, itemId, patch) =>
+        utils.client.internalProjects.planning.setItemPlanning.mutate({
+          projectId,
+          itemId,
+          ...patch,
+          expectedActorId: actorId,
+          csrfToken: readCsrfToken(),
+        })
+      }
       savedView={props.savedView}
       planningScope={props.planningScope}
       actorId={actorId}

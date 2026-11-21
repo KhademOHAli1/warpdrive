@@ -1,4 +1,4 @@
-import { and, eq, exists } from "drizzle-orm";
+import { and, eq, exists, isNull } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
@@ -37,7 +37,7 @@ function withItemSubscription(
     const [current] = await tx
       .select({ id: item.id })
       .from(item)
-      .where(and(eq(item.id, itemId), eq(item.projectId, projectId)));
+      .where(and(eq(item.id, itemId), eq(item.projectId, projectId), isNull(item.archivedAt)));
     if (current === undefined) return err("project_unavailable");
     return operation(tx, actor.id);
   });

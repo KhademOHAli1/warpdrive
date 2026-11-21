@@ -21,6 +21,8 @@ import {
   validProjectItemDates,
 } from "../input";
 
+import { emptyProjectItemStructure, emptyProjectWorkStructure } from "../work-structure/contracts";
+
 export const fixtureProjectId = "cf761674-6fce-4c84-a13e-693c2dcc0325";
 export const fixtureEditorId = "669004ee-2320-40cf-8e62-23dd5100825b";
 
@@ -81,6 +83,10 @@ export function createProjectsFixture() {
             title: "Check network outlets",
             status: "todo",
             stateId: "0b9c0fa8-5ce9-4755-8ac2-3fae9897c640",
+            ...emptyProjectItemStructure,
+            createdAt: "2026-11-10T12:00:00.000Z",
+            updatedAt: "2026-11-10T12:00:00.000Z",
+            archivedAt: null,
             sequenceNumber: 1,
             assigneeId: null,
             priority: "none",
@@ -95,6 +101,10 @@ export function createProjectsFixture() {
             title: "Confirm moving date",
             status: "in-progress",
             stateId: fixtureInProgressStateId,
+            ...emptyProjectItemStructure,
+            createdAt: "2026-11-10T12:00:00.000Z",
+            updatedAt: "2026-11-10T12:00:00.000Z",
+            archivedAt: null,
             sequenceNumber: 2,
             assigneeId: editor.id,
             priority: "medium",
@@ -119,7 +129,14 @@ export function createProjectsFixture() {
       assignees,
       staff,
       states: fixtureStates,
-      settings: { description: "", revision: 0, leadUserId: null, defaultAssigneeId: null },
+      settings: {
+        description: "",
+        revision: 0,
+        leadUserId: null,
+        defaultAssigneeId: null,
+        intakeEnabled: false,
+      },
+      workStructure: emptyProjectWorkStructure,
       canManageSettings: true,
       canEdit: true,
       canAssign: true,
@@ -178,6 +195,11 @@ export function createProjectsFixture() {
         id,
         stateId: state.id,
         sequenceNumber: project.lastItemSequence,
+        labelIds: parsed.data.labelIds ?? [],
+        estimatePointId: parsed.data.estimatePointId ?? null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        archivedAt: null,
         createdBy: owner.id,
         revision: 0,
       });
@@ -211,6 +233,9 @@ export function createProjectsFixture() {
       item.startDate = startDate;
       item.dueDate = dueDate;
       if (assigneeId !== undefined) item.assigneeId = assigneeId;
+      if (content.labelIds !== undefined) item.labelIds = content.labelIds;
+      if (content.estimatePointId !== undefined) item.estimatePointId = content.estimatePointId;
+      item.updatedAt = new Date().toISOString();
       item.revision += 1;
       return accept(snapshot(project));
     },

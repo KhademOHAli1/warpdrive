@@ -1,11 +1,15 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "@/server/trpc/trpc";
+import { projectAutomationRouter } from "./automations/router";
 import { projectIdInput } from "./input";
+import { projectIntakeRouter } from "./intake/router";
 import { projectPlanningRouter } from "./planning/router";
 import { projectProfileRouter } from "./profile/router";
 import { listInternalProjects, readInternalProject } from "./service";
 
 export const internalProjectsRouter = router({
+  automation: projectAutomationRouter,
+  intake: projectIntakeRouter,
   planning: projectPlanningRouter,
   profile: projectProfileRouter,
   index: protectedProcedure.query(({ ctx }) =>

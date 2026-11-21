@@ -3,6 +3,7 @@
 import { type FormEvent, type ReactNode, useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { MultiCombobox } from "@/components/ui/MultiCombobox";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
@@ -13,6 +14,7 @@ import {
   projectItemTitleMaxLength,
   projectPriorities,
 } from "../contracts";
+import { projectLabelOptions } from "./ProjectItemStructure";
 import { ProjectWriteNotice } from "./ProjectTitleDialog";
 import type { ProjectsTranslator } from "./projectMessages";
 import { workflowStateLabel } from "./projectWorkflowUi";
@@ -20,12 +22,40 @@ import type { ProjectWriteError } from "./projectWrites";
 
 export type ProjectWorkItemDraft = Pick<
   ProjectItem,
-  "title" | "description" | "stateId" | "priority" | "startDate" | "dueDate" | "assigneeId"
+  | "title"
+  | "description"
+  | "stateId"
+  | "priority"
+  | "startDate"
+  | "dueDate"
+  | "assigneeId"
+  | "labelIds"
+  | "estimatePointId"
 >;
 
 export function draftForProjectWorkItem(item: ProjectItem): ProjectWorkItemDraft {
-  const { title, description, stateId, priority, startDate, dueDate, assigneeId } = item;
-  return { title, description, stateId, priority, startDate, dueDate, assigneeId };
+  const {
+    title,
+    description,
+    stateId,
+    priority,
+    startDate,
+    dueDate,
+    assigneeId,
+    labelIds,
+    estimatePointId,
+  } = item;
+  return {
+    title,
+    description,
+    stateId,
+    priority,
+    startDate,
+    dueDate,
+    assigneeId,
+    labelIds,
+    estimatePointId,
+  };
 }
 
 export function ProjectWorkItemForm({
@@ -56,6 +86,15 @@ export function ProjectWorkItemForm({
   const disabled =
     pending || !datesValid || draft.title.trim() === "" || (requireChange && !changed);
   const privacy = `${BLOCK_CLASS} ph-no-capture`;
+  const catalog = workspace.workStructure;
+  const availableLabels = projectLabelOptions(catalog);
+  const activeScale = catalog.scales.find(({ id }) => id === catalog.activeScaleId);
+  const historicalPoint =
+    activeScale?.points.some(({ id }) => id === draft.estimatePointId) === true
+      ? undefined
+      : catalog.scales
+          .flatMap(({ points }) => points)
+          .find(({ id }) => id === draft.estimatePointId);
   const historicalAssignee =
     draft.assigneeId !== null && !workspace.assignees.some(({ id }) => id === draft.assigneeId)
       ? [workspace.project.owner, ...workspace.members.map(({ person }) => person)].find(
@@ -127,6 +166,37 @@ export function ProjectWorkItemForm({
               }}
             />
           </Field>
+          {availableLabels.length > 0 && (
+            <Field label={labels("workspace.workLabels")}>
+              <MultiCombobox
+                ariaLabel={labels("workspace.workLabels")}
+                contentClassName={privacy}
+                options={availableLabels}
+                values={draft.labelIds}
+                onChange={(ids) => set("labelIds", ids)}
+              />
+            </Field>
+          )}
+          {(activeScale !== undefined || historicalPoint !== undefined) && (
+            <Field label={labels("workspace.estimate")}>
+              <Select
+                ariaLabel={labels("workspace.estimate")}
+                contentClassName={privacy}
+                value={draft.estimatePointId ?? ""}
+                options={[
+                  { value: "", label: labels("workspace.noEstimate") },
+                  ...(activeScale?.points ?? []).map(({ id, value }) => ({
+                    value: id,
+                    label: value,
+                  })),
+                  ...(historicalPoint === undefined
+                    ? []
+                    : [{ value: historicalPoint.id, label: historicalPoint.value }]),
+                ]}
+                onChange={(id) => set("estimatePointId", id || null)}
+              />
+            </Field>
+          )}
           {workspace.canAssign && (
             <Field label={labels("workspace.assigneeColumn")}>
               <Select

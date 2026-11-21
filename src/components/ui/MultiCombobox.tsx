@@ -25,6 +25,7 @@ interface MultiComboboxProps {
   options: ComboboxOption[];
   ariaLabel: string;
   placeholder?: string;
+  contentClassName?: string;
 }
 
 // Searchable multi-select (participants/guests picker). Popover + cmdk, mirroring
@@ -37,6 +38,7 @@ export function MultiCombobox({
   options,
   ariaLabel,
   placeholder,
+  contentClassName,
 }: MultiComboboxProps): React.ReactNode {
   const [open, setOpen] = useState(false);
   const t = useAppTranslations("sharedUi");
@@ -85,7 +87,7 @@ export function MultiCombobox({
           <ChevronsUpDown className="ms-auto h-4 w-4 shrink-0 text-muted-foreground" />
         </PopoverTrigger>
       </div>
-      <PopoverContent className="p-0">
+      <PopoverContent className={cn("p-0", contentClassName)}>
         {/* Keep search label-based. cmdk normalizes item values, so encode IDs separately. */}
         <Command filter={(_value, search, keywords) => defaultFilter(keywords?.[0] ?? "", search)}>
           <CommandInput

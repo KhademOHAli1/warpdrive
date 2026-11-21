@@ -66,6 +66,7 @@ import * as actions63 from "@/features/privacy/requestActions.backend";
 import * as actions64 from "@/features/privacy/reviewerActions.backend";
 import * as projectActions from "@/features/projects/actions.backend";
 import * as projectDocumentActions from "@/features/projects/documents/actions.backend";
+import * as projectStructureActions from "@/features/projects/work-structure/actions.backend";
 import * as actions65 from "@/features/saved-filters/serverActions.backend";
 import * as actions66 from "@/features/settings/lostReasonActions.backend";
 import * as actions67 from "@/features/workflows/actions.backend";
@@ -127,6 +128,12 @@ export const commandHandlers = {
   "features/projects/actions.saveProjectSettingsAction": projectActions.saveProjectSettingsAction,
   "features/projects/actions.setProjectArchivedAction": projectActions.setProjectArchivedAction,
   "features/projects/actions.saveProjectStatesAction": projectActions.saveProjectStatesAction,
+  "features/projects/work-structure/actions.saveProjectLabelsAction":
+    projectStructureActions.saveProjectLabelsAction,
+  "features/projects/work-structure/actions.saveProjectEstimateScaleAction":
+    projectStructureActions.saveProjectEstimateScaleAction,
+  "features/projects/work-structure/actions.setProjectEstimateScaleAction":
+    projectStructureActions.setProjectEstimateScaleAction,
   "features/projects/documents/actions.createProjectDocumentAction":
     projectDocumentActions.createProjectDocumentAction,
   "features/projects/documents/actions.saveProjectDocumentAction":

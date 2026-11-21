@@ -29,6 +29,7 @@ export default async function Page({
         actorId={actorId}
         project={workspace.value.project}
         canManageSettings={workspace.value.canManageSettings}
+        intakeEnabled={workspace.value.settings.intakeEnabled}
         index={index.value}
         pageType={getPageType(typeof type === "string" ? type : null)}
       />

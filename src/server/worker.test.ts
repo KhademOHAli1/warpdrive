@@ -90,7 +90,7 @@ function makeFakeBoss() {
 }
 
 describe("registerAllJobs", () => {
-  it("creates all three queues and schedules the reaper", async () => {
+  it("registers application queues and schedules Projects automations in UTC", async () => {
     const h = await makeTestDb();
     testDbHolder.db = h;
     const bootstrap = new PgBoss(h.url);
@@ -109,6 +109,8 @@ describe("registerAllJobs", () => {
       expect(queueNames).toContain(PGBOSS_QUEUE_EMAIL_SEND);
       expect(queueNames).toContain(PGBOSS_QUEUE_FILE_REAPER);
       expect(queueNames).toContain("auth-maintenance");
+      expect(queueNames).toContain("project.automations");
+      expect(fakeBoss.schedules).toContainEqual({ name: "project.automations", cron: "0 1 * * *" });
       expect(fakeBoss.schedules).toContainEqual({ name: "auth-maintenance", cron: "* * * * *" });
 
       const scheduled = fakeBoss.schedules.find((s) => s.name === PGBOSS_QUEUE_FILE_REAPER);

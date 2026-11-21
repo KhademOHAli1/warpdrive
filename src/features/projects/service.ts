@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, asc, desc, eq, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, or, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema/identity";
@@ -45,6 +45,49 @@ import { internalProjectPlanningAssignments } from "./planning/schema";
 import { recordProjectItemEvent } from "./profile/events";
 import { internalProjectItems, internalProjectSettings } from "./schema";
 import { findProjectWorkflowState, readProjectWorkflowStates } from "./settings/states";
+
+import {
+  emptyProjectItemStructure,
+  type ProjectItemStructurePatch,
+} from "./work-structure/contracts";
+import {
+  readProjectItemStructures,
+  validateProjectItemStructure,
+  writeProjectItemStructure,
+} from "./work-structure/itemStructure";
+
+function itemStructureMatches(
+  current: ProjectItemStructurePatch,
+  patch: ProjectItemStructurePatch,
+) {
+  return (
+    (patch.labelIds === undefined ||
+      (current.labelIds?.length === patch.labelIds.length &&
+        patch.labelIds.every((id) => current.labelIds?.includes(id) === true))) &&
+    (patch.estimatePointId === undefined || patch.estimatePointId === current.estimatePointId)
+  );
+}
+
+async function readItemStructure(tx: Db, projectId: string, itemId: string) {
+  return (
+    (await readProjectItemStructures(tx, projectId, itemId)).get(itemId) ??
+    emptyProjectItemStructure
+  );
+}
+
+async function projectItemStructureChanges(
+  tx: Db,
+  projectId: string,
+  itemId: string,
+  { labelIds, estimatePointId }: ProjectItemStructurePatch,
+): Promise<ProjectItemStructurePatch> {
+  if (labelIds === undefined && estimatePointId === undefined) return {};
+  const current = await readItemStructure(tx, projectId, itemId);
+  return {
+    labelIds: itemStructureMatches(current, { labelIds }) ? undefined : labelIds,
+    estimatePointId: current.estimatePointId === estimatePointId ? undefined : estimatePointId,
+  };
+}
 
 // Derive a stable UUID for an intent within its actor and record scope. The client
 // supplies an intent ID and cannot address another actor's row through creation.
@@ -272,57 +315,107 @@ async function matchesProjectItemCreatePlanning(
   return links.length === expected;
 }
 
+async function replayProjectItemInTransaction(
+  tx: Db,
+  input: CreateProjectItemInput,
+  id: string,
+  existing: ProjectItemContent & { stateId: string | null; revision: number },
+): Promise<ProjectResult<{ itemId: string }>> {
+  const replay = await checkProjectItemCreateReplay(tx, id, input, existing);
+  if (!replay.ok) return replay;
+  if (
+    existing.revision === 0 &&
+    (input.labelIds !== undefined || input.estimatePointId !== undefined) &&
+    !itemStructureMatches(await readItemStructure(tx, input.projectId, id), input)
+  )
+    return err("project_conflict");
+  return ok({ itemId: id });
+}
+
+// Reuse the locked native insert for commands that admit new work in the same transaction.
+export async function createInternalProjectItemInTransaction(
+  tx: Db,
+  access: InternalProjectAccess,
+  actorId: string,
+  input: CreateProjectItemInput,
+  origin?: { kind: "intake"; createdBy: string },
+): Promise<ProjectResult<{ itemId: string }>> {
+  const { projectId, assigneeId, startDate, dueDate } = input;
+  if (projectId !== access.summary.id) return err("project_unavailable");
+  if (!access.canEdit || (assigneeId != null && !access.canAssign)) return err("project_forbidden");
+  if (!validProjectItemDates(startDate, dueDate)) return err("project_invalid");
+  const id = intentRecordId(
+    origin?.kind === "intake" ? `intake:${projectId}` : projectId,
+    actorId,
+    input.id,
+  );
+  // This project is write-locked. Check the intent before INSERT so retries
+  // do not use the next issue number in the database's insert trigger.
+  const [existing] = await tx
+    .select({
+      ...projectItemContentFields,
+      revision: internalProjectItems.revision,
+      stateId: internalProjectItems.stateId,
+    })
+    .from(internalProjectItems)
+    .where(and(eq(internalProjectItems.id, id), eq(internalProjectItems.projectId, projectId)));
+  if (existing !== undefined) return replayProjectItemInTransaction(tx, input, id, existing);
+  const initialAssignee = await resolveInitialAssignee(tx, access, assigneeId);
+  if (!initialAssignee.ok) return initialAssignee;
+  const states = await readProjectWorkflowStates(tx, projectId);
+  const state = findProjectWorkflowState(states, input.stateId, input.status);
+  if (state === undefined) return err("project_invalid");
+  if (
+    input.planning !== undefined &&
+    !(await validateNewItemPlanning(tx, projectId, input.planning))
+  )
+    return err("project_invalid");
+  if (!(await validateProjectItemStructure(tx, projectId, input))) return err("project_invalid");
+  const content = initialProjectItemContent({
+    ...input,
+    assigneeId: initialAssignee.value,
+    status: projectStateLegacyStatus(state.category),
+  });
+  await tx.insert(internalProjectItems).values({
+    ...content,
+    id,
+    projectId,
+    stateId: state.id,
+    createdBy: origin?.createdBy ?? actorId,
+  });
+  if (input.planning !== undefined) await attachNewItemPlanning(tx, projectId, id, input.planning);
+  await writeProjectItemStructure(tx, projectId, id, input);
+  await recordProjectItemEvent(tx, { itemId: id, actorId: actorId, kind: "created" });
+  return ok({ itemId: id });
+}
+
 export function createInternalProjectItem(
   db: Db,
   who: NativeSessionRef,
   input: CreateProjectItemInput,
   signal: AbortSignal,
 ) {
-  const { projectId, assigneeId, startDate, dueDate } = input;
-  return changeWorkspace(
-    db,
-    who,
-    projectId,
-    assigneeId == null ? "canEdit" : "canAssign",
-    signal,
-    async (tx, access) => {
-      if (!validProjectItemDates(startDate, dueDate)) return err("project_invalid");
-      const id = intentRecordId(projectId, who.userId, input.id);
-      // This project is write-locked. Check the intent before INSERT so retries
-      // do not use the next issue number in the database's insert trigger.
-      const [existing] = await tx
-        .select({
-          ...projectItemContentFields,
-          revision: internalProjectItems.revision,
-          stateId: internalProjectItems.stateId,
-        })
-        .from(internalProjectItems)
-        .where(and(eq(internalProjectItems.id, id), eq(internalProjectItems.projectId, projectId)));
-      if (existing !== undefined) return checkProjectItemCreateReplay(tx, id, input, existing);
-      const initialAssignee = await resolveInitialAssignee(tx, access, assigneeId);
-      if (!initialAssignee.ok) return initialAssignee;
-      const states = await readProjectWorkflowStates(tx, projectId);
-      const state = findProjectWorkflowState(states, input.stateId, input.status);
-      if (state === undefined) return err("project_invalid");
-      if (
-        input.planning !== undefined &&
-        !(await validateNewItemPlanning(tx, projectId, input.planning))
-      )
-        return err("project_invalid");
-      const content = initialProjectItemContent({
-        ...input,
-        assigneeId: initialAssignee.value,
-        status: projectStateLegacyStatus(state.category),
-      });
-      await tx
-        .insert(internalProjectItems)
-        .values({ ...content, id, projectId, stateId: state.id, createdBy: who.userId });
-      if (input.planning !== undefined)
-        await attachNewItemPlanning(tx, projectId, id, input.planning);
-      await recordProjectItemEvent(tx, { itemId: id, actorId: who.userId, kind: "created" });
-      return ok(undefined);
-    },
-  );
+  return changeWorkspace(db, who, input.projectId, "canEdit", signal, async (tx, access) => {
+    const result = await createInternalProjectItemInTransaction(tx, access, who.userId, input);
+    return result.ok ? ok(undefined) : result;
+  });
+}
+
+async function validateItemEdit(
+  tx: Db,
+  access: InternalProjectAccess,
+  input: UpdateProjectItemInput,
+  item: ProjectItemContent,
+) {
+  const { assigneeId, startDate, dueDate } = input;
+  if (
+    !validProjectItemDates(
+      startDate === undefined ? item.startDate : startDate,
+      dueDate === undefined ? item.dueDate : dueDate,
+    )
+  )
+    return false;
+  return assigneeId == null || (await isEligibleProjectMember(tx, access, assigneeId));
 }
 
 export function updateInternalProjectItem(
@@ -343,6 +436,7 @@ export function updateInternalProjectItem(
       const target = and(
         eq(internalProjectItems.projectId, projectId),
         eq(internalProjectItems.id, itemId),
+        isNull(internalProjectItems.archivedAt),
       );
       const [item] = await tx
         .select({
@@ -355,15 +449,7 @@ export function updateInternalProjectItem(
       if (item === undefined) return err("project_unavailable");
       if (item.revision !== revision || revision === Number.MAX_SAFE_INTEGER)
         return err("project_conflict");
-      if (
-        !validProjectItemDates(
-          startDate === undefined ? item.startDate : startDate,
-          dueDate === undefined ? item.dueDate : dueDate,
-        )
-      )
-        return err("project_invalid");
-      if (assigneeId != null && !(await isEligibleProjectMember(tx, access, assigneeId)))
-        return err("project_invalid");
+      if (!(await validateItemEdit(tx, access, input, item))) return err("project_invalid");
       let state: ReturnType<typeof findProjectWorkflowState>;
       if (
         stateId !== undefined ||
@@ -384,15 +470,24 @@ export function updateInternalProjectItem(
         description: content.description,
       };
       const fields = Object.keys(changes) as (keyof typeof changes)[];
-      if (!fields.some((field) => changes[field] !== undefined && changes[field] !== item[field]))
+      const structure = await projectItemStructureChanges(tx, projectId, itemId, input);
+      const updateStructure =
+        structure.labelIds !== undefined || structure.estimatePointId !== undefined;
+      if (
+        !updateStructure &&
+        !fields.some((field) => changes[field] !== undefined && changes[field] !== item[field])
+      )
         return ok(undefined);
+      if (updateStructure && !(await validateProjectItemStructure(tx, projectId, structure)))
+        return err("project_invalid");
 
       const [updated] = await tx
         .update(internalProjectItems)
-        .set({ ...changes, revision: revision + 1 })
+        .set({ ...changes, revision: revision + 1, updatedAt: sql`statement_timestamp()` })
         .where(and(target, eq(internalProjectItems.revision, revision)))
         .returning({ id: internalProjectItems.id });
       if (updated === undefined) return err("project_conflict");
+      if (updateStructure) await writeProjectItemStructure(tx, projectId, updated.id, structure);
       await recordProjectItemEvent(tx, {
         itemId: updated.id,
         actorId: who.userId,

@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
-import type { ProjectResult, ProjectWorkspace } from "../contracts";
+import type { ProjectPriority, ProjectResult, ProjectWorkspace } from "../contracts";
 import { type ProjectWorkItemDraft, ProjectWorkItemForm } from "./ProjectWorkItemForm";
 import type { ProjectsTranslator } from "./projectMessages";
 
@@ -18,6 +18,7 @@ export function ProjectWorkItemCreate({
   workspace,
   stateId,
   dueDate = null,
+  priority = "none",
   trigger,
   pending,
   labels,
@@ -26,6 +27,7 @@ export function ProjectWorkItemCreate({
   workspace: ProjectWorkspace;
   stateId: string;
   dueDate?: string | null;
+  priority?: ProjectPriority;
   trigger: ReactElement;
   pending: boolean;
   labels: ProjectsTranslator;
@@ -58,7 +60,9 @@ export function ProjectWorkItemCreate({
             initial={{
               title: "",
               description: "",
-              priority: "none",
+              priority,
+              labelIds: [],
+              estimatePointId: null,
               stateId,
               startDate: null,
               dueDate,

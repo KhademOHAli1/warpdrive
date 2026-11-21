@@ -17,6 +17,8 @@ import {
   projectTitleMaxLength,
 } from "./contracts";
 
+import { projectItemStructureInput } from "./work-structure/input";
+
 const projectTitle = projectCreateInputSchema.shape.title;
 const itemTitle = projectTitle.pipe(z.string().max(projectItemTitleMaxLength));
 const status = z.enum(projectStatuses);
@@ -87,6 +89,7 @@ export const createProjectItemInput = z
       .refine(({ cycleId, moduleId }) => cycleId !== undefined || moduleId !== undefined)
       .optional(),
     ...optionalContent,
+    ...projectItemStructureInput,
   })
   .refine(({ startDate, dueDate }) => validProjectItemDates(startDate, dueDate));
 
@@ -99,11 +102,33 @@ export const updateProjectItemInput = z
     status: status.optional(),
     stateId: canonicalUuidSchema.optional(),
     ...optionalContent,
+    ...projectItemStructureInput,
   })
-  .refine(({ title, status, stateId, assigneeId, priority, startDate, dueDate, description }) =>
-    [title, status, stateId, assigneeId, priority, startDate, dueDate, description].some(
-      (value) => value !== undefined,
-    ),
+  .refine(
+    ({
+      title,
+      status,
+      stateId,
+      assigneeId,
+      priority,
+      startDate,
+      dueDate,
+      description,
+      labelIds,
+      estimatePointId,
+    }) =>
+      [
+        title,
+        status,
+        stateId,
+        assigneeId,
+        priority,
+        startDate,
+        dueDate,
+        description,
+        labelIds,
+        estimatePointId,
+      ].some((value) => value !== undefined),
   );
 
 export const setProjectMemberInput = z.strictObject({

@@ -34,7 +34,7 @@ import { useLocalNow } from "@/features/activities/useLocalNow";
 import { localDayIso } from "@/features/activities/weekAgenda";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
-import type { ProjectItem } from "../../contracts";
+import { type ProjectItem, projectItemKey } from "../../contracts";
 import type { WorkItemsProps } from "../ProjectWorkItems";
 import { calendarDate, calendarDays, calendarDrop, dateKey } from "./projectSchedule";
 
@@ -43,7 +43,12 @@ function CalendarCard({
   openItem,
   labels,
   draggable,
-}: Pick<WorkItemsProps, "openItem" | "labels"> & { item: ProjectItem; draggable: boolean }) {
+  identifier,
+}: Pick<WorkItemsProps, "openItem" | "labels"> & {
+  item: ProjectItem;
+  draggable: boolean;
+  identifier?: string;
+}) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, isDragging } =
     useDraggable({ id: item.id, disabled: !draggable });
   return (
@@ -71,8 +76,14 @@ function CalendarCard({
       <button
         type="button"
         className="min-w-0 flex-1 truncate rounded py-1.5 text-start hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label={item.title}
         onClick={(event) => openItem(item.id, event.currentTarget)}
       >
+        {identifier !== undefined && (
+          <bdi dir="ltr" className="me-1 text-muted-foreground">
+            {projectItemKey(identifier, item.sequenceNumber)}
+          </bdi>
+        )}
         <bdi>{item.title}</bdi>
       </button>
     </li>
@@ -89,6 +100,7 @@ function CalendarCell({
   openItem,
   labels,
   draggable,
+  identifier,
 }: Pick<WorkItemsProps, "openItem" | "labels"> & {
   keyDate: string;
   dateLabel: string;
@@ -97,6 +109,7 @@ function CalendarCell({
   cards: ProjectItem[];
   create?: ReactNode;
   draggable: boolean;
+  identifier?: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: keyDate, disabled: !draggable });
   return (
@@ -130,6 +143,7 @@ function CalendarCell({
               labels={labels}
               openItem={openItem}
               draggable={draggable}
+              identifier={identifier}
             />
           ))}
         </ul>
@@ -142,6 +156,7 @@ export function ProjectCalendar({
   workspace,
   labels,
   pending,
+  display,
   openItem,
   updateItem,
   createOnDay,
@@ -291,6 +306,9 @@ export function ProjectCalendar({
                         openItem={openItem}
                         labels={labels}
                         draggable={draggable}
+                        identifier={
+                          display?.showKey === true ? workspace.project.identifier : undefined
+                        }
                       />
                     );
                   })}

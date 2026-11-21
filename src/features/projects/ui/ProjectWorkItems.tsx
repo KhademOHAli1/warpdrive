@@ -20,15 +20,17 @@ import { cn } from "@/lib/utils";
 import {
   type ProjectItem,
   type ProjectResult,
-  type ProjectWorkflowState,
   type ProjectWorkspace,
   projectItemKey,
   projectItemTitleMaxLength,
   type UpdateProjectItemInput,
 } from "../contracts";
+import type { PlanningViewDisplay, WorkspacePlanning } from "../planning/contracts";
+import { ProjectItemStructureBadges } from "./ProjectItemStructure";
 import { ProjectTitleDialog } from "./ProjectTitleDialog";
 import type { ProjectsTranslator } from "./projectMessages";
 import { workflowStateLabel } from "./projectWorkflowUi";
+import { projectWorkItemGroups, type WorkItemGroup } from "./projectWorkItemGroups";
 import { useProjectFormatters } from "./useProjectFormatters";
 
 export type ProjectItemChanges = Omit<UpdateProjectItemInput, "projectId" | "itemId" | "revision">;
@@ -38,7 +40,13 @@ export type WorkItemsProps = {
   labels: ProjectsTranslator;
   pending: boolean;
   openItem: (id: string, trigger: HTMLElement) => void;
-  createInColumn?: (state: ProjectWorkflowState) => ReactNode;
+  display?: PlanningViewDisplay;
+  planning?: WorkspacePlanning;
+  setItemPlanning?: (
+    itemId: string,
+    patch: { cycleId?: string | null; moduleIds?: string[] },
+  ) => void;
+  createInColumn?: (group: WorkItemGroup) => ReactNode;
   updateItem: (
     item: ProjectItem,
     changes: ProjectItemChanges,
@@ -46,9 +54,19 @@ export type WorkItemsProps = {
   ) => Promise<ProjectResult<ProjectWorkspace>>;
 };
 
+type BoardDestination = { group: WorkItemGroup; key: string; lane: string };
+type BoardInteraction = { canGroup: boolean; destination: BoardDestination; repeated: boolean };
 type WorkItemProps = WorkItemsProps & { item: ProjectItem };
 
-function ItemTitle({ workspace, item, pending, labels, updateItem, openItem }: WorkItemProps) {
+function ItemTitle({
+  workspace,
+  item,
+  pending,
+  labels,
+  updateItem,
+  openItem,
+  display,
+}: WorkItemProps) {
   return (
     <div className="flex min-w-0 items-start justify-between gap-2">
       <button
@@ -57,9 +75,14 @@ function ItemTitle({ workspace, item, pending, labels, updateItem, openItem }: W
         onClick={(event) => openItem(item.id, event.currentTarget)}
         aria-label={item.title}
       >
-        <bdi className="me-2 whitespace-nowrap text-xs font-normal text-muted-foreground" dir="ltr">
-          {projectItemKey(workspace.project.identifier, item.sequenceNumber)}
-        </bdi>
+        {display?.showKey !== false && (
+          <bdi
+            className="me-2 whitespace-nowrap text-xs font-normal text-muted-foreground"
+            dir="ltr"
+          >
+            {projectItemKey(workspace.project.identifier, item.sequenceNumber)}
+          </bdi>
+        )}
         <bdi>{item.title}</bdi>
       </button>
       {workspace.canEdit && (
@@ -148,10 +171,15 @@ export function ItemAssignee({ workspace, item, labels, pending, updateItem }: W
   );
 }
 
-export function ProjectWorkItemList(props: WorkItemsProps) {
-  const { workspace, labels } = props;
+function ItemDate({ value }: { value: string | null }) {
   const format = useProjectFormatters();
-  if (workspace.items.length === 0) {
+  return value === null ? "—" : <time dateTime={value}>{format.dateOnly(value)}</time>;
+}
+
+export function ProjectWorkItemList(props: WorkItemsProps) {
+  const { workspace, labels, display } = props;
+  const format = useProjectFormatters();
+  if (workspace.items.length === 0 && display?.showEmptyGroups !== true) {
     return (
       <EmptyState
         className="rounded-lg border bg-card"
@@ -160,76 +188,107 @@ export function ProjectWorkItemList(props: WorkItemsProps) {
       />
     );
   }
+  const groupBy = display?.groupBy ?? "state";
+  const columns = [
+    {
+      key: "titleColumn",
+      visible: true,
+      render: (item: ProjectItem) => (
+        <div className="space-y-1">
+          <ItemTitle {...props} item={item} />
+          <ProjectItemStructureBadges
+            item={item}
+            catalog={workspace.workStructure}
+            labels={labels}
+            showLabels={display?.showLabels}
+            showEstimate={display?.showEstimate}
+          />
+        </div>
+      ),
+    },
+    {
+      key: "statusColumn",
+      visible: display?.showStatus !== false,
+      render: (item: ProjectItem) => <ItemStatus {...props} item={item} />,
+    },
+    {
+      key: "assigneeColumn",
+      visible: display?.showAssignee ?? true,
+      render: (item: ProjectItem) => <ItemAssignee {...props} item={item} />,
+    },
+    {
+      key: "priority",
+      visible: display?.showPriority ?? true,
+      render: (item: ProjectItem) => <ItemPriority item={item} labels={labels} />,
+    },
+    {
+      key: "startDate",
+      visible: display?.showStartDate === true,
+      render: (item: ProjectItem) => <ItemDate value={item.startDate} />,
+    },
+    {
+      key: "dueDate",
+      visible: display?.showDueDate ?? true,
+      render: (item: ProjectItem) => <ItemDate value={item.dueDate} />,
+    },
+  ] as const;
+  const visible = columns.filter(({ visible }) => visible);
+  const groups = projectWorkItemGroups(workspace, labels, groupBy, props.planning).filter(
+    ({ items }) => items.length > 0 || display?.showEmptyGroups === true,
+  );
   return (
     <div className="overflow-x-auto rounded-lg border bg-card">
       <table className="w-full min-w-[40rem] table-fixed text-start text-sm">
         <thead className="border-b bg-muted/40 text-muted-foreground">
           <tr>
-            <th scope="col" className="w-[32%] px-4 py-2.5 text-start font-medium">
-              {labels("workspace.titleColumn")}
-            </th>
-            <th scope="col" className="px-3 py-2.5 text-start font-medium">
-              {labels("workspace.statusColumn")}
-            </th>
-            <th scope="col" className="px-3 py-2.5 text-start font-medium">
-              {labels("workspace.assigneeColumn")}
-            </th>
-            <th scope="col" className="px-3 py-2.5 text-start font-medium">
-              {labels("workspace.priority")}
-            </th>
-            <th scope="col" className="px-3 py-2.5 text-start font-medium">
-              {labels("workspace.dueDate")}
-            </th>
+            {visible.map(({ key }) => (
+              <th
+                scope="col"
+                key={key}
+                className={cn(
+                  "px-3 py-2.5 text-start font-medium",
+                  key === "titleColumn" && "w-[32%] px-4",
+                )}
+              >
+                {labels(`workspace.${key}`)}
+              </th>
+            ))}
           </tr>
         </thead>
-        {workspace.states.map((state) => {
-          const items = workspace.items.filter((item) => item.stateId === state.id);
-          if (items.length === 0) return null;
-          return (
-            <tbody key={state.id} className="divide-y border-b last:border-b-0">
+        {groups.map((group) => (
+          <tbody key={group.id} className="divide-y border-b last:border-b-0">
+            {groupBy !== "none" && (
               <tr>
                 <th
                   scope="rowgroup"
-                  colSpan={5}
+                  colSpan={visible.length}
                   className="bg-muted/30 px-4 py-2 text-start font-medium"
                 >
-                  <span
-                    aria-hidden="true"
-                    className="me-2 inline-block size-2 rounded-full"
-                    style={{ backgroundColor: state.color }}
-                  />
-                  {workflowStateLabel(state, labels)}
+                  {group.state !== undefined && (
+                    <span
+                      aria-hidden="true"
+                      className="me-2 inline-block size-2 rounded-full"
+                      style={{ backgroundColor: group.state.color }}
+                    />
+                  )}
+                  {group.title}
                   <span className="ms-2 text-xs text-muted-foreground">
-                    {format.number(items.length)}
+                    {format.number(group.items.length)}
                   </span>
                 </th>
               </tr>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-4 py-2.5">
-                    <ItemTitle {...props} item={item} />
+            )}
+            {group.items.map((item) => (
+              <tr key={item.id}>
+                {visible.map(({ key, render }) => (
+                  <td key={key} className={cn("px-3 py-2.5", key === "titleColumn" && "px-4")}>
+                    {render(item)}
                   </td>
-                  <td className="px-3 py-2.5">
-                    <ItemStatus {...props} item={item} />
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <ItemAssignee {...props} item={item} />
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <ItemPriority item={item} labels={labels} />
-                  </td>
-                  <td className="px-3 py-2.5 text-muted-foreground">
-                    {item.dueDate === null ? (
-                      "—"
-                    ) : (
-                      <time dateTime={item.dueDate}>{format.dateOnly(item.dueDate)}</time>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          );
-        })}
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        ))}
       </table>
     </div>
   );
@@ -246,10 +305,14 @@ function ItemPriority({ item, labels }: Pick<WorkItemProps, "item" | "labels">) 
   );
 }
 
-function BoardCard(props: WorkItemProps) {
-  const { item, labels, workspace, pending } = props;
+function BoardCard(props: WorkItemProps & BoardInteraction) {
+  const { item, labels, workspace, pending, display, canGroup, destination, repeated } = props;
   const { attributes, listeners, transform, setNodeRef, setActivatorNodeRef, isDragging } =
-    useDraggable({ id: item.id, disabled: pending || !workspace.canEdit });
+    useDraggable({
+      id: repeated ? `${destination.key}:${item.id}` : item.id,
+      data: { itemId: item.id, from: destination.key },
+      disabled: pending || !workspace.canEdit || !canGroup,
+    });
   const format = useProjectFormatters();
   return (
     <li
@@ -261,7 +324,7 @@ function BoardCard(props: WorkItemProps) {
       )}
     >
       <div className="flex min-w-0 gap-1.5">
-        {workspace.canEdit && (
+        {workspace.canEdit && canGroup && (
           <Button
             {...attributes}
             {...listeners}
@@ -280,11 +343,23 @@ function BoardCard(props: WorkItemProps) {
           <ItemTitle {...props} />
         </div>
       </div>
-      {workspace.canEdit && <ItemStatus {...props} />}
-      <ItemAssignee {...props} />
+      {workspace.canEdit && display?.showStatus !== false && <ItemStatus {...props} />}
+      {display?.showAssignee !== false && <ItemAssignee {...props} />}
+      <ProjectItemStructureBadges
+        item={item}
+        catalog={workspace.workStructure}
+        labels={labels}
+        showLabels={display?.showLabels}
+        showEstimate={display?.showEstimate}
+      />
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <ItemPriority item={item} labels={labels} />
-        {item.dueDate !== null && (
+        {display?.showPriority !== false && <ItemPriority item={item} labels={labels} />}
+        {display?.showStartDate === true && item.startDate !== null && (
+          <time dateTime={item.startDate} className="text-xs text-muted-foreground">
+            {format.dateOnly(item.startDate)}
+          </time>
+        )}
+        {display?.showDueDate !== false && item.dueDate !== null && (
           <time dateTime={item.dueDate} className="text-xs text-muted-foreground">
             {format.dateOnly(item.dueDate)}
           </time>
@@ -294,13 +369,18 @@ function BoardCard(props: WorkItemProps) {
   );
 }
 
-function BoardColumn({ state, ...props }: WorkItemsProps & { state: ProjectWorkflowState }) {
+function BoardColumn({
+  destination,
+  canGroup,
+  repeated,
+  ...props
+}: WorkItemsProps & BoardInteraction) {
+  const { group, key } = destination;
   const { labels, workspace, pending } = props;
-  const title = workflowStateLabel(state, labels);
-  const cards = workspace.items.filter((item) => item.stateId === state.id);
+  const { title, items: cards, state } = group;
   const { setNodeRef, isOver } = useDroppable({
-    id: state.id,
-    disabled: pending || !workspace.canEdit,
+    id: key,
+    disabled: pending || !workspace.canEdit || !canGroup,
   });
   return (
     <section
@@ -313,18 +393,20 @@ function BoardColumn({ state, ...props }: WorkItemsProps & { state: ProjectWorkf
     >
       <div className="mb-2.5 flex items-center justify-between gap-2 px-1 py-1">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
-          <span
-            aria-hidden="true"
-            className="size-2 shrink-0 rounded-full"
-            style={{ backgroundColor: state.color }}
-          />
+          {state !== undefined && (
+            <span
+              aria-hidden="true"
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: state.color }}
+            />
+          )}
           {title}
         </h2>
         <div className="flex items-center gap-1">
           <Badge variant="outline">
             {labels("workspace.columnCount", { count: cards.length })}
           </Badge>
-          {props.createInColumn?.(state)}
+          {props.createInColumn?.(group)}
         </div>
       </div>
       {cards.length === 0 ? (
@@ -334,7 +416,14 @@ function BoardColumn({ state, ...props }: WorkItemsProps & { state: ProjectWorkf
       ) : (
         <ul className="space-y-2">
           {cards.map((item) => (
-            <BoardCard key={item.id} {...props} item={item} />
+            <BoardCard
+              key={item.id}
+              {...props}
+              item={item}
+              canGroup={canGroup}
+              destination={destination}
+              repeated={repeated}
+            />
           ))}
         </ul>
       )}
@@ -342,34 +431,132 @@ function BoardColumn({ state, ...props }: WorkItemsProps & { state: ProjectWorkf
   );
 }
 
+function boardLanes({ workspace, display, labels, planning }: WorkItemsProps) {
+  const primary = display?.groupBy ?? "state";
+  const secondary = display?.subGroupBy ?? "none";
+  const lanes = projectWorkItemGroups(workspace, labels, secondary, planning);
+  return lanes
+    .filter(({ items }) => secondary === "none" || items.length > 0)
+    .map((lane) => ({
+      ...lane,
+      columns: projectWorkItemGroups({ ...workspace, items: lane.items }, labels, primary, planning)
+        .filter(
+          ({ items }) =>
+            items.length > 0 || display?.showEmptyGroups !== false || primary === "none",
+        )
+        .map((group) => ({
+          group,
+          key: secondary === "none" ? group.id : `${lane.id}:${group.id}`,
+          lane: lane.id,
+        })),
+    }));
+}
+
+function changedMembership(current: string[], value: string | null, from?: string | null) {
+  if (value === null) return [];
+  return [...new Set([...current.filter((id) => id !== from), value])];
+}
+
+function changePlanningGroup(
+  props: WorkItemsProps,
+  item: ProjectItem,
+  kind: "cycle" | "module",
+  value: string | null,
+  from?: string | null,
+) {
+  const choices = kind === "cycle" ? props.planning?.cycles : props.planning?.modules;
+  if (
+    value !== null &&
+    choices?.some(({ id, acceptsWork }) => id === value && acceptsWork) !== true
+  )
+    return;
+  const assignment = props.planning?.assignments.find(({ itemId }) => item.id === itemId);
+  if (kind === "cycle") props.setItemPlanning?.(item.id, { cycleId: value });
+  else
+    props.setItemPlanning?.(item.id, {
+      moduleIds: changedMembership(assignment?.moduleIds ?? [], value, from),
+    });
+}
+
+function moveCard(
+  props: WorkItemsProps,
+  item: ProjectItem,
+  target: WorkItemGroup,
+  from?: WorkItemGroup,
+) {
+  if (target.state !== undefined) {
+    if (target.state.id !== item.stateId) void props.updateItem(item, { stateId: target.state.id });
+    return;
+  }
+  if (target.priority !== undefined) {
+    if (target.priority !== item.priority)
+      void props.updateItem(item, { priority: target.priority });
+    return;
+  }
+  const relation = target.related;
+  if (relation === undefined) return;
+  const { kind, value } = relation;
+  const previous = from?.related?.value;
+  switch (kind) {
+    case "assignee":
+      if (value === null || props.workspace.assignees.some(({ id }) => id === value))
+        void props.updateItem(item, { assigneeId: value });
+      break;
+    case "label":
+      void props.updateItem(item, { labelIds: changedMembership(item.labelIds, value, previous) });
+      break;
+    case "cycle":
+    case "module":
+      changePlanningGroup(props, item, kind, value, previous);
+      break;
+    case "creator":
+      break;
+  }
+}
+
 export function ProjectWorkItemBoard(props: WorkItemsProps) {
-  const { workspace, labels, pending, updateItem } = props;
+  const { workspace, labels, pending, display } = props;
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
-  const itemById = (id: string | number) => workspace.items.find((item) => item.id === id);
-  const stateById = (id: string | number | undefined) =>
-    workspace.states.find((state) => state.id === id);
+  const primary = display?.groupBy ?? "state";
+  const secondary = display?.subGroupBy ?? "none";
+  const lanes = boardLanes(props);
+  const columns = lanes.flatMap((lane) => lane.columns);
+  const byKey = (key: unknown) => columns.find((column) => column.key === key);
+  const repeated = secondary !== "none" || primary === "label" || primary === "module";
+  const canGroup =
+    primary !== "none" && primary !== "creator" && (primary !== "assignee" || workspace.canAssign);
+  const draggedItem = ({ id, data }: DragEndEvent["active"]) =>
+    workspace.items.find((item) => item.id === (data.current?.itemId ?? id));
 
   function move({ active, over }: DragEndEvent) {
-    if (pending || !workspace.canEdit) return;
-    const item = itemById(active.id);
-    const state = stateById(over?.id);
-    if (item !== undefined && state !== undefined && state.id !== item.stateId) {
-      void updateItem(item, { stateId: state.id });
-    }
+    if (pending || !workspace.canEdit || !canGroup) return;
+    const item = draggedItem(active);
+    const target = byKey(over?.id);
+    if (item === undefined || target === undefined) return;
+    const from = byKey(active.data.current?.from);
+    if (from?.key === target.key || (from !== undefined && from.lane !== target.lane)) return;
+    moveCard(props, item, target.group, from?.group);
   }
 
   function describeDrop(
     key: "workspace.dragOver" | "workspace.dragEnd",
-    id: string | number,
+    active: DragEndEvent["active"],
     target: string | number | undefined,
   ) {
-    const item = itemById(id);
-    const state = stateById(target);
-    if (item !== undefined && state !== undefined) {
-      return labels(key, { title: item.title, status: workflowStateLabel(state, labels) });
-    }
+    const item = draggedItem(active);
+    const group = byKey(target)?.group;
+    if (item !== undefined && group !== undefined)
+      return labels(key, { title: item.title, status: group.title });
   }
 
+  if (columns.length === 0)
+    return (
+      <EmptyState
+        className="rounded-lg border bg-card"
+        title={labels("workspace.empty")}
+        body={labels("workspace.emptyDescription")}
+      />
+    );
   return (
     <DndContext
       id={`project-board-${workspace.project.id}`}
@@ -380,18 +567,35 @@ export function ProjectWorkItemBoard(props: WorkItemsProps) {
         screenReaderInstructions: { draggable: labels("workspace.dragInstructions") },
         announcements: {
           onDragStart: ({ active }) => {
-            const item = itemById(active.id);
+            const item = draggedItem(active);
             if (item !== undefined) return labels("workspace.dragStart", { title: item.title });
           },
-          onDragOver: ({ active, over }) => describeDrop("workspace.dragOver", active.id, over?.id),
-          onDragEnd: ({ active, over }) => describeDrop("workspace.dragEnd", active.id, over?.id),
+          onDragOver: ({ active, over }) => describeDrop("workspace.dragOver", active, over?.id),
+          onDragEnd: ({ active, over }) => describeDrop("workspace.dragEnd", active, over?.id),
           onDragCancel: () => labels("workspace.dragCancel"),
         },
       }}
     >
-      <div className="grid auto-cols-[minmax(14rem,1fr)] grid-flow-col items-start gap-3 overflow-x-auto pb-2">
-        {workspace.states.map((state) => (
-          <BoardColumn key={state.id} {...props} state={state} />
+      <div className="space-y-3">
+        {lanes.map((lane) => (
+          <div key={lane.id}>
+            {secondary !== "none" && (
+              <h2 className="mb-2 text-sm font-semibold">
+                <bdi>{lane.title}</bdi>
+              </h2>
+            )}
+            <div className="grid auto-cols-[minmax(14rem,1fr)] grid-flow-col items-start gap-3 overflow-x-auto pb-2">
+              {lane.columns.map((column) => (
+                <BoardColumn
+                  key={column.key}
+                  {...props}
+                  destination={column}
+                  repeated={repeated}
+                  canGroup={canGroup}
+                />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </DndContext>

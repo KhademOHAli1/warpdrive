@@ -31,6 +31,7 @@ export const internalProjectSettings = pgTable(
     description: text("description").notNull().default(""),
     creationTitle: text("creation_title"),
     leadUserId: uuid("lead_user_id"),
+    intakeEnabled: boolean("intake_enabled").notNull().default(false),
     defaultAssigneeId: uuid("default_assignee_id"),
     lastItemSequence: bigint("last_item_sequence", { mode: "number" }).notNull().default(0),
     revision: bigint("revision", { mode: "number" }).notNull().default(0),
@@ -123,6 +124,8 @@ export const internalProjectItems = pgTable(
     createdBy: uuid("created_by"),
     revision: bigint("revision", { mode: "number" }).notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
   },
   (table) => [
     foreignKey({
@@ -179,6 +182,9 @@ export const internalProjectItems = pgTable(
       table.createdAt,
       table.id,
     ),
+    index("internal_project_items_active_age_idx")
+      .on(table.projectId, table.updatedAt, table.id)
+      .where(sql`${table.archivedAt} IS NULL`),
     index("internal_project_items_created_by_idx").on(table.createdBy),
     index("internal_project_items_state_idx").on(table.projectId, table.stateId),
     unique("internal_project_items_id_project_key").on(table.id, table.projectId),

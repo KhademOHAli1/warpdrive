@@ -189,6 +189,7 @@ export function ProjectTimeline({
   labels,
   openItem,
   pending,
+  display,
   updateItem,
 }: WorkItemsProps) {
   const options = useLocalePreferences();
@@ -303,9 +304,11 @@ export function ProjectTimeline({
                   separator,
                 )}
               >
-                <bdi dir="ltr" className="me-2 shrink-0 text-xs text-muted-foreground">
-                  {projectItemKey(workspace.project.identifier, item.sequenceNumber)}
-                </bdi>
+                {display?.showKey !== false && (
+                  <bdi dir="ltr" className="me-2 shrink-0 text-xs text-muted-foreground">
+                    {projectItemKey(workspace.project.identifier, item.sequenceNumber)}
+                  </bdi>
+                )}
                 <button
                   type="button"
                   className="min-w-0 truncate py-2.5 text-start font-medium hover:text-primary"

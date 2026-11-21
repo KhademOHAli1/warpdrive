@@ -18,6 +18,7 @@ import {
   projectItemTitleMaxLength,
   projectPriorities,
 } from "../../contracts";
+import { ProjectItemStructureBadges } from "../ProjectItemStructure";
 import { ItemAssignee, ItemStatus, type WorkItemsProps } from "../ProjectWorkItems";
 import { useProjectFormatters } from "../useProjectFormatters";
 
@@ -103,15 +104,18 @@ function moveAcrossCells(event: KeyboardEvent<HTMLTableElement>, rtl: boolean) {
 }
 
 export function ProjectSpreadsheet(props: WorkItemsProps) {
-  const { workspace, labels, pending, updateItem, openItem } = props;
+  const { workspace, labels, pending, updateItem, openItem, display } = props;
   const format = useProjectFormatters();
+  const datedFields = [
+    ...(display?.showStartDate === false ? [] : (["startDate"] as const)),
+    ...(display?.showDueDate === false ? [] : (["dueDate"] as const)),
+  ];
   const columns = [
     "titleColumn",
-    "statusColumn",
-    "assigneeColumn",
-    "priority",
-    "startDate",
-    "dueDate",
+    ...(display?.showStatus === false ? [] : (["statusColumn"] as const)),
+    ...(display?.showAssignee === false ? [] : (["assigneeColumn"] as const)),
+    ...(display?.showPriority === false ? [] : (["priority"] as const)),
+    ...datedFields,
   ] as const;
 
   if (workspace.items.length === 0) {
@@ -158,9 +162,11 @@ export function ProjectSpreadsheet(props: WorkItemsProps) {
             <tr key={item.id}>
               <td className="sticky start-0 z-10 border-e bg-card p-1">
                 <div className="flex min-w-0 items-center gap-1">
-                  <bdi dir="ltr" className="shrink-0 ps-1.5 text-xs text-muted-foreground">
-                    {projectItemKey(workspace.project.identifier, item.sequenceNumber)}
-                  </bdi>
+                  {display?.showKey !== false && (
+                    <bdi dir="ltr" className="shrink-0 ps-1.5 text-xs text-muted-foreground">
+                      {projectItemKey(workspace.project.identifier, item.sequenceNumber)}
+                    </bdi>
+                  )}
                   {workspace.canEdit && (
                     <EditableCell key={item.revision} {...props} item={item} field="title" />
                   )}
@@ -181,34 +187,49 @@ export function ProjectSpreadsheet(props: WorkItemsProps) {
                     )}
                   </button>
                 </div>
-              </td>
-              <td className="border-e p-1">
-                <ItemStatus {...props} item={item} />
-              </td>
-              <td className="border-e p-1">
-                <ItemAssignee {...props} item={item} />
-              </td>
-              <td className="border-e p-1">
-                {workspace.canEdit ? (
-                  <Select
-                    ariaLabel={`${labels("workspace.priority")} · ${item.title}`}
-                    disabled={pending}
-                    value={item.priority}
-                    options={projectPriorities.map((priority) => ({
-                      value: priority,
-                      label: labels(`priority.${priority}`),
-                    }))}
-                    onChange={(value) => {
-                      const priority = projectPriorities.find((choice) => choice === value);
-                      if (priority !== undefined && item.priority !== priority)
-                        void updateItem(item, { priority });
-                    }}
+                <div className="ps-2">
+                  <ProjectItemStructureBadges
+                    item={item}
+                    catalog={workspace.workStructure}
+                    labels={labels}
+                    showLabels={display?.showLabels}
+                    showEstimate={display?.showEstimate}
                   />
-                ) : (
-                  labels(`priority.${item.priority}`)
-                )}
+                </div>
               </td>
-              {(["startDate", "dueDate"] as const).map((field) => (
+              {display?.showStatus !== false && (
+                <td className="border-e p-1">
+                  <ItemStatus {...props} item={item} />
+                </td>
+              )}
+              {display?.showAssignee !== false && (
+                <td className="border-e p-1">
+                  <ItemAssignee {...props} item={item} />
+                </td>
+              )}
+              {display?.showPriority !== false && (
+                <td className="border-e p-1">
+                  {workspace.canEdit ? (
+                    <Select
+                      ariaLabel={`${labels("workspace.priority")} · ${item.title}`}
+                      disabled={pending}
+                      value={item.priority}
+                      options={projectPriorities.map((priority) => ({
+                        value: priority,
+                        label: labels(`priority.${priority}`),
+                      }))}
+                      onChange={(value) => {
+                        const priority = projectPriorities.find((choice) => choice === value);
+                        if (priority !== undefined && item.priority !== priority)
+                          void updateItem(item, { priority });
+                      }}
+                    />
+                  ) : (
+                    labels(`priority.${item.priority}`)
+                  )}
+                </td>
+              )}
+              {datedFields.map((field) => (
                 <td key={field} className="border-e p-1 last:border-e-0">
                   {workspace.canEdit ? (
                     <EditableCell key={item.revision} {...props} item={item} field={field} />

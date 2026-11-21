@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   check,
   date,
   foreignKey,
@@ -17,11 +18,14 @@ import {
 import { users } from "@/db/schema/identity";
 import { agencyProjects } from "@/features/agency-projects/schema/agencyProjects";
 import { internalProjectItems } from "../schema";
-import type {
-  PlanningGroupKind,
-  PlanningModuleStatus,
-  PlanningSavedView,
-  PlanningViewFilters,
+import {
+  defaultStoredPlanningViewDisplay,
+  type PlanningCycleRolloverSnapshot,
+  type PlanningGroupKind,
+  type PlanningModuleStatus,
+  type PlanningSavedView,
+  type PlanningViewFilters,
+  type StoredPlanningViewDisplay,
 } from "./contracts";
 
 export const internalProjectPlanningGroups = pgTable(
@@ -38,6 +42,7 @@ export const internalProjectPlanningGroups = pgTable(
     endDate: date("end_date"),
     moduleStatus: text("module_status").$type<PlanningModuleStatus>(),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
+    rolloverSnapshot: jsonb("rollover_snapshot").$type<PlanningCycleRolloverSnapshot>(),
     revision: bigint("revision", { mode: "number" }).notNull().default(0),
   },
   (t) => [
@@ -61,6 +66,10 @@ export const internalProjectPlanningGroups = pgTable(
     check(
       "internal_project_planning_groups_dates_check",
       sql`${t.startDate} IS NULL OR ${t.endDate} IS NULL OR ${t.startDate} <= ${t.endDate}`,
+    ),
+    check(
+      "internal_project_planning_groups_rollover_check",
+      sql`${t.rolloverSnapshot} IS NULL OR (${t.kind} = 'cycles' AND jsonb_typeof(${t.rolloverSnapshot}) = 'object')`,
     ),
   ],
 );
@@ -111,6 +120,11 @@ export const internalProjectSavedViews = pgTable(
     layout: text("layout").$type<PlanningSavedView["layout"]>().notNull(),
     visibility: text("visibility").$type<PlanningSavedView["visibility"]>().notNull(),
     filters: jsonb("filters").$type<PlanningViewFilters>().notNull(),
+    display: jsonb("display")
+      .$type<StoredPlanningViewDisplay>()
+      .notNull()
+      .default(defaultStoredPlanningViewDisplay),
+    locked: boolean("locked").notNull().default(false),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     revision: bigint("revision", { mode: "number" }).notNull().default(0),
   },
@@ -129,5 +143,22 @@ export const internalProjectSavedViews = pgTable(
       "internal_project_saved_views_layout_check",
       sql`${t.layout} IN ('list','board','calendar','gantt_chart','spreadsheet') AND ${t.visibility} IN ('project','private') AND jsonb_typeof(${t.filters}) = 'object'`,
     ),
+    check("internal_project_saved_views_display_check", sql`jsonb_typeof(${t.display}) = 'object'`),
+  ],
+);
+
+export const internalProjectSavedViewFavorites = pgTable(
+  "internal_project_saved_view_favorites",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    viewId: uuid("view_id")
+      .notNull()
+      .references(() => internalProjectSavedViews.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.viewId] }),
+    index("internal_project_saved_view_favorites_view_idx").on(t.viewId),
   ],
 );

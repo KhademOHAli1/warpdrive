@@ -422,7 +422,14 @@ test("keeps concurrent same-intent creates idempotent and rejects cross-project 
     ),
   );
   expect(rescheduled.items).toMatchObject([
-    { ...item, dueDate: "2026-11-20", startDate: null, priority: "medium", revision: 1 },
+    {
+      ...item,
+      updatedAt: expect.any(String),
+      dueDate: "2026-11-20",
+      startDate: null,
+      priority: "medium",
+      revision: 1,
+    },
   ]);
   expect(
     value(await createInternalProjectItem(fixture.db, owner, itemDraft, signal())).items,
@@ -526,7 +533,7 @@ test("upgrades populated work items, preserving identity, unknown authorship and
     });
     expect(await ledger(h)).toEqual(nextLedger);
 
-    workflowUpgrade = await migrationFolder(125);
+    workflowUpgrade = await migrationFolder(126);
     expect(
       await applyMigrations(h.db, AbortSignal.timeout(30_000), workflowUpgrade.folder),
     ).toEqual({
@@ -546,6 +553,7 @@ test("upgrades populated work items, preserving identity, unknown authorship and
         revision: 7,
         createdBy: null,
         sequenceNumber: 1,
+        archivedAt: null,
       },
     ]);
     expect(

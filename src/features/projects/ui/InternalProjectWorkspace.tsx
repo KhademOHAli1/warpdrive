@@ -21,18 +21,22 @@ import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import type { Locale } from "@/features/i18n/registry";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
+import { ProjectItemArchiveControl } from "../automations/ProjectItemArchiveControl";
 import type {
   ProjectCommands,
   ProjectItem,
   ProjectMemberGrant,
+  ProjectPriority,
   ProjectResult,
   ProjectWorkflowState,
   ProjectWorkspace,
 } from "../contracts";
 import {
   emptyPlanningViewFilters,
+  matchesPlanningItemScope,
   type PlanningSavedView,
   type PlanningScope,
+  sortPlanningViewItems,
   type WorkspacePlanning,
 } from "../planning/contracts";
 import { planningPath } from "../planning/paths";
@@ -58,6 +62,7 @@ import {
 } from "./planeWorkItemView";
 import { projectsTranslator } from "./projectMessages";
 import { workflowStateLabel } from "./projectWorkflowUi";
+import type { WorkItemGroup } from "./projectWorkItemGroups";
 import { useProjectWrites } from "./projectWrites";
 
 export function InternalProjectWorkspace({
@@ -65,6 +70,7 @@ export function InternalProjectWorkspace({
   initialLocation,
   initialPlanning,
   reloadPlanning,
+  writePlanning,
   savedView,
   planningScope,
   actorId,
@@ -75,6 +81,11 @@ export function InternalProjectWorkspace({
   initialLocation?: ProjectWorkspaceLocation;
   initialPlanning?: WorkspacePlanning;
   reloadPlanning?: (projectId: string) => Promise<ProjectResult<WorkspacePlanning>>;
+  writePlanning?: (
+    projectId: string,
+    itemId: string,
+    patch: { cycleId?: string | null; moduleIds?: string[] },
+  ) => Promise<ProjectResult<WorkspacePlanning>>;
   savedView?: PlanningSavedView;
   planningScope?: PlanningScope;
   actorId?: string;
@@ -134,7 +145,7 @@ export function InternalProjectWorkspace({
   const defaultState = workspace.states.find(({ isDefault }) => isDefault);
   function createItem(
     state: ProjectWorkflowState | undefined,
-    entry?: { dueDate: string } | "column",
+    entry?: { dueDate?: string; priority?: ProjectPriority } | "column",
   ) {
     if (!workspace.canEdit || state === undefined || planningScope?.group.acceptsWork === false)
       return null;
@@ -145,12 +156,14 @@ export function InternalProjectWorkspace({
             [planningScope.kind === "cycles" ? "cycleId" : "moduleId"]: planningScope.group.id,
           };
     const compact = entry !== undefined;
-    const date = typeof entry === "object" ? entry.dueDate : null;
+    const date = typeof entry === "object" ? (entry.dueDate ?? null) : null;
+    const priority = typeof entry === "object" ? entry.priority : undefined;
     return (
       <ProjectWorkItemCreate
         workspace={workspace}
         stateId={state.id}
         dueDate={date}
+        priority={priority}
         labels={labels}
         pending={pending}
         trigger={
@@ -159,7 +172,7 @@ export function InternalProjectWorkspace({
             size={compact ? "sm" : "md"}
             aria-label={
               compact
-                ? `${date ?? workflowStateLabel(state, labels)} · ${labels("workspace.create")}`
+                ? `${date ?? (priority === undefined ? workflowStateLabel(state, labels) : labels(`priority.${priority}`))} · ${labels("workspace.create")}`
                 : undefined
             }
             disabled={pending}
@@ -198,10 +211,33 @@ export function InternalProjectWorkspace({
           ...filters,
           [planningScope.kind === "cycles" ? "cycleId" : "moduleId"]: planningScope.group.id,
         };
-  const items = filterProjectItems(workspace, scopedFilters, locale, planning);
+  const items = sortPlanningViewItems(
+    filterProjectItems(workspace, scopedFilters, locale, planning).filter(({ stateId }) => {
+      const category = workspace.states.find(({ id }) => id === stateId)?.category;
+      return matchesPlanningItemScope(savedView?.display.itemScope ?? "all", category);
+    }),
+    savedView?.display.orderBy ?? "manual",
+  );
   const activeItem = workspace.items.find(({ id }) => id === location.itemId);
+  const activeCategory = workspace.states.find(({ id }) => id === activeItem?.stateId)?.category;
+  const canArchiveActive =
+    workspace.canEdit && (activeCategory === "completed" || activeCategory === "cancelled");
+  function createBoardItem({ state, priority, related }: WorkItemGroup) {
+    if (related !== undefined || (savedView?.display.subGroupBy ?? "none") !== "none") return null;
+    return createItem(state ?? defaultState, priority === undefined ? "column" : { priority });
+  }
+  function setItemPlanning(
+    itemId: string,
+    patch: { cycleId?: string | null; moduleIds?: string[] },
+  ) {
+    if (writePlanning !== undefined)
+      void execute(() => writePlanning(projectId, itemId, patch), setPlanning);
+  }
   const workItemsProps = {
     workspace: { ...workspace, items },
+    display: savedView?.display,
+    planning,
+    setItemPlanning,
     labels,
     pending,
     updateItem,
@@ -235,31 +271,14 @@ export function InternalProjectWorkspace({
         projectId={projectId}
         active="work_items"
         canManageSettings={workspace.canManageSettings}
+        intakeEnabled={workspace.settings.intakeEnabled}
       />
-      {planningScope !== undefined && (
-        <div className="mb-3">
-          <Link
-            href={planningPath(projectId, planningScope.kind, planningScope.group.id)}
-            className="inline-flex rounded-md border bg-card px-2.5 py-1 text-sm hover:bg-accent"
-          >
-            <bdi>{planningScope.group.title}</bdi>
-          </Link>
-        </div>
-      )}
-      {savedView !== undefined && (
-        <div className="mb-3 flex items-center gap-2">
-          <Badge variant="secondary">
-            <bdi>{savedView.title}</bdi>
-          </Badge>
-          <Link
-            href={`/projects/internal/${projectId}`}
-            aria-label={labels("planning.closeSavedView")}
-            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-7")}
-          >
-            <X aria-hidden="true" className="size-4" />
-          </Link>
-        </div>
-      )}
+      <ProjectWorkspaceContext
+        projectId={projectId}
+        planningScope={planningScope}
+        savedView={savedView}
+        locale={locale}
+      />
       <ProjectWriteNotice error={error} labels={labels} />
       <Tabs
         value={location.view}
@@ -299,7 +318,7 @@ export function InternalProjectWorkspace({
               {labels("workspace.members")}
             </TabsTrigger>
           </TabsList>
-          {location.view !== "members" && (
+          {location.view !== "members" && savedView?.locked !== true && (
             <ProjectItemFilters
               workspace={workspace}
               filters={filters}
@@ -315,10 +334,7 @@ export function InternalProjectWorkspace({
         </TabsContent>
         <TabsContent value="board">
           {noMatches ?? (
-            <ProjectWorkItemBoard
-              {...workItemsProps}
-              createInColumn={(state) => createItem(state, "column")}
-            />
+            <ProjectWorkItemBoard {...workItemsProps} createInColumn={createBoardItem} />
           )}
         </TabsContent>
         <TabsContent value="calendar">
@@ -365,6 +381,23 @@ export function InternalProjectWorkspace({
               />
             ) : undefined
           }
+          lifecycle={
+            canArchiveActive && actorId !== undefined ? (
+              <ProjectItemArchiveControl
+                actorId={actorId}
+                projectId={projectId}
+                item={activeItem}
+                disabled={pending}
+                onChanged={() => {
+                  setWorkspace((current) => ({
+                    ...current,
+                    items: current.items.filter(({ id }) => id !== activeItem.id),
+                  }));
+                  moveLocation({ ...location, itemId: null });
+                }}
+              />
+            ) : undefined
+          }
           close={() => moveLocation({ ...location, itemId: null })}
           restoreFocus={() => {
             const trigger = itemTrigger.current;
@@ -375,5 +408,48 @@ export function InternalProjectWorkspace({
         />
       )}
     </section>
+  );
+}
+
+function ProjectWorkspaceContext({
+  projectId,
+  planningScope,
+  savedView,
+  locale,
+}: {
+  projectId: string;
+  planningScope?: PlanningScope;
+  savedView?: PlanningSavedView;
+  locale: Locale;
+}) {
+  const { numberingSystem } = useLocalePreferences();
+  const labels = projectsTranslator(locale, numberingSystem);
+  return (
+    <>
+      {planningScope !== undefined && (
+        <div className="mb-3">
+          <Link
+            href={planningPath(projectId, planningScope.kind, planningScope.group.id)}
+            className="inline-flex rounded-md border bg-card px-2.5 py-1 text-sm hover:bg-accent"
+          >
+            <bdi>{planningScope.group.title}</bdi>
+          </Link>
+        </div>
+      )}
+      {savedView !== undefined && (
+        <div className="mb-3 flex items-center gap-2">
+          <Badge variant="secondary">
+            <bdi>{savedView.title}</bdi>
+          </Badge>
+          <Link
+            href={`/projects/internal/${projectId}`}
+            aria-label={labels("planning.closeSavedView")}
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-7")}
+          >
+            <X aria-hidden="true" className="size-4" />
+          </Link>
+        </div>
+      )}
+    </>
   );
 }

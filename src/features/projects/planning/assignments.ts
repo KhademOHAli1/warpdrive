@@ -38,7 +38,13 @@ export async function projectPlanningSnapshot(
     .from(assignments)
     .innerJoin(groups, eq(assignments.groupId, groups.id))
     .innerJoin(items, eq(assignments.itemId, items.id))
-    .where(and(eq(groups.projectId, projectId), eq(items.projectId, projectId)))
+    .where(
+      and(
+        eq(groups.projectId, projectId),
+        eq(items.projectId, projectId),
+        isNull(items.archivedAt),
+      ),
+    )
     .orderBy(asc(assignments.itemId), asc(groups.title), asc(groups.id));
   const mapping = new Map<string, PlanningAssignment>();
   for (const { internal_project_planning_assignments: relation } of relations) {
@@ -84,7 +90,7 @@ async function itemInProject(tx: Db, projectId: string, itemId: string) {
   const [row] = await tx
     .select({ id: items.id })
     .from(items)
-    .where(and(eq(items.projectId, projectId), eq(items.id, itemId)));
+    .where(and(eq(items.projectId, projectId), eq(items.id, itemId), isNull(items.archivedAt)));
   return row !== undefined;
 }
 

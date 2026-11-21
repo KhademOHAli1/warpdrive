@@ -21,7 +21,7 @@ export const projectDocumentsInventoryEntry = classifyInventory(
     "sourceReview:src/features/projects/documents/service.ts#1eaed67cf27005c9b88ccb616695dacf85c5761a09ac3d04c47b5f39b69201b2",
     "sourceReview:src/features/projects/documents/webReads.ts#29a60794992a3dbf2c65bc86c915db5b01ffcafd32da341fac13d50ec427c206",
     "sourceReview:src/features/projects/documents/ui/ProjectPage.tsx#2a0be0ef505abcd6778fc4ec4258f87b7e0ae19b3865346911caeadd6827fb14",
-    "sourceReview:src/features/projects/documents/ui/ProjectPagesList.tsx#c326b72870f4796095ce40753b99ae138f11cd8b9fe7f93f4e19da734e751a2b",
+    "sourceReview:src/features/projects/documents/ui/ProjectPagesList.tsx#f9746e359c93d79b49f399d4f64592cc2e9fbd7cb18e7f20fe2984fe29bfd6b3",
     "table:internal_project_documents",
     "table:internal_project_document_versions",
     "writer:src/features/projects/documents/router.ts#query:dynamic",

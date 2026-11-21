@@ -10,6 +10,7 @@ import {
   type ProjectWorkspace,
   projectItemKey,
 } from "../contracts";
+import { ProjectItemStructureBadges } from "./ProjectItemStructure";
 import { ProjectItemSubscription } from "./ProjectItemSubscription";
 import { draftForProjectWorkItem, ProjectWorkItemForm } from "./ProjectWorkItemForm";
 import type { ProjectItemChanges } from "./ProjectWorkItems";
@@ -26,6 +27,7 @@ export function ProjectWorkItemPeek({
   close,
   restoreFocus,
   planning,
+  lifecycle,
 }: {
   item: ProjectItem;
   workspace: ProjectWorkspace;
@@ -39,6 +41,7 @@ export function ProjectWorkItemPeek({
   close: () => void;
   restoreFocus: () => boolean;
   planning?: ReactNode;
+  lifecycle?: ReactNode;
 }) {
   const format = useProjectFormatters();
   const state = workspace.states.find(({ id }) => id === item.stateId);
@@ -73,13 +76,14 @@ export function ProjectWorkItemPeek({
               <bdi>{item.title}</bdi>
             </SheetTitle>
           </div>
-          {!workspace.project.archived && (
+          {!workspace.project.archived && item.archivedAt === null && (
             <ProjectItemSubscription
               projectId={workspace.project.id}
               itemId={item.id}
               labels={labels}
             />
           )}
+          {lifecycle}
         </header>
         {workspace.canEdit ? (
           <ProjectWorkItemForm
@@ -106,6 +110,11 @@ export function ProjectWorkItemPeek({
                 <bdi>{item.description}</bdi>
               </p>
             )}
+            <ProjectItemStructureBadges
+              item={item}
+              catalog={workspace.workStructure}
+              labels={labels}
+            />
             <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 text-sm">
               <dt className="text-muted-foreground">{labels("workspace.statusColumn")}</dt>
               <dd>

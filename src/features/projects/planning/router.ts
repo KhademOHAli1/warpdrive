@@ -5,15 +5,19 @@ import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { changePlanningGroupItems, readWorkspacePlanning, setItemPlanning } from "./assignments";
 import {
   changePlanningGroupItemsInput,
+  deletePlanningViewInput,
   planningGroupKey,
   planningGroupKinds,
   planningProjectKey,
   planningViewKey,
+  rolloverPlanningCycleInput,
   savePlanningGroupInput,
   savePlanningViewInput,
   setItemPlanningInput,
   setPlanningGroupArchiveInput,
   setPlanningViewArchiveInput,
+  setPlanningViewFavoriteInput,
+  setPlanningViewLockInput,
 } from "./contracts";
 import {
   listPlanningGroups,
@@ -21,11 +25,15 @@ import {
   savePlanningGroup,
   setPlanningGroupArchive,
 } from "./groups";
+import { rolloverPlanningCycle } from "./rollover";
 import {
+  deletePlanningView,
   listPlanningViews,
   readPlanningView,
   savePlanningView,
   setPlanningViewArchive,
+  setPlanningViewFavorite,
+  setPlanningViewLock,
 } from "./views";
 
 const signal = () => AbortSignal.timeout(10_000);
@@ -85,5 +93,23 @@ export const projectPlanningRouter = router({
   archiveView: protectedProcedure.input(setPlanningViewArchiveInput).mutation(({ ctx, input }) => {
     requirePlanningWrite(ctx, input);
     return setPlanningViewArchive(ctx.db, ctx.session, input, signal());
+  }),
+  rolloverCycle: protectedProcedure.input(rolloverPlanningCycleInput).mutation(({ ctx, input }) => {
+    requirePlanningWrite(ctx, input);
+    return rolloverPlanningCycle(ctx.db, ctx.session, input, signal());
+  }),
+  setViewLock: protectedProcedure.input(setPlanningViewLockInput).mutation(({ ctx, input }) => {
+    requirePlanningWrite(ctx, input);
+    return setPlanningViewLock(ctx.db, ctx.session, input, signal());
+  }),
+  setViewFavorite: protectedProcedure
+    .input(setPlanningViewFavoriteInput)
+    .mutation(({ ctx, input }) => {
+      requirePlanningWrite(ctx, input);
+      return setPlanningViewFavorite(ctx.db, ctx.session, input, signal());
+    }),
+  deleteView: protectedProcedure.input(deletePlanningViewInput).mutation(({ ctx, input }) => {
+    requirePlanningWrite(ctx, input);
+    return deletePlanningView(ctx.db, ctx.session, input, signal());
   }),
 });

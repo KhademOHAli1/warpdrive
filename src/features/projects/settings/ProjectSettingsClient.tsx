@@ -11,7 +11,6 @@
 "use client";
 
 import { Archive, ArchiveRestore } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useId, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
@@ -51,6 +50,7 @@ import { ProjectWorkspaceNav } from "../ui/ProjectWorkspaceNav";
 import { projectsTranslator } from "../ui/projectMessages";
 import { useProjectWrites } from "../ui/projectWrites";
 import { type ProjectSettingsMessages, projectSettingsMessages } from "./messages";
+import { ProjectSettingsTabs } from "./ProjectSettingsTabs";
 import { ProjectStateGroups } from "./ProjectStateGroups";
 
 export type ProjectSettingsSection = "general" | "states";
@@ -73,7 +73,6 @@ export function ProjectSettingsClient({
   const { execute, pending, error } = useProjectWrites();
   const router = useRouter();
   const id = workspace.project.id;
-  const path = `/projects/internal/${id}/settings`;
   const target = { projectId: id, revision: workspace.settings.revision };
 
   function save(write: () => Promise<ProjectResult<ProjectWorkspace>>) {
@@ -94,27 +93,13 @@ export function ProjectSettingsClient({
           { label: labels.settings },
         ]}
       />
-      <ProjectWorkspaceNav projectId={id} active="settings" canManageSettings />
-      <nav aria-label={labels.settings} className="mb-5 flex gap-1">
-        {(
-          [
-            { name: "general", href: path },
-            { name: "states", href: `${path}/states` },
-          ] as const
-        ).map(({ name, href }) => (
-          <Link
-            key={name}
-            href={href}
-            aria-current={name === section ? "page" : undefined}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-sm",
-              name === section ? "bg-accent font-medium" : "text-muted-foreground hover:bg-muted",
-            )}
-          >
-            {labels[name]}
-          </Link>
-        ))}
-      </nav>
+      <ProjectWorkspaceNav
+        projectId={id}
+        active="settings"
+        canManageSettings
+        intakeEnabled={workspace.settings.intakeEnabled}
+      />
+      <ProjectSettingsTabs projectId={id} active={section} />
       <div className="max-w-4xl space-y-5">
         <ProjectWriteNotice error={error} labels={projectLabels} />
         {saved && (

@@ -7,7 +7,16 @@
  * Adapted from Plane Community v1.5.0, apps/web/components/navigation/use-navigation-items.ts.
  */
 
-import { CalendarRange, FileText, Layers3, ListFilter, Package, Settings } from "lucide-react";
+import {
+  Archive,
+  CalendarRange,
+  FileText,
+  Inbox,
+  Layers3,
+  ListFilter,
+  Package,
+  Settings,
+} from "lucide-react";
 import Link from "next/link";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
@@ -18,10 +27,20 @@ export function ProjectWorkspaceNav({
   projectId,
   active,
   canManageSettings = false,
+  intakeEnabled = false,
 }: {
   projectId: string;
-  active: "work_items" | "pages" | "cycles" | "modules" | "views" | "settings";
+  active:
+    | "work_items"
+    | "pages"
+    | "cycles"
+    | "modules"
+    | "views"
+    | "settings"
+    | "intake"
+    | "archive";
   canManageSettings?: boolean;
+  intakeEnabled?: boolean;
 }) {
   const { locale, numberingSystem } = useLocalePreferences();
   const labels = projectsTranslator(locale, numberingSystem);
@@ -31,6 +50,13 @@ export function ProjectWorkspaceNav({
     { key: "cycles", name: labels("sections.cycles"), href: `${root}/cycles`, icon: CalendarRange },
     { key: "modules", name: labels("sections.modules"), href: `${root}/modules`, icon: Package },
     { key: "views", name: labels("sections.views"), href: `${root}/views`, icon: ListFilter },
+    { key: "intake", name: labels("sections.intake"), href: `${root}/intake`, icon: Inbox },
+    {
+      key: "archive",
+      name: labels("sections.workArchive"),
+      href: `${root}/archive`,
+      icon: Archive,
+    },
     { key: "pages", name: pageLabels[locale].pages, href: `${root}/documents`, icon: FileText },
     {
       key: "settings",
@@ -44,6 +70,7 @@ export function ProjectWorkspaceNav({
     <nav aria-label={labels("workspace.views")} className="mb-4 flex flex-wrap gap-x-3 border-b">
       {navigationItems
         .filter(({ key }) => key !== "settings" || active === "settings" || canManageSettings)
+        .filter(({ key }) => key !== "intake" || active === "intake" || intakeEnabled)
         .map(({ key, name, href, icon: Icon }) => (
           <Link
             key={key}

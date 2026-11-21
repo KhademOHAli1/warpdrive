@@ -30,14 +30,31 @@ project-role checks, cross-project denial, planning assignment, private views
 and live editing. The previous milestone's image rehearsal predates this
 migration.
 
-Additional Plane Community workflows include project appearance, per-project
-time zones, public project access and guest controls, permanent deletion,
-feature toggles, Intake, labels, estimates, and auto-close and auto-archive
-rules. Cycle transfer, advanced progress analytics, module member metadata and
-saved view favorites and locks also remain open. Pages collaboration uses
-short authenticated HTTP exchanges. Peers disappear from the active list
-after 15 seconds. Expired presence rows are removed on later collaboration
-traffic or when their session or page is deleted.
+## Intake, work structure, and execution
+
+| Plane Community source | Warpdrive behavior |
+| --- | --- |
+| `apps/api/plane/app/views/intake/base.py` and `apps/api/plane/db/models/intake.py` | Owners enable Intake. Members submit requests, editors can read the queue, and viewers see their own submissions. Owners accept, decline, snooze, reopen or mark a request as a duplicate. Acceptance atomically creates one work item with the requester as author and records the reviewer. |
+| `apps/web/components/labels` and `apps/web/components/estimates` | Projects own their label groups and estimate definitions. Work items use concrete labels and the active enabled estimate scale. Points and Categories are available. Historic estimate choices survive scale changes, and point replacement reconciles dependent work. |
+| `apps/api/plane/bgtasks/issue_automation_task.py` and `apps/api/plane/celery.py` | The worker runs at 01:00 UTC. Auto-close moves inactive open work to the selected cancelled state. Auto-archive removes inactive completed or cancelled work from active layouts. Both protect work with current or undated cycle or module commitments. Archive readers use the same project grants, and editors can restore items. |
+| `apps/web/components/cycles` and `packages/constants/src/issue/filter.ts` | Rollover moves unfinished work to an eligible cycle in the same project and preserves a pre-transfer progress snapshot. Saved views support personal favorites, creator-controlled locks, ordering, grouping, Board subgroups, visible fields, filters, and link, open, archive, and delete actions. |
+
+Migration `0125` keeps existing work-item and client project identifiers
+and backfills the inactivity clock from committed work-item history. Intake,
+work structure, and automations add project-scoped records and no provider
+connection. Project archiving pauses the rules and leaves the records
+available to authorized readers.
+
+Plane’s separately authenticated published-board Intake and integrator API
+are a different surface from internal Project Intake. Project branding,
+project time zones, public or guest access, and feature configuration
+outside the implemented Projects workflows still differ from Plane. Saved
+view controls apply to the work-item fields available in Warpdrive, including
+its existing project membership and assignment model.
+
+Pages collaboration uses authenticated HTTP exchanges. Peers disappear from
+the active list after 15 seconds. Expired rows are removed on later
+collaboration traffic or when their session or page is deleted.
 
 Adapted source files retain their notices. The Plane comparison checkout is
 available for checking these workflows against the local Warpdrive demo.

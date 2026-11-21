@@ -12,6 +12,7 @@ import {
   readInternalProjectSettings,
   withInternalProjects,
 } from "../access";
+import { readProjectAutomationSettings } from "../automations/service";
 import {
   type ProjectResult,
   type ProjectSettings,
@@ -201,6 +202,12 @@ export function saveInternalProjectStates(
     )
       return ok(null);
     const afterById = new Map(states.map((state) => [state.id, state]));
+    const automation = await readProjectAutomationSettings(tx, projectId);
+    if (
+      automation.closeStateId !== null &&
+      afterById.get(automation.closeStateId)?.category !== "cancelled"
+    )
+      return err("project_conflict");
     const removed = before.filter(({ id }) => !afterById.has(id)).map(({ id }) => id);
     const recategorized = before.flatMap((previous) => {
       const next = afterById.get(previous.id);

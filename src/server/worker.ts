@@ -13,6 +13,7 @@ import {
   OPERATIONS_WORKER_HEARTBEAT_SECONDS,
   OPERATIONS_WORKER_INSTANCE_NAME,
 } from "@/features/operations/workerHeartbeat";
+import { registerProjectAutomations } from "@/features/projects/automations/worker";
 import { registerReleaseCheckJob } from "@/features/release/job";
 import { registerWorkflowV2Jobs } from "@/features/workflows/v2/worker";
 import { registerWorkflowJobs } from "@/features/workflows/worker";
@@ -40,6 +41,7 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerReleaseCheckJob(boss);
   await registerWorkflowJobs(boss, db);
   await registerWorkflowV2Jobs(boss, db);
+  await registerProjectAutomations(boss, db);
 }
 
 // Compose `worker` service. Boots pg-boss, publishes the singleton so producers

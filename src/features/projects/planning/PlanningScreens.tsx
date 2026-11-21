@@ -6,12 +6,18 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getLocalePreferences } from "@/features/i18n/server";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
-import { type FormattingPreferences, formatDateOnly, formatNumber } from "@/lib/localeFormatting";
+import {
+  type FormattingPreferences,
+  formatDateOnly,
+  formatDateTime,
+  formatNumber,
+} from "@/lib/localeFormatting";
 import type { ProjectSummary } from "../contracts";
 import { projectIdInput } from "../input";
 import { ProjectTypeNav } from "../ProjectTypeNav";
 import { ProjectWorkspaceNav } from "../ui/ProjectWorkspaceNav";
 import { readInternalWorkspace, requireInternalProjects } from "../webReads";
+import { planningAdvancedLabels } from "./advancedMessages";
 import {
   canArchivePlanningGroup,
   type PlanningChoice,
@@ -23,7 +29,10 @@ import {
 } from "./contracts";
 import { type PlanningLabels, planningLabels } from "./messages";
 import { PlanningArchiveToggle, PlanningGroupItems } from "./PlanningChanges";
+import { PlanningCycleRollover, type RolloverDestination } from "./PlanningCycleRollover";
 import { PlanningGroupEditor, PlanningViewEditor } from "./PlanningEditors";
+import { PlanningViewFavorite, PlanningViewLock } from "./PlanningViewControls";
+import { PlanningViewQuickActions } from "./PlanningViewQuickActions";
 import { openPlanningGroupPath, openPlanningViewPath, planningPath } from "./paths";
 import {
   readPlanningGroup,
@@ -47,6 +56,7 @@ function PlanningFrame({
   project,
   section,
   canManageSettings,
+  intakeEnabled,
   labels,
   entry,
   children,
@@ -54,6 +64,7 @@ function PlanningFrame({
   project: ProjectSummary;
   section: PlanningSection;
   canManageSettings: boolean;
+  intakeEnabled: boolean;
   labels: PlanningLabels;
   entry?: PlanningChoice;
   children: ReactNode;
@@ -74,8 +85,85 @@ function PlanningFrame({
         projectId={project.id}
         active={section}
         canManageSettings={canManageSettings}
+        intakeEnabled={intakeEnabled}
       />
       {children}
+    </section>
+  );
+}
+
+function canRollover(group: PlanningGroup, canEdit: boolean) {
+  return (
+    canEdit &&
+    group.kind === "cycles" &&
+    !group.archived &&
+    planningCyclePhase(group) === "completed" &&
+    group.itemCount > group.closedCount
+  );
+}
+
+function rolloverTargets(groups: PlanningGroup[]): RolloverDestination[] {
+  return groups
+    .filter(({ archived }) => !archived)
+    .map(({ id, title, startDate, endDate }) => ({
+      id,
+      title,
+      phase: planningCyclePhase({ startDate, endDate }),
+    }))
+    .filter(({ phase }) => phase !== "completed");
+}
+
+function RolloverSnapshot({
+  group,
+  projectId,
+  preferences,
+}: {
+  group: PlanningGroup;
+  projectId: string;
+  preferences: FormattingPreferences;
+}) {
+  const snapshot = group.rolloverSnapshot;
+  if (snapshot === null) return null;
+  const labels = planningAdvancedLabels[preferences.locale];
+  const base = planningLabels[preferences.locale];
+  return (
+    <section className="space-y-2 rounded-md border bg-card px-4 py-3">
+      <h2 className="text-sm font-semibold">{labels.lastTransfer}</h2>
+      <dl className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+        <div>
+          <dt>{labels.beforeTransfer}</dt>
+          <dd className="font-medium text-foreground">
+            {formatNumber(snapshot.itemCount, preferences)}
+          </dd>
+        </div>
+        <div>
+          <dt>{base.closed}</dt>
+          <dd className="font-medium text-foreground">
+            {formatNumber(snapshot.closedCount, preferences)}
+          </dd>
+        </div>
+        <div>
+          <dt>{labels.moved}</dt>
+          <dd className="font-medium text-foreground">
+            {formatNumber(snapshot.movedCount, preferences)}
+          </dd>
+        </div>
+        <div>
+          <dt>
+            <Link
+              className="underline"
+              href={planningPath(projectId, "cycles", snapshot.targetCycleId)}
+            >
+              {labels.destination}
+            </Link>
+          </dt>
+          <dd>
+            <time dateTime={snapshot.recordedAt}>
+              {formatDateTime(snapshot.recordedAt, preferences)}
+            </time>
+          </dd>
+        </div>
+      </dl>
     </section>
   );
 }
@@ -200,15 +288,17 @@ export async function planningGroupsPage(rawProjectId: string, kind: PlanningGro
     getLocalePreferences(),
   ]);
   if (!result.ok) notFound();
-  const { project, canEdit, canManageSettings, groups } = result.value;
+  const { project, canEdit, canManageSettings, intakeEnabled, groups } = result.value;
   const labels = planningLabels[preferences.locale];
   const cycle = kind === "cycles";
+  const targets = cycle ? rolloverTargets(groups) : [];
   return (
     <PlanningFrame
       project={project}
       section={kind}
       labels={labels}
       canManageSettings={canManageSettings}
+      intakeEnabled={intakeEnabled}
     >
       {canEdit && (
         <EditorPanel title={cycle ? labels.newCycle : labels.newModule}>
@@ -227,6 +317,14 @@ export async function planningGroupsPage(rawProjectId: string, kind: PlanningGro
               <bdi>{group.title}</bdi>
             </Link>
             <GroupFacts entry={group} labels={labels} preferences={preferences} />
+            {canRollover(group, canEdit) && (
+              <PlanningCycleRollover
+                actorId={actorId}
+                projectId={projectId}
+                source={group}
+                targets={targets}
+              />
+            )}
           </>
         )}
       </SplitIndex>
@@ -247,17 +345,20 @@ export async function planningGroupPage(
     getLocalePreferences(),
   ]);
   if (!result.ok) notFound();
-  const { project, group, items, canEdit, canManageSettings } = result.value;
+  const { project, group, items, canEdit, canManageSettings, intakeEnabled } = result.value;
   const labels = planningLabels[preferences.locale];
   const cycleCompleted = kind === "cycles" && planningCyclePhase(group) === "completed";
   const canAdd = canEdit && !group.archived && !cycleCompleted;
   const canArchive = canArchivePlanningGroup(group);
+  const canTransfer = canRollover(group, canEdit);
+  const candidates = canTransfer ? await readPlanningGroups(projectId, "cycles") : null;
   return (
     <PlanningFrame
       project={project}
       section={kind}
       labels={labels}
       canManageSettings={canManageSettings}
+      intakeEnabled={intakeEnabled}
       entry={group}
     >
       <GroupFacts entry={group} preferences={preferences} labels={labels} />
@@ -265,6 +366,15 @@ export async function planningGroupPage(
         <p className="whitespace-pre-wrap text-sm [overflow-wrap:anywhere]">{group.description}</p>
       )}
       <GroupLayouts projectId={projectId} group={group} labels={labels} />
+      {canTransfer && (
+        <PlanningCycleRollover
+          actorId={actorId}
+          projectId={projectId}
+          source={group}
+          targets={candidates?.ok === true ? rolloverTargets(candidates.value.groups) : []}
+        />
+      )}
+      <RolloverSnapshot group={group} projectId={projectId} preferences={preferences} />
       {canEdit && (group.archived || canArchive) && (
         <PlanningArchiveToggle actorId={actorId} projectId={projectId} entry={group} />
       )}
@@ -303,12 +413,12 @@ async function readEditorContext(projectId: string) {
     readWorkspacePlanning(projectId),
   ]);
   if (!workspace.ok || !planning.ok) notFound();
-  const { project, states, members } = workspace.value;
+  const { project, states, members, workStructure } = workspace.value;
   const { cycles, modules } = planning.value;
-  return { workspace: { project, states, members }, planning: { cycles, modules } };
+  return { workspace: { project, states, members, workStructure }, planning: { cycles, modules } };
 }
 
-export async function planningViewsPage(rawProjectId: string) {
+export async function planningViewsPage(rawProjectId: string, favoriteOnly = false) {
   const { actorId } = await requireInternalProjects();
   const projectId = checkedId(rawProjectId);
   const [result, preferences] = await Promise.all([
@@ -316,26 +426,45 @@ export async function planningViewsPage(rawProjectId: string) {
     getLocalePreferences(),
   ]);
   if (!result.ok) notFound();
-  const { project, canEdit, canManageSettings, views } = result.value;
+  const { project, canEdit, canManageSettings, intakeEnabled, views } = result.value;
   const context = canEdit ? await readEditorContext(projectId) : null;
   const labels = planningLabels[preferences.locale];
+  const advanced = planningAdvancedLabels[preferences.locale];
+  const indexPath = planningPath(projectId, "views");
   return (
     <PlanningFrame
       project={project}
       section="views"
       labels={labels}
       canManageSettings={canManageSettings}
+      intakeEnabled={intakeEnabled}
     >
       {context && (
         <EditorPanel title={labels.newView}>
           <PlanningViewEditor actorId={actorId} {...context} />
         </EditorPanel>
       )}
+      <nav aria-label={labels.views} className="flex flex-wrap gap-2">
+        <Link
+          href={indexPath}
+          className={secondaryLink}
+          aria-current={!favoriteOnly ? "page" : undefined}
+        >
+          {advanced.allViews}
+        </Link>
+        <Link
+          href={`${indexPath}?favorites=1`}
+          className={secondaryLink}
+          aria-current={favoriteOnly ? "page" : undefined}
+        >
+          {advanced.favorites}
+        </Link>
+      </nav>
       <SplitIndex
-        entries={views}
+        entries={favoriteOnly ? views.filter((view) => view.favorite && !view.archived) : views}
         labels={labels}
-        emptyTitle={labels.viewEmpty}
-        emptyBody={labels.viewHelp}
+        emptyTitle={favoriteOnly ? advanced.noFavorites : labels.viewEmpty}
+        emptyBody={favoriteOnly ? advanced.favoritesHelp : labels.viewHelp}
       >
         {(view) => (
           <>
@@ -345,11 +474,14 @@ export async function planningViewsPage(rawProjectId: string) {
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">{labels[view.layout]}</Badge>
               <Badge variant="secondary">{labels[view.visibility]}</Badge>
+              {view.locked && <Badge variant="outline">{advanced.locked}</Badge>}
               {!view.archived && (
                 <Link href={openPlanningViewPath(projectId, view.id)} className={secondaryLink}>
                   {labels.openView}
                 </Link>
               )}
+              <PlanningViewFavorite actorId={actorId} projectId={projectId} view={view} />
+              <PlanningViewQuickActions actorId={actorId} projectId={projectId} view={view} />
             </div>
           </>
         )}
@@ -370,23 +502,30 @@ export async function planningViewPage(rawProjectId: string, rawViewId: string) 
   if (!result.ok || !index.ok) notFound();
   const view = result.value;
   const labels = planningLabels[preferences.locale];
-  const context = view.canEdit && !view.archived ? await readEditorContext(projectId) : null;
+  const advanced = planningAdvancedLabels[preferences.locale];
+  const context =
+    view.canEdit && !view.archived && !view.locked ? await readEditorContext(projectId) : null;
   return (
     <PlanningFrame
       project={index.value.project}
       section="views"
       labels={labels}
       canManageSettings={index.value.canManageSettings}
+      intakeEnabled={index.value.intakeEnabled}
       entry={view}
     >
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline">{labels[view.layout]}</Badge>
         <Badge variant="secondary">{labels[view.archived ? "archived" : view.visibility]}</Badge>
+        {view.locked && <Badge variant="outline">{advanced.locked}</Badge>}
         {!view.archived && (
           <Link href={openPlanningViewPath(projectId, view.id)} className={secondaryLink}>
             {labels.openView}
           </Link>
         )}
+        <PlanningViewFavorite actorId={actorId} projectId={projectId} view={view} />
+        <PlanningViewLock actorId={actorId} projectId={projectId} view={view} />
+        <PlanningViewQuickActions actorId={actorId} projectId={projectId} view={view} detail />
         {view.canArchive && (
           <PlanningArchiveToggle actorId={actorId} projectId={projectId} entry={view} />
         )}

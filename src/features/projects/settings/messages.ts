@@ -1,4 +1,8 @@
 const en = {
+  labels: "Labels",
+  estimates: "Estimates",
+  intake: "Intake",
+  automations: "Automations",
   settings: "Project settings",
   general: "General",
   states: "States",
@@ -44,6 +48,10 @@ const en = {
 type SettingsMessages = typeof en;
 
 const de: SettingsMessages = {
+  labels: "Labels",
+  estimates: "Schätzungen",
+  intake: "Eingang",
+  automations: "Automatisierungen",
   settings: "Projekteinstellungen",
   general: "Allgemein",
   states: "Status",
@@ -91,6 +99,10 @@ const de: SettingsMessages = {
 };
 
 const fa: SettingsMessages = {
+  labels: "برچسب‌ها",
+  estimates: "برآوردها",
+  intake: "ورودی",
+  automations: "خودکارسازی‌ها",
   settings: "تنظیمات پروژه",
   general: "عمومی",
   states: "وضعیت‌ها",

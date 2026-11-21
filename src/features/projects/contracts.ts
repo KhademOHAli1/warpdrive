@@ -1,4 +1,9 @@
 import type { Result } from "@/types/result";
+import type {
+  ProjectItemStructure,
+  ProjectItemStructurePatch,
+  ProjectWorkStructure,
+} from "./work-structure/contracts";
 
 export const projectStatuses = ["todo", "in-progress", "done"] as const;
 export const projectPriorities = ["urgent", "high", "medium", "low", "none"] as const;
@@ -72,25 +77,31 @@ export type ProjectItemContent = {
   dueDate: string | null;
   description: string;
 };
-export type ProjectItem = ProjectItemContent & {
-  id: string;
-  stateId: string;
-  sequenceNumber: number;
-  createdBy: string | null;
-  revision: number;
-};
+export type ProjectItem = ProjectItemContent &
+  ProjectItemStructure & {
+    id: string;
+    stateId: string;
+    sequenceNumber: number;
+    createdAt: string;
+    updatedAt: string;
+    archivedAt: string | null;
+    createdBy: string | null;
+    revision: number;
+  };
 
 export type ProjectSettings = {
   description: string;
   revision: number;
   leadUserId: string | null;
   defaultAssigneeId: string | null;
+  intakeEnabled: boolean;
 };
 
 export type ProjectWorkspace = {
   project: ProjectSummary;
   states: ProjectWorkflowState[];
   settings: ProjectSettings;
+  workStructure: ProjectWorkStructure;
   items: ProjectItem[];
   members: ProjectMembership[];
   assignees: ProjectPerson[];
@@ -115,13 +126,15 @@ export type CreateProjectItemInput = {
   stateId?: string;
   title: string;
   planning?: { cycleId?: string; moduleId?: string };
-} & Partial<Omit<ProjectItemContent, "title">>;
+} & Partial<Omit<ProjectItemContent, "title">> &
+  ProjectItemStructurePatch;
 export type UpdateProjectItemInput = {
   projectId: string;
   itemId: string;
   revision: number;
   stateId?: string;
-} & Partial<ProjectItemContent>;
+} & Partial<ProjectItemContent> &
+  ProjectItemStructurePatch;
 export type SetProjectMemberInput = {
   projectId: string;
   userId: string;

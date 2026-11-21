@@ -1,4 +1,4 @@
-import { and, count, desc, eq, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, isNull, or, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import type { Db } from "@/db/client";
 import { agencyProjects } from "@/features/agency-projects/schema/agencyProjects";
@@ -49,6 +49,7 @@ export function readProjectProfileSummary(db: Db, session: NativeSessionRef, sig
       .where(
         and(
           listInternalProjectScope(tx, actor.id),
+          isNull(item.archivedAt),
           or(assignedToActor, createdByActor, subscribedByActor),
         ),
       )
@@ -112,6 +113,7 @@ export function readProjectProfileItems(
         and(
           listInternalProjectScope(tx, actor.id),
           workOfMember(tx, actor.id, view),
+          isNull(item.archivedAt),
           status === undefined ? undefined : eq(item.status, status),
           priority === undefined ? undefined : eq(item.priority, priority),
           earlierThanCursor(item.createdAt, item.id, cursor),

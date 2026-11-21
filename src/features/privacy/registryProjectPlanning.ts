@@ -2,6 +2,13 @@ import { classifyInventory } from "./registryClassification";
 
 export const projectPlanningInventoryEntry = classifyInventory(
   [
+    "writer:src/features/projects/planning/views.ts#delete:views",
+    "writer:src/features/projects/planning/views.ts#insert:favorites",
+    "writer:src/features/projects/planning/views.ts#delete:favorites",
+    "writer:src/features/projects/planning/rollover.ts#update:groups",
+    "writer:src/features/projects/planning/rollover.ts#update:assignments",
+    "table:internal_project_saved_view_favorites",
+    "sourceReview:src/features/projects/planning/rollover.ts#68d03f7112bb5175ec0684f3dd0a7330806d18afdff8728c10f9bf8b2614b2dd",
     "writer:src/features/projects/planning/webReads.ts#query:dynamic",
     "writer:src/features/projects/planning/views.ts#update:views",
     "writer:src/features/projects/planning/views.ts#insert:views",
@@ -14,11 +21,11 @@ export const projectPlanningInventoryEntry = classifyInventory(
     "table:internal_project_planning_groups",
     "table:internal_project_planning_assignments",
     "sourceReview:src/features/projects/planning/webReads.ts#0561e4bb0ea4d28bc643fc9c6cec113c98114b97253469397ab8e77e063e4863",
-    "sourceReview:src/features/projects/planning/views.ts#87b506e1f4f4e9f397a923b628feec02d98152acf4d1c5513349305803b2b742",
-    "sourceReview:src/features/projects/planning/schema.ts#eb092f63fb05e55660263791f3e0171fc395ebfa02a87841df15833c8e2bf1d9",
-    "sourceReview:src/features/projects/planning/router.ts#fc2737c2c573c03a87a78398411662d891d3c8c4d05d8077af6c5bf28f44d83e",
-    "sourceReview:src/features/projects/planning/groups.ts#4d6f04e1aef7ee1f9f5b7834fce00c511ce9e8cfa3bfde44f823a89d913a6a43",
-    "sourceReview:src/features/projects/planning/assignments.ts#bc336cb79f8b09f0e7997da0a75a455514292324d9fd482409e63fe5c5128b4a",
+    "sourceReview:src/features/projects/planning/views.ts#8ef6cbd1680a1949d2caca49156c6629ca3ffa0d0d1d0e8ca9f83b7cc99416b1",
+    "sourceReview:src/features/projects/planning/schema.ts#4cbfdf05caabb49e6e283d36ed49c2a57b4643a5021840cd9aa8cd1648ee1b53",
+    "sourceReview:src/features/projects/planning/router.ts#bce0643911cb538784bc7dc04a317bfc429a3adc69761ab05d4f76d93d51bff8",
+    "sourceReview:src/features/projects/planning/groups.ts#2af087cea0a51c01764ca0463a1acaac8b26f710bdbcd3c4b841c649b8f9d190",
+    "sourceReview:src/features/projects/planning/assignments.ts#c8dd6b6bc24c35e9937e4d94e0977a09a480139f3b665e264310a5975fbf602a",
     "derived:src/features/projects/planning/assignments.ts",
   ],
   {
@@ -26,7 +33,7 @@ export const projectPlanningInventoryEntry = classifyInventory(
     categories: [
       "cycle and module titles, descriptions, dates and progress states",
       "work-item membership in cycles and modules",
-      "saved view ownership, layout and filter definitions",
+      "saved view ownership, layout and filter definitions, and personal favorites",
     ],
     subjectRelation:
       "Saved view authors and optional assignee filters reference workforce identities. Group membership references work items whose authors and assignees remain in the Projects domain.",
@@ -35,7 +42,7 @@ export const projectPlanningInventoryEntry = classifyInventory(
     disclosure:
       "Core rechecks the enabled module and the actor’s project grant for each request. Private view definitions require current project access and authorship. Active project edit, author, and archive permissions gate changes.",
     retention:
-      "Planning records and assignments persist in PostgreSQL and backups. Archived groups and views retain their links. Web holds the current projection in memory and addresses saved or scoped views with the opaque identifier in the URL.",
+      "Planning records and assignments persist in PostgreSQL and backups. Archived groups and views retain their links. Cycle rollover preserves the source progress totals and destination identity. Web holds the current projection in memory and addresses saved or scoped views with the opaque identifier in the URL.",
     externalEffects:
       "Same-origin typed procedures read and update scoped Core records. Changes have no provider, background delivery or object-store effect.",
     erasureTask: "DPL-15 / DPL-18 / DPL-21",

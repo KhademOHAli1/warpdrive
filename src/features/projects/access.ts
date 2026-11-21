@@ -1,4 +1,4 @@
-import { and, asc, eq, exists, isNull, or } from "drizzle-orm";
+import { and, asc, desc, eq, exists, isNotNull, isNull, or } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema/identity";
@@ -18,6 +18,12 @@ import { err, ok } from "@/types/result";
 import type { ProjectResult, ProjectSummary, ProjectWorkspace } from "./contracts";
 import { internalProjectItems, internalProjectSettings } from "./schema";
 import { readProjectWorkflowStates } from "./settings/states";
+
+import { emptyProjectItemStructure } from "./work-structure/contracts";
+import {
+  readProjectItemStructures,
+  readProjectWorkStructure,
+} from "./work-structure/itemStructure";
 
 class ProjectSessionExpired extends Error {}
 
@@ -175,12 +181,8 @@ export async function projectWorkspaceSnapshot(
     .innerJoin(users, eq(users.id, agencyProjectMembers.userId))
     .where(eq(agencyProjectMembers.projectId, projectId))
     .orderBy(asc(users.name), asc(users.id));
-  const { id, revision, createdAt, createdBy, stateId, sequenceNumber } = internalProjectItems;
-  const items = await db
-    .select({ id, ...projectItemContentFields, createdBy, revision, stateId, sequenceNumber })
-    .from(internalProjectItems)
-    .where(eq(internalProjectItems.projectId, projectId))
-    .orderBy(asc(createdAt), asc(id));
+  const items = await readProjectWorkspaceItems(db, projectId, "active");
+  const workStructure = await readProjectWorkStructure(db, projectId);
   const settings = await readInternalProjectSettings(db, projectId);
   const states = await readProjectWorkflowStates(db, projectId);
   const staff = canManageMembers
@@ -192,19 +194,8 @@ export async function projectWorkspaceSnapshot(
     : [];
   return {
     project: summary,
-    items: items.map((item) => {
-      if (item.stateId === null)
-        throw new AppError(
-          ERROR_IDS.DB_INVARIANT,
-          "Internal work item is missing a workflow state",
-        );
-      if (item.sequenceNumber === null)
-        throw new AppError(
-          ERROR_IDS.DB_INVARIANT,
-          "Internal work item is missing its sequence number",
-        );
-      return { ...item, stateId: item.stateId, sequenceNumber: item.sequenceNumber };
-    }),
+    items,
+    workStructure,
     settings,
     states,
     members: memberships.map(({ person, edit, coordinate }) => ({
@@ -226,10 +217,59 @@ export async function projectWorkspaceSnapshot(
   };
 }
 
+export async function readProjectWorkspaceItems(
+  db: Db,
+  projectId: string,
+  scope: "active" | "archived",
+) {
+  const { id, revision, createdAt, updatedAt, archivedAt, createdBy, stateId, sequenceNumber } =
+    internalProjectItems;
+  const items = await db
+    .select({
+      id,
+      ...projectItemContentFields,
+      createdAt,
+      updatedAt,
+      archivedAt,
+      createdBy,
+      revision,
+      stateId,
+      sequenceNumber,
+    })
+    .from(internalProjectItems)
+    .where(
+      and(
+        eq(internalProjectItems.projectId, projectId),
+        scope === "archived" ? isNotNull(archivedAt) : isNull(archivedAt),
+      ),
+    )
+    .orderBy(scope === "archived" ? desc(archivedAt) : asc(createdAt), asc(id));
+  const itemStructures = await readProjectItemStructures(db, projectId);
+  return items.map((item) => {
+    if (item.stateId === null)
+      throw new AppError(ERROR_IDS.DB_INVARIANT, "Internal work item is missing a workflow state");
+    if (item.sequenceNumber === null)
+      throw new AppError(
+        ERROR_IDS.DB_INVARIANT,
+        "Internal work item is missing its sequence number",
+      );
+    return {
+      ...item,
+      ...(itemStructures.get(item.id) ?? emptyProjectItemStructure),
+      stateId: item.stateId,
+      sequenceNumber: item.sequenceNumber,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+      archivedAt: item.archivedAt?.toISOString() ?? null,
+    };
+  });
+}
+
 export async function readInternalProjectSettings(db: Db, projectId: string) {
-  const { description, revision, leadUserId, defaultAssigneeId } = internalProjectSettings;
+  const { description, revision, leadUserId, defaultAssigneeId, intakeEnabled } =
+    internalProjectSettings;
   const [settings] = await db
-    .select({ description, revision, leadUserId, defaultAssigneeId })
+    .select({ description, revision, leadUserId, defaultAssigneeId, intakeEnabled })
     .from(internalProjectSettings)
     .where(eq(internalProjectSettings.projectId, projectId));
   if (settings === undefined)

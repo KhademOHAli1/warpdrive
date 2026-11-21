@@ -5,6 +5,8 @@ import { localeWithNumberingSystem, type NumberingSystem } from "@/lib/numbering
 
 const en = {
   sections: {
+    intake: "Intake",
+    workArchive: "Work item archive",
     cycles: "Cycles",
     modules: "Modules",
     views: "Saved views",
@@ -32,6 +34,8 @@ const en = {
     moveSchedule: "Move dates for {title}",
   },
   planning: {
+    noCreator: "Unknown creator",
+    noLabels: "No labels",
     filters: "Work item filters",
     allPriorities: "All priorities",
     allCycles: "All cycles",
@@ -83,6 +87,9 @@ const en = {
     copyError: "Could not copy the project link.",
   },
   workspace: {
+    workLabels: "Labels",
+    estimate: "Estimate",
+    noEstimate: "No estimate",
     workItems: "Work items",
     search: "Search work items",
     filterStatus: "Filter by status",
@@ -154,6 +161,8 @@ const en = {
 
 const de = {
   sections: {
+    intake: "Eingang",
+    workArchive: "Aufgabenarchiv",
     cycles: "Zyklen",
     modules: "Module",
     views: "Gespeicherte Ansichten",
@@ -181,6 +190,8 @@ const de = {
     moveSchedule: "Zeitraum für {title} verschieben",
   },
   planning: {
+    noCreator: "Unbekannter Ersteller",
+    noLabels: "Keine Labels",
     filters: "Arbeitsaufgaben filtern",
     allPriorities: "Alle Prioritäten",
     allCycles: "Alle Zyklen",
@@ -232,6 +243,9 @@ const de = {
     copyError: "Der Projektlink konnte nicht kopiert werden.",
   },
   workspace: {
+    workLabels: "Labels",
+    estimate: "Schätzung",
+    noEstimate: "Keine Schätzung",
     workItems: "Aufgaben",
     search: "Aufgaben durchsuchen",
     filterStatus: "Nach Status filtern",
@@ -303,6 +317,8 @@ const de = {
 
 const fa = {
   sections: {
+    intake: "ورودی",
+    workArchive: "بایگانی کارها",
     cycles: "چرخه‌ها",
     modules: "ماژول‌ها",
     views: "نماهای ذخیره‌شده",
@@ -330,6 +346,8 @@ const fa = {
     moveSchedule: "جابجایی تاریخ‌های {title}",
   },
   planning: {
+    noCreator: "ایجادکننده نامشخص",
+    noLabels: "بدون برچسب",
     filters: "فیلتر کارها",
     allPriorities: "همه اولویت‌ها",
     allCycles: "همه چرخه‌ها",
@@ -381,6 +399,9 @@ const fa = {
     copyError: "کپی پیوند پروژه انجام نشد.",
   },
   workspace: {
+    workLabels: "برچسب‌ها",
+    estimate: "برآورد",
+    noEstimate: "بدون برآورد",
     workItems: "کارها",
     search: "جست‌وجوی کارها",
     filterStatus: "فیلتر بر اساس وضعیت",

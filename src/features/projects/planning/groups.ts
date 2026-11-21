@@ -2,6 +2,7 @@ import { and, asc, count, eq, gte, isNull, lte, ne, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { err, ok } from "@/types/result";
+import { readInternalProjectSettings } from "../access";
 import { internalProjectItems as items } from "../schema";
 import { withPlanningProject } from "./access";
 import {
@@ -40,6 +41,7 @@ function groupResult(row: GroupRow, itemCount = 0, closedCount = 0): PlanningGro
     archived: archivedAt !== null,
     itemCount,
     closedCount,
+    rolloverSnapshot: row.rolloverSnapshot,
   };
 }
 
@@ -69,12 +71,20 @@ export function listPlanningGroups(
         })
         .from(groups)
         .leftJoin(assignments, eq(assignments.groupId, groups.id))
-        .leftJoin(items, and(eq(items.id, assignments.itemId), eq(items.projectId, projectId)))
+        .leftJoin(
+          items,
+          and(
+            eq(items.id, assignments.itemId),
+            eq(items.projectId, projectId),
+            isNull(items.archivedAt),
+          ),
+        )
         .where(and(eq(groups.projectId, projectId), eq(groups.kind, kind)))
         .groupBy(groups.id)
         .orderBy(asc(groups.startDate), asc(groups.title), asc(groups.id));
       return ok({
         project: summary,
+        intakeEnabled: (await readInternalProjectSettings(tx, projectId)).intakeEnabled,
         canEdit,
         canManageSettings,
         groups: rows.map(({ group, total, closed }) => groupResult(group, total, closed)),
@@ -114,6 +124,7 @@ export function readPlanningGroup(
         .where(
           and(
             eq(items.projectId, input.projectId),
+            isNull(items.archivedAt),
             group.archivedAt !== null || closedCycle || !canEdit
               ? sql`${assignments.itemId} IS NOT NULL`
               : undefined,
@@ -123,6 +134,7 @@ export function readPlanningGroup(
       const included = rows.filter((item) => item.included);
       return ok({
         project: summary,
+        intakeEnabled: (await readInternalProjectSettings(tx, input.projectId)).intakeEnabled,
         canEdit,
         canManageSettings,
         group: groupResult(

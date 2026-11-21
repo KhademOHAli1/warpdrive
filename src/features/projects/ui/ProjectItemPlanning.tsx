@@ -77,6 +77,7 @@ export function ProjectItemPlanning({
             <fieldset disabled={mutation.isPending}>
               <MultiCombobox
                 ariaLabel={labels("planning.modules")}
+                contentClassName={`${BLOCK_CLASS} ph-no-capture`}
                 placeholder={labels("planning.noModules")}
                 values={moduleIds}
                 options={planning.modules
