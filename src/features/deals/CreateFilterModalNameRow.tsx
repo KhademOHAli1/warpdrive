@@ -6,6 +6,7 @@ import { useAppTranslations } from "@/features/i18n/LocaleProvider";
 
 interface CreateFilterModalNameRowProps {
   name: string;
+  nameLabel?: string;
   onNameChange: (name: string) => void;
   isShared: boolean;
   onSharedChange: (isShared: boolean) => void;
@@ -14,22 +15,24 @@ interface CreateFilterModalNameRowProps {
 // Name field + shared toggle, the row under the conditions in the filter dialog.
 export function CreateFilterModalNameRow({
   name,
+  nameLabel,
   onNameChange,
   isShared,
   onSharedChange,
 }: CreateFilterModalNameRowProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
+  const label = nameLabel ?? translateSales("filter_name_95706");
 
   const nameId = useId();
   return (
     <div className="grid grid-cols-2 gap-4 pt-4">
       <label className="block text-sm">
         <span className="mb-1 block font-medium" id={nameId}>
-          {translateSales("filter_name_95706")}
+          {label}
         </span>
         <input
           aria-labelledby={nameId}
-          aria-label={translateSales("filter_name_95706")}
+          aria-label={label}
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder={translateSales("named_from_your_conditions_a1144")}

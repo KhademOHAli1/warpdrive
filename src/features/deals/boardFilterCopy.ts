@@ -15,8 +15,7 @@ export const BOARD_EMPTY_UNSURE_BODY =
   "This pipeline has filters applied. Clear them to see everything in it, or add a deal.";
 
 export const BOARD_EMPTY_TITLE = "No deals in this pipeline yet";
-export const BOARD_EMPTY_BODY =
-  "A deal is one opportunity: a value, a stage and an owner. Add the first one and it lands in a stage column below.";
+export const BOARD_EMPTY_BODY = "Add the first deal to start tracking its stage, value and owner.";
 
 export const BOARD_CHIPS_LABEL = "Applied filters";
 export const BOARD_CLEAR_ALL = "Clear all";

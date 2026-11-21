@@ -365,7 +365,7 @@
     "boardEmptyUnsureTitle": "Nothing to show here",
     "boardEmptyUnsureBody": "This pipeline has filters applied. Clear them to see everything in it, or add a deal.",
     "boardEmptyTitle": "No deals in this pipeline yet",
-    "boardEmptyBody": "A deal is one opportunity: a value, a stage and an owner. Add the first one and it lands in a stage column below.",
+    "boardEmptyBody": "Add the first deal to start tracking its stage, value and owner.",
     "appliedFilters": "Applied filters",
     "clearAll": "Clear all",
     "ownerChip": "Owner: {name}",

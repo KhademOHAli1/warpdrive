@@ -107,6 +107,7 @@ export function DealListClient({
   } = view;
   const [sortKey, setSortKey] = useState<DealListSortKey>(DEFAULT_SORT_KEY);
   const [sortDirection, setSortDirection] = useState<SortDirection>(DEFAULT_SORT_DIRECTION);
+  const [newViewTrigger, setNewViewTrigger] = useState<HTMLButtonElement | null>(null);
   const catalog = useMemo<(ColumnDef & { sortField?: CustomFieldSortKey })[]>(
     () => [...dealListColumns(locale), ...customFieldColumns(initial.customFieldDefs ?? [])],
     [initial.customFieldDefs, locale],
@@ -188,6 +189,7 @@ export function DealListClient({
       activeView={variant}
       totalsUnavailable={viewUnavailable || data === undefined}
       canManagePipelines={initial.canManagePipelines}
+      onAddView={setNewViewTrigger}
       createSlot={addDeal}
       sortSlot={
         <BoardSortControl<DealListSortKey>
@@ -216,6 +218,8 @@ export function DealListClient({
             onSelectFilter={setSavedFilter}
             appliedDefinition={inlineDefinition}
             onApplyDefinition={setInlineDefinition}
+            newViewTrigger={newViewTrigger}
+            onCloseNewView={() => setNewViewTrigger(null)}
             // The list keeps its own ad-hoc Filter builder, so this menu is the saved-filter
             // picker and the badge stays on the builder.
             triggerLabel={translateSales("saved_filters_f52bc")}

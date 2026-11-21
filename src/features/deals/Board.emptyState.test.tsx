@@ -162,7 +162,7 @@ describe("Board with a filter that provably excludes every deal", () => {
 // A saved filter narrows server-side, so zero rows back is indistinguishable from a pipeline with
 // nothing in it. Blaming the filter would promise deals that clearing it cannot produce.
 describe("Board where the filter and an empty pipeline look the same", () => {
-  test("claims neither cause and offers both ways out", () => {
+  test("shows only the empty state and offers both ways out", () => {
     renderBoard([], ROTTING);
 
     const title = screen.getByText("Nothing to show here");
@@ -173,23 +173,18 @@ describe("Board where the filter and an empty pipeline look the same", () => {
     const empty = within(panel);
     expect(empty.getByRole("button", { name: "Clear filters" })).not.toBeNull();
     expect(empty.getByRole("button", { name: /Deal/ })).not.toBeNull();
-  });
-
-  test("keeps the stage columns, since the pipeline may simply be empty", () => {
-    renderBoard([], ROTTING);
-
-    expect(stageList()).not.toBeNull();
+    expect(stageList()).toBeNull();
   });
 });
 
-// An empty pipeline is a different sentence: nothing is being hidden, so the way out is adding a
-// deal, and the stage columns stay because they are the drop targets a first deal lands in.
 describe("Board with an empty, unfiltered pipeline", () => {
-  test("says the pipeline is empty and keeps the stage columns", () => {
+  test("shows the empty pipeline and add action without stage columns", () => {
     renderBoard([]);
 
-    expect(screen.getByText("No deals in this pipeline yet")).not.toBeNull();
-    expect(stageList()).not.toBeNull();
+    const empty = screen.getByText("No deals in this pipeline yet").parentElement;
+    if (empty === null) throw new Error("empty state has no status container");
+    expect(within(empty).getByRole("button", { name: /Deal/ })).toBeEnabled();
+    expect(stageList()).toBeNull();
     expect(screen.queryByRole("button", { name: "Clear filters" })).toBeNull();
   });
 });

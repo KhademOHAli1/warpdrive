@@ -15,9 +15,6 @@ interface BoardActionsMenuProps {
   pipelineId: string;
 }
 
-// Board actions overflow (Pipedrive ellipsis). Seeded with actions that already have a home:
-// edit pipeline, and bulk-select via the List view (which already supports multi-select).
-// Intended future entries: export deals, import, board settings (add when those features exist).
 export function BoardActionsMenu(props: BoardActionsMenuProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
 
@@ -32,9 +29,6 @@ export function BoardActionsMenu(props: BoardActionsMenuProps): React.ReactNode 
         <Ellipsis aria-hidden="true" className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-48">
-        <DropdownMenuItem asChild>
-          <Link href={`/pipeline/${pipelineId}/edit`}>{translateSales("edit_pipeline_81305")}</Link>
-        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href={`/pipeline/${pipelineId}/list`}>
             {translateSales("select_multiple_deals_e3337")}

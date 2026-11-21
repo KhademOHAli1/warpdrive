@@ -365,7 +365,7 @@
     "boardEmptyUnsureTitle": "Hier gibt es nichts anzuzeigen",
     "boardEmptyUnsureBody": "Für diese Vertriebspipeline sind Filter aktiv. Setzen Sie diese zurück, um alle Verkaufschancen zu sehen, oder fügen Sie eine Verkaufschance hinzu.",
     "boardEmptyTitle": "Noch keine Verkaufschancen in dieser Vertriebspipeline",
-    "boardEmptyBody": "Eine Verkaufschance bildet eine konkrete Geschäftsmöglichkeit mit Betrag, Phase und verantwortlicher Person ab. Fügen Sie die erste hinzu. Sie erscheint unten in einer Phasenspalte.",
+    "boardEmptyBody": "Fügen Sie die erste Verkaufschance hinzu, um ihre Phase, ihren Wert und die zuständige Person zu verfolgen.",
     "appliedFilters": "Aktive Filter",
     "clearAll": "Alle zurücksetzen",
     "ownerChip": "Verantwortlich: {name}",

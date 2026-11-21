@@ -39,9 +39,10 @@
     "dashboard": "Dashboard",
     "select": "Select dashboard",
     "selectCurrent": "Select dashboard: {name}",
-    "pipelines": "Pipelines",
+    "myDashboards": "My Dashboards",
     "performance": "Performance",
-    "addPipeline": "Add new pipeline"
+    "addView": "Add new view",
+    "viewName": "View name"
   },
   "appearance": {
     "title": "Appearance",

@@ -116,7 +116,7 @@ describe("Board stage lanes", () => {
   // large empty right half. The GROWING element must be the flex item itself (the <li> that wraps
   // each column), not the inner section, or flex-grow has no effect and columns sit at min-width.
   test("stage columns grow to fill the board width", () => {
-    renderBoard([]);
+    renderBoard([card("dddddddd-0000-0000-0000-000000000009", "Card One", STAGES[0]!.id, "1")]);
     const alpha = screen.getByRole("region", { name: "Alpha" });
     const flexItem = alpha.parentElement;
     expect(flexItem?.className).toMatch(/flex-1\b/);

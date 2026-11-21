@@ -6,8 +6,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import { DashboardSelect } from "./DashboardSelect";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
-vi.mock("@/features/pipelines/pipelineEditActions", () => ({ createPipelineAction: vi.fn() }));
 afterEach(cleanup);
 
 const pipelines = [
@@ -22,6 +20,7 @@ it("offers only the supplied pipelines and Performance with a current indicator"
   );
   await user.click(screen.getByRole("button", { name: "Select dashboard: Sales" }));
   expect(screen.getByRole("menu", { name: "Select dashboard" })).toBeInTheDocument();
+  expect(screen.getByText("My Dashboards")).toBeInTheDocument();
   const items = screen.getAllByRole("menuitem");
   expect(items.map((item) => item.textContent)).toEqual(["Sales", "Partners", "Performance"]);
   expect(screen.getByRole("menuitem", { name: "Sales" })).toHaveAttribute("aria-current", "page");
@@ -70,31 +69,36 @@ it("keeps Performance reachable with no visible pipelines and no fabricated sele
   expect(screen.queryByRole("menuitem", { name: /Add/ })).not.toBeInTheDocument();
 });
 
-it("keeps authorized pipeline creation and returns focus after dismissing the dialog", async () => {
+it("hands off Add new view to the current dashboard after closing its menu", async () => {
   const user = userEvent.setup();
+  const addView = vi.fn(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
   render(
-    <DashboardSelect current={{ kind: "performance" }} pipelines={pipelines} canManagePipelines />,
+    <DashboardSelect current={{ kind: "performance" }} pipelines={pipelines} onAddView={addView} />,
   );
   const trigger = screen.getByRole("button", { name: "Select dashboard: Performance" });
   await user.click(trigger);
-  await user.click(screen.getByRole("menuitem", { name: "Add new pipeline" }));
-  expect(await screen.findByRole("dialog", { name: "Create pipeline" })).toBeInTheDocument();
-  await user.keyboard("{Escape}");
-  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-  expect(trigger).toHaveFocus();
+  await user.click(screen.getByRole("menuitem", { name: "Add new view" }));
+  await waitFor(() => expect(addView).toHaveBeenCalledExactlyOnceWith(trigger));
 });
 
 it.each([
-  ["de", "Dashboard auswählen: Leistung", "Dashboard auswählen", "Leistung"],
-  ["fa", "انتخاب داشبورد: عملکرد", "انتخاب داشبورد", "عملکرد"],
-] as const)("localizes dashboard navigation in %s", async (locale, trigger, menu, performance) => {
-  const user = userEvent.setup();
-  render(
-    <LocaleProvider locale={locale}>
-      <DashboardSelect current={{ kind: "performance" }} pipelines={[]} />
-    </LocaleProvider>,
-  );
-  await user.click(screen.getByRole("button", { name: trigger }));
-  expect(screen.getByRole("menu", { name: menu })).toBeInTheDocument();
-  expect(screen.getByRole("menuitem", { name: performance })).toHaveAttribute("href", "/dashboard");
-});
+  ["de", "Dashboard auswählen: Leistung", "Dashboard auswählen", "Leistung", "Meine Dashboards"],
+  ["fa", "انتخاب داشبورد: عملکرد", "انتخاب داشبورد", "عملکرد", "داشبوردهای من"],
+] as const)(
+  "localizes dashboard navigation in %s",
+  async (locale, trigger, menu, performance, heading) => {
+    const user = userEvent.setup();
+    render(
+      <LocaleProvider locale={locale}>
+        <DashboardSelect current={{ kind: "performance" }} pipelines={[]} />
+      </LocaleProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: trigger }));
+    expect(screen.getByRole("menu", { name: menu })).toBeInTheDocument();
+    expect(screen.getByText(heading)).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: performance })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+  },
+);

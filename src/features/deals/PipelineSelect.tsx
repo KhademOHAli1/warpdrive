@@ -7,7 +7,7 @@ import type { PipelineDashboardView } from "@/features/dashboards/dashboardViews
 interface PipelineSelectProps {
   pipelineId: string;
   pipelines: Array<{ id: string; name: string }>;
-  canManagePipelines?: boolean;
+  onAddView?: (trigger: HTMLButtonElement) => void;
   activeView?: PipelineDashboardView;
 }
 

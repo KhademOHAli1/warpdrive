@@ -1,5 +1,5 @@
 import { Bookmark } from "lucide-react";
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, type Ref, useId, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/Collapsible";
@@ -40,6 +40,7 @@ interface Labels {
 interface Props extends Labels {
   scope: Scope;
   canSave: boolean;
+  nameInputRef: Ref<HTMLInputElement>;
 }
 
 const READ_OPTIONS = {
@@ -321,7 +322,7 @@ function saveFailure(
   return "saveFailed";
 }
 
-function SavedPerformancePanel({ scope, canSave, ...labels }: Props) {
+function SavedPerformancePanel({ scope, canSave, nameInputRef, ...labels }: Props) {
   const S = useStatsMessages();
   const copy = S.savedPerformance;
   const nameId = useId();
@@ -392,6 +393,7 @@ function SavedPerformancePanel({ scope, canSave, ...labels }: Props) {
               {copy.name}
             </label>
             <Input
+              ref={nameInputRef}
               id={nameId}
               value={name}
               maxLength={120}
@@ -464,10 +466,14 @@ function SavedPerformancePanel({ scope, canSave, ...labels }: Props) {
   );
 }
 
-export function SavedPerformanceControl(props: Props) {
+export function SavedPerformanceControl({
+  open,
+  onOpenChange,
+  ...props
+}: Props & { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { savedPerformance: copy } = useStatsMessages();
   return (
-    <Collapsible className="space-y-3">
+    <Collapsible open={open} onOpenChange={onOpenChange} className="space-y-3">
       <CollapsibleTrigger asChild>
         <Button type="button" variant="outline">
           <Bookmark aria-hidden="true" className="size-4" />

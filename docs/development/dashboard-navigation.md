@@ -5,8 +5,8 @@ Workflows and Help & docs form the smaller utility group. Number-key shortcuts
 follow the same visible order.
 
 Dashboard is the shared entry point for the existing pipeline workspaces and
-Performance. Its selector is used on pipeline boards, lists, archived-deal views
-and Performance. Performance's pipeline filter still controls which records its
+Performance. The My Dashboards selector is used on boards, lists, archived-deal
+views and Performance. Performance's pipeline filter controls which records its
 charts aggregate; that filter is separate from dashboard navigation.
 
 ## Current implementation
@@ -18,6 +18,12 @@ charts aggregate; that filter is separate from dashboard navigation.
 - Performance retains its existing personal/team statistics permissions.
 - Switching pipelines keeps the current board, list or archived-deal layout.
   Entering a pipeline from Performance opens its board.
+- The active view determines the toolbar actions. Live deal views offer creation.
+  Board also offers the pipeline editor to managers, and an empty Board shows its
+  empty state in place of the stage columns.
+- Add new view saves deal conditions on a pipeline or the current report scope on
+  Performance. Open saved deal views through the filter menu and saved reports
+  through Saved Performance reports. Manage pipelines in company settings.
 - An account without visible pipelines can still select Performance. Existing
   authorized first-pipeline creation remains available.
 - No new membership store, dashboard builder or role policy is introduced.

@@ -35,9 +35,10 @@ vi.mock("@/lib/trpc-client", () => ({
 const reportError = vi.fn();
 vi.mock("@/components/shell/ActionErrorProvider", () => ({ useActionError: () => reportError }));
 const removeSavedFilterAction = vi.fn<(...a: unknown[]) => Promise<unknown>>();
+const createSavedFilterAction = vi.fn<(...a: unknown[]) => Promise<unknown>>();
 vi.mock("@/features/saved-filters/serverActions", () => ({
   toggleFavoriteAction: vi.fn(),
-  createSavedFilterAction: vi.fn(),
+  createSavedFilterAction: (...a: unknown[]) => createSavedFilterAction(...a),
   removeSavedFilterAction: (...a: unknown[]) => removeSavedFilterAction(...a),
 }));
 vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf" }));
@@ -103,6 +104,35 @@ async function openBuilder(
 }
 
 describe("BoardFilterControl", () => {
+  it("adds a separate named view seeded with the active conditions", async () => {
+    savedFiltersData.mockReturnValue([savedRow(OR_DEFINITION)]);
+    createSavedFilterAction.mockResolvedValue({ ok: true, value: { id: "new-view" } });
+    const onSelectFilter = vi.fn();
+    const onApplyDefinition = vi.fn();
+    const onCloseNewView = vi.fn();
+    const user = userEvent.setup();
+    renderControl("f1", {
+      newViewTrigger: document.createElement("button"),
+      onCloseNewView,
+      onSelectFilter,
+      onApplyDefinition,
+    });
+
+    const dialog = screen.getByRole("dialog", { name: "Add new view" });
+    expect(within(dialog).getByLabelText("Match combinator")).toHaveTextContent("any condition");
+    expect(within(dialog).queryByRole("button", { name: "Apply" })).not.toBeInTheDocument();
+    fireEvent.change(within(dialog).getByLabelText("View name"), { target: { value: "New view" } });
+    await user.click(within(dialog).getByRole("button", { name: "Save" }));
+
+    expect(createSavedFilterAction).toHaveBeenCalledWith(
+      { name: "New view", targetEntity: "deal", isShared: false, definition: OR_DEFINITION },
+      "csrf",
+    );
+    expect(onApplyDefinition).toHaveBeenCalledWith(null);
+    expect(onSelectFilter).toHaveBeenCalledWith(expect.objectContaining({ id: "new-view" }));
+    expect(onCloseNewView).toHaveBeenCalled();
+  });
+
   it("seeds the builder with the selected saved filter's conditions and combinator", async () => {
     savedFiltersData.mockReturnValue([savedRow(OR_DEFINITION)]);
     const user = userEvent.setup();

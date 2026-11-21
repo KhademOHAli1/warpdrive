@@ -42,6 +42,8 @@ interface BoardFilterControlProps {
   onPreviewFilter?: (definition: FilterDefinition) => void;
   // Clears any active preview so the board reverts to the applied saved filter.
   onClearPreview?: () => void;
+  newViewTrigger?: HTMLButtonElement | null;
+  onCloseNewView?: () => void;
 }
 
 function sameSavedFilter(a: SavedFilterView, b: SavedFilterView): boolean {
@@ -61,6 +63,8 @@ export function BoardFilterControl(props: BoardFilterControlProps): React.ReactN
   const { selectedFilterId, appliedFilter, onSelectFilter } = props;
   const { onPreviewFilter, onClearPreview } = props;
   const { appliedDefinition = null, onApplyDefinition, activeCount = 0, triggerLabel } = props;
+  const { newViewTrigger, onCloseNewView } = props;
+  const creatingView = newViewTrigger != null;
   const utils = trpc.useUtils();
   const reportError = useActionError();
   const query = trpc.deal.savedFilters.useQuery(undefined, { staleTime: 10_000 });
@@ -98,6 +102,12 @@ export function BoardFilterControl(props: BoardFilterControlProps): React.ReactN
     await refreshing;
   }
 
+  function closeModal(): void {
+    onClearPreview?.();
+    setModalOpen(false);
+    if (creatingView) onCloseNewView?.();
+  }
+
   return (
     <>
       <BoardFilterMenu
@@ -121,30 +131,37 @@ export function BoardFilterControl(props: BoardFilterControlProps): React.ReactN
         currentUserId={currentUserId}
         onSelectOwner={onSelectOwner}
       />
-      {modalOpen && (
+      {(modalOpen || creatingView) && (
         <CreateFilterModal
           owners={owners}
           stages={stages}
           onPreview={onPreviewFilter}
-          savedFilter={selectedFilter?.availability === "unavailable" ? undefined : selectedFilter}
-          initialDefinition={appliedDefinition ?? undefined}
+          savedFilter={
+            creatingView || selectedFilter?.availability === "unavailable"
+              ? undefined
+              : selectedFilter
+          }
+          initialDefinition={
+            appliedDefinition ??
+            (creatingView ? (appliedFilter ?? selectedFilter)?.definition : undefined) ??
+            undefined
+          }
+          returnFocusTo={newViewTrigger ?? undefined}
+          creatingView={creatingView}
           onApply={
-            onApplyDefinition === undefined
+            creatingView || onApplyDefinition === undefined
               ? undefined
               : (definition) => {
                   // The reads resolve the ad-hoc definition ahead of the saved filter, so leaving
                   // the selection set would show these edits while the menu named the saved row.
                   onSelectFilter(null);
                   onApplyDefinition(definition.conditions.length > 0 ? definition : null);
-                  setModalOpen(false);
                 }
           }
-          onClose={() => {
-            onClearPreview?.();
-            setModalOpen(false);
-          }}
+          onClose={closeModal}
           onSave={(persisted) => {
             void utils.deal.savedFilters.invalidate();
+            if (creatingView) onApplyDefinition?.(null);
             onSelectFilter({
               id: persisted.id,
               name: persisted.name,
@@ -154,9 +171,7 @@ export function BoardFilterControl(props: BoardFilterControlProps): React.ReactN
               isOwn: true,
               definition: persisted.definition,
             });
-            // The saved filter now drives the board; drop the transient preview.
-            onClearPreview?.();
-            setModalOpen(false);
+            closeModal();
           }}
         />
       )}

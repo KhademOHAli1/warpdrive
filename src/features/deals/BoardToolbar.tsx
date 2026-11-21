@@ -24,7 +24,7 @@ export interface BoardToolbarProps {
   // tab. Defaults to the board so existing board callers need no change.
   activeView?: BoardToolbarView;
   presence?: React.ReactNode;
-  // The "+ Deal" control, rendered prominently at the left like Pipedrive.
+  // The "+ Deal" control for live views.
   createSlot?: React.ReactNode;
   // The board filter dropdown (owners/filters/favorites), rendered in the right cluster.
   filterSlot?: React.ReactNode;
@@ -33,6 +33,7 @@ export interface BoardToolbarProps {
   // The quick-filter condition chips row, rendered below the main toolbar row (Pipedrive).
   quickFilters?: React.ReactNode;
   canManagePipelines?: boolean;
+  onAddView?: (trigger: HTMLButtonElement) => void;
 }
 
 // P6: a labeled segmented control (icon + text) so List/Archive read as available views, not a
@@ -42,8 +43,6 @@ const ICON_BTN =
 const ACTIVE = "bg-accent text-accent-foreground font-medium";
 const IDLE = "text-muted-foreground hover:text-foreground";
 
-// The controls Pipedrive puts above the board: Board|List|Archive view toggle, add-deal, a board
-// summary with a value toggle, a styled pipeline selector, filter/sort, and an actions overflow.
 export function BoardToolbar(props: BoardToolbarProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
 
@@ -55,6 +54,12 @@ export function BoardToolbar(props: BoardToolbarProps): React.ReactNode {
   return (
     <div className="mb-3 flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-3">
+        <PipelineSelect
+          pipelineId={pipelineId}
+          pipelines={pipelines}
+          activeView={activeView}
+          onAddView={props.onAddView}
+        />
         <div className="inline-flex rounded-md border bg-card p-0.5">
           <Link
             href={`/pipeline/${pipelineId}`}
@@ -85,7 +90,7 @@ export function BoardToolbar(props: BoardToolbarProps): React.ReactNode {
           </Link>
         </div>
 
-        {createSlot}
+        {activeView !== "archived" && createSlot}
 
         <div className="ms-auto flex items-center gap-3">
           {props.totalsUnavailable !== true && (
@@ -96,23 +101,18 @@ export function BoardToolbar(props: BoardToolbarProps): React.ReactNode {
               currency={props.currency}
             />
           )}
-          <PipelineSelect
-            pipelineId={pipelineId}
-            pipelines={pipelines}
-            activeView={activeView}
-            canManagePipelines={canManagePipelines}
-          />
-
-          <Link
-            href={`/pipeline/${pipelineId}/edit`}
-            aria-label={translateSales("edit_pipeline_81305")}
-            className={ICON_BUTTON}
-          >
-            <Pencil aria-hidden="true" className="h-4 w-4" />
-          </Link>
+          {activeView === "board" && canManagePipelines === true && (
+            <Link
+              href={`/pipeline/${pipelineId}/edit`}
+              aria-label={translateSales("edit_pipeline_81305")}
+              className={ICON_BUTTON}
+            >
+              <Pencil aria-hidden="true" className="h-4 w-4" />
+            </Link>
+          )}
 
           {filterSlot}
-          <BoardActionsMenu pipelineId={pipelineId} />
+          {activeView === "board" && <BoardActionsMenu pipelineId={pipelineId} />}
           {presence}
         </div>
       </div>

@@ -106,8 +106,7 @@ export function Board(props: BoardProps): React.ReactNode {
   const addDeal = (
     <NewDealButton pipelineId={pipelineId} pipelines={pipelines} baseCurrency={baseCurrency} />
   );
-  // A filter that excluded every card is a different sentence from an empty pipeline, and only the
-  // first one replaces the stage columns: an empty pipeline keeps them as the drop targets they are.
+  // A filter that excluded every card needs a different empty state from a pipeline with no deals.
   const filtered = isBoardFiltered(view);
   const emptyKind = boardEmptyKind({
     shownCount: shownCards.length,
@@ -225,6 +224,13 @@ export function Board(props: BoardProps): React.ReactNode {
             void refetch();
           }}
         />
+      ) : emptyKind !== "none" ? (
+        <DealsEmpty
+          variant="board"
+          kind={emptyKind}
+          onClearFilters={view.clearFilters}
+          addSlot={addDeal}
+        />
       ) : (
         <DndContext
           // Stable, deterministic id so dnd-kit's accessibility ids (aria-describedby /
@@ -244,29 +250,17 @@ export function Board(props: BoardProps): React.ReactNode {
             announcements: boardAnnouncements(cardTitleById, stageNameById, locale),
           }}
         >
-          {emptyKind !== "none" && (
-            <DealsEmpty
-              variant="board"
-              kind={emptyKind}
-              onClearFilters={view.clearFilters}
-              addSlot={addDeal}
-            />
-          )}
-          {/* Only a board proven to be hiding cards drops its columns: the other two states may be
-            an empty pipeline, whose columns are still the drop targets. */}
-          {emptyKind !== "filtered" && (
-            <BoardStages
-              stages={stages}
-              sumsByStage={sumsByStage}
-              sortedByStage={sortedByStage}
-              density={density}
-              now={now}
-              pipelineId={pipelineId}
-              pipelines={pipelines}
-              baseCurrency={baseCurrency}
-              movesDisabled={stageMove.blocked}
-            />
-          )}
+          <BoardStages
+            stages={stages}
+            sumsByStage={sumsByStage}
+            sortedByStage={sortedByStage}
+            density={density}
+            now={now}
+            pipelineId={pipelineId}
+            pipelines={pipelines}
+            baseCurrency={baseCurrency}
+            movesDisabled={stageMove.blocked}
+          />
 
           {/* Bottom Delete/Lost/Won/Move action bar, revealed only during a drag (Pipedrive). */}
           <DragDropZones active={dragActive} />

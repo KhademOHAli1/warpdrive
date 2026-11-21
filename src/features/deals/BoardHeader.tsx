@@ -1,5 +1,6 @@
 "use client";
 import type React from "react";
+import { useState } from "react";
 import { wsChannel } from "@/constants/wsChannels";
 import type { CurrencyTotal } from "@/features/currencies/money";
 import { useAppTranslations } from "@/features/i18n/LocaleProvider";
@@ -37,6 +38,7 @@ interface BoardHeaderProps {
 // of chips naming each narrowing dimension the board currently applies.
 export function BoardHeader(props: BoardHeaderProps): React.ReactNode {
   const translateSales = useAppTranslations("sales");
+  const [newViewTrigger, setNewViewTrigger] = useState<HTMLButtonElement | null>(null);
 
   const { pipelineId, pipelines, stages, selfActorId, owners, view, addSlot } = props;
   const { totalValue, dealCount, onPreviewFilter, canManagePipelines } = props;
@@ -56,6 +58,7 @@ export function BoardHeader(props: BoardHeaderProps): React.ReactNode {
       totalsUnavailable={props.totalsUnavailable}
       currency={props.currency}
       canManagePipelines={canManagePipelines}
+      onAddView={setNewViewTrigger}
       createSlot={addSlot}
       sortSlot={
         <BoardSortControl
@@ -80,6 +83,8 @@ export function BoardHeader(props: BoardHeaderProps): React.ReactNode {
           activeCount={view.conditions?.conditions.length ?? 0}
           onPreviewFilter={onPreviewFilter}
           onClearPreview={() => onPreviewFilter(null)}
+          newViewTrigger={newViewTrigger}
+          onCloseNewView={() => setNewViewTrigger(null)}
         />
       }
       quickFilters={

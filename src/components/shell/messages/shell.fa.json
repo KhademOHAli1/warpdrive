@@ -39,9 +39,10 @@
     "dashboard": "داشبورد",
     "select": "انتخاب داشبورد",
     "selectCurrent": "انتخاب داشبورد: {name}",
-    "pipelines": "قیف‌های فروش",
+    "myDashboards": "داشبوردهای من",
     "performance": "عملکرد",
-    "addPipeline": "افزودن قیف فروش جدید"
+    "addView": "افزودن نمای جدید",
+    "viewName": "نام نما"
   },
   "appearance": {
     "title": "ظاهر برنامه",

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { hydrateRoot, type Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
@@ -469,7 +469,7 @@ describe("Performance report experience", () => {
     );
   });
 
-  it("saves controlled filters and reviews or deletes private definitions without running another scope", async () => {
+  it("adds a view from the navigator and reviews or deletes saved reports without running another scope", async () => {
     const earlier = {
       id: "earlier-definition",
       name: "Earlier quarter",
@@ -502,9 +502,12 @@ describe("Performance report experience", () => {
     const page = mount();
     expect(fixture.savedList).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole("button", { name: "Last 30 days" }));
-    await userEvent.click(screen.getByRole("button", { name: "Saved Performance reports" }));
-    const panel = screen.getByRole("region", { name: "Saved Performance reports" });
-    await userEvent.type(within(panel).getByRole("textbox", { name: "Report name" }), "Last 30");
+    await userEvent.click(screen.getByRole("button", { name: "Select dashboard: Performance" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Add new view" }));
+    const panel = await screen.findByRole("region", { name: "Saved Performance reports" });
+    const name = within(panel).getByRole("textbox", { name: "Report name" });
+    await waitFor(() => expect(name).toHaveFocus());
+    await userEvent.type(name, "Last 30");
     await userEvent.click(within(panel).getByRole("button", { name: "Save current filters" }));
     expect(fixture.savedCreate).toHaveBeenCalledWith({
       name: "Last 30",

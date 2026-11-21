@@ -33,9 +33,10 @@
     "dashboard": "Dashboard",
     "select": "Dashboard auswählen",
     "selectCurrent": "Dashboard auswählen: {name}",
-    "pipelines": "Pipelines",
+    "myDashboards": "Meine Dashboards",
     "performance": "Leistung",
-    "addPipeline": "Neue Pipeline hinzufügen"
+    "addView": "Neue Ansicht hinzufügen",
+    "viewName": "Name der Ansicht"
   },
   "appearance": {
     "title": "Darstellung",

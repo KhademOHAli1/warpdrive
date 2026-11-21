@@ -1,20 +1,12 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const push = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push, refresh: () => {} }) }));
-vi.mock("@/features/pipelines/pipelineEditActions", () => ({ createPipelineAction: vi.fn() }));
-vi.mock("@/utils/csrfCookie", () => ({ readCsrfToken: () => "csrf-token" }));
-
 import { PipelineSelect } from "./PipelineSelect";
 
-afterEach(() => {
-  cleanup();
-  vi.clearAllMocks();
-});
+afterEach(cleanup);
 
 const PIPELINES = [
   { id: "p1", name: "Sales" },
@@ -24,7 +16,7 @@ const PIPELINES = [
 describe("PipelineSelect", () => {
   it("lists every visible pipeline as a board destination and includes Performance", async () => {
     const user = userEvent.setup();
-    render(<PipelineSelect pipelineId="p1" pipelines={PIPELINES} canManagePipelines />);
+    render(<PipelineSelect pipelineId="p1" pipelines={PIPELINES} />);
     await user.click(screen.getByRole("button", { name: /Sales/ }));
     expect(screen.getByRole("menuitem", { name: "Partnerships" })).toHaveAttribute(
       "href",
@@ -36,34 +28,24 @@ describe("PipelineSelect", () => {
     );
   });
 
-  it("offers an Add new pipeline item that opens the create dialog", async () => {
+  it("offers a new deal view while retaining destinations for the current layout", async () => {
     const user = userEvent.setup();
-    render(<PipelineSelect pipelineId="p1" pipelines={PIPELINES} canManagePipelines />);
-    await user.click(screen.getByRole("button", { name: /Sales/ }));
-    await user.click(screen.getByRole("menuitem", { name: "Add new pipeline" }));
-    expect(await screen.findByRole("dialog", { name: "Create pipeline" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Pipeline name")).toBeInTheDocument();
-    expect(push).not.toHaveBeenCalled();
-  });
-
-  it("hides Add new pipeline from users who cannot manage pipelines", async () => {
-    const user = userEvent.setup();
-    render(<PipelineSelect pipelineId="p1" pipelines={PIPELINES} canManagePipelines={false} />);
-    await user.click(screen.getByRole("button", { name: /Sales/ }));
-    expect(screen.getByRole("menuitem", { name: "Partnerships" })).toBeInTheDocument();
-    expect(screen.queryByRole("menuitem", { name: "Add new pipeline" })).toBeNull();
-    expect(screen.getByRole("menuitem", { name: "Performance" })).toBeInTheDocument();
-  });
-
-  it("returns focus to the pipeline selector when the create dialog is dismissed", async () => {
-    const user = userEvent.setup();
-    render(<PipelineSelect pipelineId="p1" pipelines={PIPELINES} canManagePipelines />);
+    const addView = vi.fn();
+    render(
+      <PipelineSelect
+        pipelineId="p1"
+        pipelines={PIPELINES}
+        activeView="list"
+        onAddView={addView}
+      />,
+    );
     const trigger = screen.getByRole("button", { name: /Sales/ });
     await user.click(trigger);
-    await user.click(screen.getByRole("menuitem", { name: "Add new pipeline" }));
-    await screen.findByRole("dialog", { name: "Create pipeline" });
-    await user.keyboard("{Escape}");
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    expect(trigger).toHaveFocus();
+    expect(screen.getByRole("menuitem", { name: "Partnerships" })).toHaveAttribute(
+      "href",
+      "/pipeline/p2/list",
+    );
+    await user.click(screen.getByRole("menuitem", { name: "Add new view" }));
+    expect(addView).toHaveBeenCalledWith(trigger);
   });
 });

@@ -9,7 +9,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DashboardSkeleton } from "@/components/shell/skeletons";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
@@ -62,7 +62,6 @@ const REPORT_TAB = cn(
 interface DashboardProps {
   canViewOthers: boolean;
   canManageGoals?: boolean;
-  canManagePipelines?: boolean;
   canExport?: boolean;
   today: string;
   currency: string;
@@ -112,7 +111,6 @@ function DashboardGoals({
 export function Dashboard({
   canViewOthers,
   canManageGoals = false,
-  canManagePipelines = false,
   canExport = false,
   currency,
   today,
@@ -128,6 +126,8 @@ export function Dashboard({
   const [ownerScope, setOwnerScope] = useState<OwnerScope>(ME_SCOPE);
   const [range, setRange] = useState(() => presetRange("year", today, calendar));
   const [selectedPipelineId, setSelectedPipelineId] = useState(ALL_PIPELINES);
+  const [savedReportsOpen, setSavedReportsOpen] = useState(false);
+  const reportNameRef = useRef<HTMLInputElement>(null);
   const [inspection, setInspection] = useState<{
     metric: DealRecordMetric;
     trigger: HTMLButtonElement;
@@ -144,9 +144,15 @@ export function Dashboard({
     ...range,
   };
   const validRange = range.from <= range.to;
+  const canSaveReport = validRange && !preferencePending;
   const inspectionScope = inspection?.chart?.scope ?? reportScope;
   const chart = inspection?.chart;
   const chartSelector = chart?.kind === "won-month" ? chart.month : chart?.selector;
+  function openNewReport() {
+    setSavedReportsOpen(true);
+    requestAnimationFrame(() => reportNameRef.current?.focus());
+  }
+
   function inspectChart(
     selection: RecordChartSelection,
     trigger: HTMLButtonElement,
@@ -265,7 +271,7 @@ export function Dashboard({
           <DashboardSelect
             current={{ kind: "performance" }}
             pipelines={pipelinesQ.data ?? []}
-            canManagePipelines={canManagePipelines}
+            onAddView={canSaveReport ? openNewReport : undefined}
           />
         </header>
         <section
@@ -301,7 +307,10 @@ export function Dashboard({
           <DateRangeControl today={today} from={range.from} to={range.to} onChange={setRange} />
           <SavedPerformanceControl
             scope={{ ...currentScope, ...range }}
-            canSave={validRange && !preferencePending}
+            canSave={canSaveReport}
+            open={savedReportsOpen}
+            onOpenChange={setSavedReportsOpen}
+            nameInputRef={reportNameRef}
             pipelineOptions={pipelineOptions}
             ownerUsers={ownerOptionsQ.data?.users ?? []}
             ownerTeams={ownerOptionsQ.data?.teams ?? []}

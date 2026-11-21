@@ -46,6 +46,8 @@ interface CreateFilterModalProps {
   // Seeds the builder from an ad-hoc definition, so reopening the board's inline filter shows the
   // conditions and the combinator it applied instead of a blank "match all" form.
   initialDefinition?: FilterDefinition;
+  returnFocusTo?: HTMLElement;
+  creatingView?: boolean;
 }
 
 export function CreateFilterModal({
@@ -57,9 +59,12 @@ export function CreateFilterModal({
   onSave,
   savedFilter,
   initialDefinition,
+  returnFocusTo,
+  creatingView = false,
 }: CreateFilterModalProps): React.ReactNode {
   const locale = useLocale();
   const translateSales = useAppTranslations("sales");
+  const translateViews = useAppTranslations("shell.dashboardViews");
   const mode = filterSaveMode(savedFilter);
   const copy = filterSaveCopy(mode, locale);
   const seedDefinition = savedFilter?.definition ?? initialDefinition;
@@ -97,7 +102,8 @@ export function CreateFilterModal({
   // The filter as currently edited: rows with a real value, minus incomplete ones. Shared by
   // Save (persist) and Preview (apply live without saving).
   function buildDefinition(): FilterDefinition {
-    return dealRowsToDefinition(rows, combinator, locale) ?? { combinator, conditions: [] };
+    const definition = dealRowsToDefinition(rows, combinator, locale);
+    return { ...seedDefinition, combinator, conditions: definition?.conditions ?? [] };
   }
 
   async function save(): Promise<void> {
@@ -150,10 +156,15 @@ export function CreateFilterModal({
       <DialogContent
         aria-describedby={undefined}
         className="max-w-2xl gap-0 overflow-hidden bg-card p-0"
+        onCloseAutoFocus={(event) => {
+          if (returnFocusTo === undefined) return;
+          event.preventDefault();
+          returnFocusTo.focus();
+        }}
       >
         <DialogHeader className="border-b px-5 py-3">
           <DialogTitle className="text-base font-semibold">
-            <bdi dir="auto">{copy.title}</bdi>
+            <bdi dir="auto">{creatingView ? translateViews("addView") : copy.title}</bdi>
           </DialogTitle>
         </DialogHeader>
         <div className="max-h-[70vh] space-y-2 overflow-y-auto px-5 py-4">
@@ -180,6 +191,7 @@ export function CreateFilterModal({
             </div>
           ) : null}
           <CreateFilterModalNameRow
+            nameLabel={creatingView ? translateViews("viewName") : undefined}
             name={effectiveName}
             onNameChange={(next) => {
               setNameEdited(true);
