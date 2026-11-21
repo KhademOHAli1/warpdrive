@@ -17,6 +17,7 @@ import { notificationsRouter } from "@/features/notifications/router";
 import { oauthRouter } from "@/features/oauth/router";
 import { operationsRouter } from "@/features/operations/router";
 import { pipelineRouter } from "@/features/pipelines/pipelineRouter";
+import { internalProjectsRouter } from "@/features/projects/router";
 import { versionRouter } from "@/features/release/router";
 import { savedFiltersRouter } from "@/features/saved-filters/router";
 import { searchRouter } from "@/features/search/router";
@@ -53,6 +54,7 @@ export const appRouter = router({
   notifications: notificationsRouter,
   oauth: oauthRouter,
   operations: operationsRouter,
+  internalProjects: internalProjectsRouter,
   savedFilters: savedFiltersRouter,
   search: searchRouter,
   stats: statsRouter,

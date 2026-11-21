@@ -17,6 +17,7 @@ import { persons } from "@/db/schema/persons";
 import type { ProjectState } from "../projectLifecycle";
 
 type UnarchivedProjectState = Exclude<ProjectState, "archived">;
+type ProjectKind = "client" | "internal";
 
 // The canonical migration also retains the manual title function and audit triggers,
 // which Drizzle table metadata cannot model.
@@ -24,6 +25,7 @@ export const agencyProjects = pgTable(
   "agency_projects",
   {
     id: uuid("id").notNull().defaultRandom(),
+    kind: text("kind").$type<ProjectKind>().notNull().default("client"),
     title: text("title").notNull(),
     ownerUserId: uuid("owner_user_id").notNull(),
     dealId: uuid("deal_id"),
@@ -73,7 +75,10 @@ export const agencyProjects = pgTable(
     ),
     check(
       "agency_projects_anchor_check",
-      sql`${table.dealId} IS NOT NULL OR ${table.personId} IS NOT NULL OR ${table.orgId} IS NOT NULL`,
+      sql`
+      (${table.kind} = 'client' AND (${table.dealId} IS NOT NULL OR ${table.personId} IS NOT NULL OR ${table.orgId} IS NOT NULL))
+      OR (${table.kind} = 'internal' AND ${table.dealId} IS NULL AND ${table.personId} IS NULL AND ${table.orgId} IS NULL)
+      `,
     ),
   ],
 );

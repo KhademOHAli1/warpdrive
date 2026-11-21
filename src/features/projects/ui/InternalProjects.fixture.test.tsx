@@ -17,7 +17,7 @@ vi.mock("@dnd-kit/core", async (load) => {
   return {
     ...actual,
     DndContext(props: ComponentProps<typeof actual.DndContext>) {
-      drag.end = props.onDragEnd;
+      drag.end = (event) => props.onDragEnd?.(event);
       return props.children;
     },
   };
@@ -98,11 +98,13 @@ test("creates, assigns, and moves the same work item through list and board", as
   const item = getWorkspace(fixture).items.find(({ title }) => title === "Inspect the wiring");
   expect(item?.assigneeId).toBe(fixtureEditorId);
   expect(drag.end).toBeDefined();
-  await act(async () => {
+  act(() => {
     drag.end?.({ active: { id: item?.id }, over: { id: "in-progress" } } as DndKit.DragEndEvent);
   });
   expect(
-    within(screen.getByRole("region", { name: "In progress" })).getByText("Inspect the wiring"),
+    await within(screen.getByRole("region", { name: "In progress" })).findByText(
+      "Inspect the wiring",
+    ),
   ).toBeVisible();
 
   await user.click(screen.getByRole("tab", { name: "List" }));
@@ -212,4 +214,17 @@ test("renders a viewer’s list and board without project mutation controls", as
   await user.click(screen.getByRole("tab", { name: "Members" }));
   expect(screen.getByText("Alex Morgan")).toBeVisible();
   expect(screen.queryByRole("button", { name: "Add member" })).not.toBeInTheDocument();
+});
+
+test("shows a historical assignee without offering an ineligible staff member for assignment", () => {
+  const fixture = createProjectsFixture();
+  const initial = getWorkspace(fixture);
+  initial.assignees = initial.assignees.filter(({ id }) => id !== fixtureEditorId);
+  render(<InternalProjectWorkspace initial={initial} commands={fixture.commands} locale="en" />);
+
+  const assignment = screen.getByRole("combobox", { name: "Assignee for Confirm moving date" });
+  expect(assignment).toHaveTextContent("Jules Kim");
+  fireEvent.click(assignment);
+  expect(screen.queryByRole("option", { name: "Jules Kim" })).not.toBeInTheDocument();
+  expect(screen.getByRole("option", { name: "Unassigned" })).toBeVisible();
 });

@@ -12,9 +12,21 @@ export async function loadProject(
 ): Promise<ProjectReadModel | null> {
   signal.throwIfAborted();
   const query = context.db
-    .select()
+    .select({
+      id: agencyProjects.id,
+      title: agencyProjects.title,
+      ownerUserId: agencyProjects.ownerUserId,
+      dealId: agencyProjects.dealId,
+      personId: agencyProjects.personId,
+      orgId: agencyProjects.orgId,
+      state: agencyProjects.state,
+      revision: agencyProjects.revision,
+      archivedFrom: agencyProjects.archivedFrom,
+      createdAt: agencyProjects.createdAt,
+      updatedAt: agencyProjects.updatedAt,
+    })
     .from(agencyProjects)
-    .where(eq(agencyProjects.id, projectId))
+    .where(and(eq(agencyProjects.id, projectId), eq(agencyProjects.kind, "client")))
     .limit(1);
   const rows = await (lock ? query.for("update") : query);
   signal.throwIfAborted();

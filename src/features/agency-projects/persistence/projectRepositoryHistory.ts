@@ -6,7 +6,7 @@ import type { ProjectReplayOperation, ProjectTransactionContext } from "./projec
 const PROJECT_HISTORY_POLICY_VERSION = 1;
 
 export async function appendProjectHistory(
-  context: ProjectTransactionContext,
+  context: Pick<ProjectTransactionContext, "db" | "actor">,
   operation: ProjectReplayOperation,
   projectId: string,
   before: ProjectSnapshot | null,

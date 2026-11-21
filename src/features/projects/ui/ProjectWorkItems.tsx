@@ -111,11 +111,15 @@ function ItemStatus({ workspace, item, labels, pending, updateItem }: WorkItemPr
 
 function ItemAssignee({ workspace, item, labels, pending, updateItem }: WorkItemProps) {
   const unassigned = labels("workspace.unassigned");
+  const eligible = workspace.assignees.find(({ id }) => id === item.assigneeId);
+  const historical =
+    workspace.project.owner.id === item.assigneeId
+      ? workspace.project.owner
+      : workspace.members.find(({ person }) => person.id === item.assigneeId)?.person;
   if (!workspace.canAssign) {
-    const name = workspace.assignees.find(({ id }) => id === item.assigneeId)?.name;
     return (
       <span className="text-sm text-muted-foreground [overflow-wrap:anywhere]">
-        <bdi>{name ?? unassigned}</bdi>
+        <bdi>{eligible?.name ?? historical?.name ?? unassigned}</bdi>
       </span>
     );
   }
@@ -124,6 +128,11 @@ function ItemAssignee({ workspace, item, labels, pending, updateItem }: WorkItem
       ariaLabel={labels("workspace.assignee", { title: item.title })}
       value={item.assigneeId ?? ""}
       contentClassName={`${BLOCK_CLASS} ph-no-capture`}
+      triggerContent={
+        eligible === undefined && historical !== undefined ? (
+          <bdi>{historical.name}</bdi>
+        ) : undefined
+      }
       disabled={pending}
       options={[
         { value: "", label: unassigned },

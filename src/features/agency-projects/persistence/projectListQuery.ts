@@ -74,7 +74,8 @@ export async function queryProjectList(
       THEN to_char(project.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"')
       ELSE NULL END AS "createdAt"
     FROM agency_projects project
-    WHERE ${projectListVisibility(context)} AND ${filterClause(request)} AND ${keyset}
+    WHERE project.kind = 'client'
+      AND ${projectListVisibility(context)} AND ${filterClause(request)} AND ${keyset}
     ORDER BY project.created_at DESC,project.id DESC
     LIMIT ${request.pageSize + 1}
   `);
