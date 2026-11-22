@@ -18,13 +18,17 @@ import { inventoryItems } from "../schema";
 import { authorizeArtifactRelease } from "./access";
 import { validReleaseArchive } from "./archive";
 import { inspectReleaseBom, releaseBomMaxBytes } from "./bomCsv";
-import { type ReleaseArtifactKind, releaseFixtureMaxFileBytes } from "./contracts";
+import {
+  type ManualReleaseArtifactKind,
+  type ReleaseArtifactKind,
+  releaseFixtureMaxFileBytes,
+} from "./contracts";
 import { inventoryReleaseArtifacts, type ReleaseBomEntry } from "./schema";
 
 type Artifact = typeof inventoryReleaseArtifacts.$inferSelect;
 type ArtifactUpload = {
   releaseId: string;
-  kind: ReleaseArtifactKind;
+  kind: ManualReleaseArtifactKind;
   name: string;
   sizeBytes: number;
 };
@@ -62,6 +66,11 @@ const formats: Readonly<Record<ReleaseArtifactKind, Readonly<Record<string, stri
     csv: "text/csv",
     zip: "application/zip",
   },
+  pcbSource: {
+    kicad_pcb: "application/octet-stream",
+    kicad_sch: "application/octet-stream",
+    kicad_pro: "application/octet-stream",
+  },
 };
 
 const unavailable = "The release file is unavailable.";
@@ -93,6 +102,20 @@ function artifactSizeLimit(kind: ReleaseArtifactKind) {
 
 function validSize(sizeBytes: number, maximum: number) {
   return Number.isSafeInteger(sizeBytes) && sizeBytes > 0 && sizeBytes <= maximum;
+}
+
+export function releaseArtifactUploadSpec(
+  kind: ReleaseArtifactKind,
+  rawName: string,
+  sizeBytes: number,
+): Result<{ name: string; contentType: string; maxBytes: number }, "fileType" | "fileSize"> {
+  const name = uploadName(rawName);
+  if (name === null) return err("fileType");
+  const contentType = uploadType(kind, name);
+  if (contentType === null) return err("fileType");
+  const maxBytes = artifactSizeLimit(kind);
+  if (!validSize(sizeBytes, maxBytes)) return err("fileSize");
+  return ok({ name, contentType, maxBytes });
 }
 
 function uploadKey(releaseId: string, artifactId: string) {
@@ -135,12 +158,16 @@ async function lockEditableRelease(
   const release = await authorizeArtifactRelease(tx, actor, releaseId, "edit", signal);
   // The item lock is shared with grant changes, approval and build creation.
   // Check the latest grant and draft status again after any lock wait.
+  await lockReleaseArtifactItem(tx, release.itemId, "update");
+  await authorizeArtifactRelease(tx, actor, releaseId, "edit", signal);
+}
+
+export async function lockReleaseArtifactItem(tx: Db, itemId: string, mode: "share" | "update") {
   await tx
     .select({ id: inventoryItems.id })
     .from(inventoryItems)
-    .where(eq(inventoryItems.id, release.itemId))
-    .for("update");
-  await authorizeArtifactRelease(tx, actor, releaseId, "edit", signal);
+    .where(eq(inventoryItems.id, itemId))
+    .for(mode);
 }
 
 function targetFilter({ releaseId, artifactId }: ArtifactTarget) {
@@ -174,14 +201,32 @@ async function loadStaging(
     return err(verificationFailed);
   const loaded = await storage.getObjectBytes(artifact.objectKey, signal, artifact.sizeBytes);
   if (!loaded.ok || loaded.value.length !== artifact.sizeBytes) return err(verificationFailed);
-  return validateStagingBytes(artifact, loaded.value, signal);
+  return verifyReleaseArtifactBytes(artifact, loaded.value, signal);
 }
 
-function validateStagingBytes(
-  artifact: Artifact,
+function validPcbSource(name: string, bytes: Buffer): boolean {
+  try {
+    const source = new TextDecoder("utf-8", { fatal: true }).decode(bytes).trim();
+    const suffix = name.slice(name.lastIndexOf(".") + 1).toLowerCase();
+    if (suffix === "kicad_pro") {
+      const project: unknown = JSON.parse(source);
+      return typeof project === "object" && project !== null && !Array.isArray(project);
+    }
+    const header = suffix === "kicad_pcb" ? /^\(kicad_pcb\s/u : /^\(kicad_sch\s/u;
+    return header.test(source) && source.endsWith(")");
+  } catch {
+    return false;
+  }
+}
+
+export function verifyReleaseArtifactBytes(
+  artifact: { kind: ReleaseArtifactKind; name: string; contentType: string },
   bytes: Buffer,
   signal: AbortSignal,
 ): ArtifactResult<VerifiedArtifact> {
+  signal.throwIfAborted();
+  if (artifact.kind === "pcbSource" && !validPcbSource(artifact.name, bytes))
+    return err(uploadInvalid);
   if (
     artifact.contentType === "application/zip" &&
     !validReleaseArchive(bytes, artifact.kind === "pcbFabrication", signal)
@@ -213,9 +258,9 @@ export async function requestReleaseArtifactUpload(
 ): Promise<ArtifactResult<{ artifactId: string; post: PresignedPost }>> {
   const name = uploadName(input.name);
   if (name === null) return err(uploadNameInvalid);
-  const contentType = uploadType(input.kind, name);
-  if (contentType === null) return err(uploadInvalid);
-  if (!validSize(input.sizeBytes, artifactSizeLimit(input.kind))) return err(uploadSizeInvalid);
+  const spec = releaseArtifactUploadSpec(input.kind, name, input.sizeBytes);
+  if (!spec.ok) return err(spec.error === "fileType" ? uploadInvalid : uploadSizeInvalid);
+  const { contentType } = spec.value;
 
   const artifactId = randomUUID();
   const objectKey = uploadKey(input.releaseId, artifactId);
@@ -314,13 +359,13 @@ async function tryRemoveObject(storage: StorageClient, key: string) {
   }
 }
 
-async function sealStaging(
+export async function writeReleaseArtifactSeal(
   storage: StorageClient,
-  artifact: Artifact,
+  artifact: { objectKey: string; sizeBytes: number; contentType: string },
   verified: VerifiedArtifact,
   signal: AbortSignal,
 ): Promise<ArtifactResult<Seal>> {
-  const objectKey = sealedKey(artifact.releaseId, artifact.id);
+  const { objectKey } = artifact;
   const written = await storage.putObjectBytes(
     objectKey,
     verified.bytes,
@@ -368,7 +413,12 @@ export async function confirmReleaseArtifactUpload(
       ? ok({ artifactId: input.artifactId })
       : verified;
   }
-  const sealed = await sealStaging(storage, pending.value, verified.value, signal);
+  const sealed = await writeReleaseArtifactSeal(
+    storage,
+    { ...pending.value, objectKey: sealedKey(pending.value.releaseId, pending.value.id) },
+    verified.value,
+    signal,
+  );
   if (!sealed.ok) return sealed;
 
   const committed = await commitConfirmation(db, who, input, pending.value, sealed.value, signal);

@@ -2,6 +2,7 @@ import type { Queue, QueueResult } from "pg-boss";
 import {
   PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE,
   PGBOSS_QUEUE_PROJECT_AUTOMATIONS,
+  PGBOSS_QUEUE_RELEASE_EXPORT_INTAKE,
 } from "@/constants/jobNames";
 
 // Fixed infrastructure, independent of workspace/account count. The update-check queue is
@@ -21,6 +22,7 @@ export const QUEUE_NAMES = Object.freeze([
   "activity.reminder.reconcile.v1",
   "calendar.reminder",
   PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE,
+  PGBOSS_QUEUE_RELEASE_EXPORT_INTAKE,
   "activity.reminder.dispatch",
   "auth-maintenance",
   "release.check",

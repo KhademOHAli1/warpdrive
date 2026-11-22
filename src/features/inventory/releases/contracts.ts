@@ -10,7 +10,8 @@ export const releaseArtifactKinds = [
   "testInstructions",
 ] as const;
 
-export type ReleaseArtifactKind = (typeof releaseArtifactKinds)[number];
+export type ManualReleaseArtifactKind = (typeof releaseArtifactKinds)[number];
+export type ReleaseArtifactKind = ManualReleaseArtifactKind | "pcbSource";
 
 export type ReleaseArtifact = {
   id: string;

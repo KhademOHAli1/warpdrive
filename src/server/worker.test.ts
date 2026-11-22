@@ -15,6 +15,7 @@ import {
   PGBOSS_QUEUE_EMAIL_SYNC,
   PGBOSS_QUEUE_FILE_REAPER,
   PGBOSS_QUEUE_RELEASE_CHECK,
+  PGBOSS_QUEUE_RELEASE_EXPORT_INTAKE,
 } from "@/constants/jobNames";
 import { observeBossErrors } from "@/jobs/bossObserver";
 import { makeTestDb } from "@/test/db";
@@ -117,6 +118,12 @@ describe("registerAllJobs", () => {
       expect(fakeBoss.workers).toContainEqual({ name: PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE });
       expect(fakeBoss.schedules).toContainEqual({
         name: PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE,
+        cron: "* * * * *",
+      });
+      expect(queueNames).toContain(PGBOSS_QUEUE_RELEASE_EXPORT_INTAKE);
+      expect(fakeBoss.workers).toContainEqual({ name: PGBOSS_QUEUE_RELEASE_EXPORT_INTAKE });
+      expect(fakeBoss.schedules).toContainEqual({
+        name: PGBOSS_QUEUE_RELEASE_EXPORT_INTAKE,
         cron: "* * * * *",
       });
 

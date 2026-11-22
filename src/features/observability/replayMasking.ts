@@ -4,10 +4,12 @@ export const MASK_CLASS = "ph-mask-email";
 // box (the received-email iframe, whose contents rrweb would otherwise serialize).
 export const BLOCK_CLASS = "ph-block-email";
 
-// Passed to posthog.init as `session_recording`. Unmask by default (same-company internal
-// users), mask only the two email-content surfaces per the design decision.
+// Replay may record navigation and timings. Keep authorization headers, signed upload
+// forms and private response bodies outside the recorder even with remote recording enabled.
 export const sessionRecordingOptions = {
   maskAllInputs: false,
+  recordBody: false,
+  recordHeaders: false,
   maskTextSelector: `.${MASK_CLASS}`,
   blockSelector: `.${BLOCK_CLASS}`,
   maskCapturedNetworkRequestFn: (request) =>
@@ -20,6 +22,8 @@ export const sessionRecordingOptions = {
     request.name.includes("/assets/tags") ||
     request.name.includes("physicalLabels.") ||
     request.name.includes("assets.tags.") ||
+    request.name.includes("/inventory") ||
+    request.name.includes("inventory.releases.intake.") ||
     request.name.includes("internalProjects.publication") ||
     request.name.includes("internalProjects.integrator")
       ? null

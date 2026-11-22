@@ -145,11 +145,18 @@ async function releaseViews(tx: Db, itemId: string, releaseId?: string): Promise
     )
     .orderBy(asc(inventoryReleaseArtifacts.createdAt), asc(inventoryReleaseArtifacts.id));
   const files = new Map<string, ReleaseView["artifacts"]>();
-  for (const { releaseId: key, sha256, ...artifact } of artifacts) {
+  const sources = new Map<string, NonNullable<ReleaseView["pcbSourceArtifacts"]>>();
+  for (const { releaseId: key, kind, sha256, ...artifact } of artifacts) {
     if (sha256 === null) continue;
-    const group = files.get(key) ?? [];
-    group.push({ ...artifact, sha256 });
-    files.set(key, group);
+    if (kind === "pcbSource") {
+      const group = sources.get(key) ?? [];
+      group.push({ ...artifact, kind, sha256 });
+      sources.set(key, group);
+    } else {
+      const group = files.get(key) ?? [];
+      group.push({ ...artifact, kind, sha256 });
+      files.set(key, group);
+    }
   }
 
   return revisions.map(({ createdAt, approvedAt, bom, ...release }) => ({
@@ -162,6 +169,7 @@ async function releaseViews(tx: Db, itemId: string, releaseId?: string): Promise
     createdAt: createdAt.toISOString(),
     approvedAt: approvedAt?.toISOString() ?? null,
     artifacts: files.get(release.id) ?? [],
+    ...(sources.has(release.id) ? { pcbSourceArtifacts: sources.get(release.id) } : {}),
   }));
 }
 
@@ -210,6 +218,7 @@ export async function readReleaseWorkspace(
       canManage: permissions.manage,
       releases,
       qualityPlanVersions: await readQualityPlanVersions(tx, itemId),
+      intakeAvailable: true,
       ...administration,
     };
   });

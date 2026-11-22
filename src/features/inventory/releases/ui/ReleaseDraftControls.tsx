@@ -19,7 +19,7 @@ import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { BomCsvGuide } from "../../bom/ui/BomCsvGuide";
 import type { QualityPlanVersion } from "../../quality/contracts";
-import { type ReleaseArtifactKind, releaseArtifactKinds } from "../contracts";
+import { type ManualReleaseArtifactKind, releaseArtifactKinds } from "../contracts";
 import type { ReleaseView } from "../liveContracts";
 import { manufacturingReleaseLiveMessages } from "./manufacturingReleaseLiveMessages";
 import { manufacturingReleaseMessages } from "./manufacturingReleaseMessages";
@@ -68,7 +68,7 @@ export function NewManufacturingDraft({
   );
 }
 
-const fileAccept: Partial<Record<ReleaseArtifactKind, string>> = {
+const fileAccept: Partial<Record<ManualReleaseArtifactKind, string>> = {
   pcbFabrication: ".zip",
   manufacturingBom: ".csv",
 };
@@ -78,11 +78,11 @@ export function UploadReleaseArtifact({
   upload,
 }: {
   pending: boolean;
-  upload: (kind: ReleaseArtifactKind, file: File) => Promise<boolean>;
+  upload: (kind: ManualReleaseArtifactKind, file: File) => Promise<boolean>;
 }) {
   const t = manufacturingReleaseMessages[useLocale()];
   const inputId = useId();
-  const [kind, setKind] = useState<ReleaseArtifactKind>("pcbFabrication");
+  const [kind, setKind] = useState<ManualReleaseArtifactKind>("pcbFabrication");
 
   return (
     <form
@@ -130,7 +130,7 @@ export function UploadReleaseArtifact({
   );
 }
 
-const requiredKinds: readonly ReleaseArtifactKind[] = ["pcbFabrication", "manufacturingBom"];
+const requiredKinds: readonly ManualReleaseArtifactKind[] = ["pcbFabrication", "manufacturingBom"];
 
 export function ApproveManufacturingRelease({
   release,

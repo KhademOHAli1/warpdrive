@@ -5,7 +5,7 @@ export const exportIntakeMaxFiles = 16;
 export const exportIntakeMaxTotalBytes = 100 * 1024 * 1024;
 export const exportManifestMaxBytes = 32 * 1024;
 
-export type ExportIntakeKind = ReleaseArtifactKind | "pcbSource";
+export type ExportIntakeKind = ReleaseArtifactKind;
 export type ExportIntakeBinding = {
   itemId: string;
   releaseId: string;
@@ -64,21 +64,27 @@ export type ExportIntakeResult<T> =
   | { ok: true; value: T }
   | { ok: false; issues: ExportIntakeIssue[] };
 
+export type IntakeUploadPost = { url: string; fields: Record<string, string> };
+export type PreparedExportIntake =
+  | {
+      state: "staging";
+      jobId: string;
+      uploads: { name: string; contentType: string; post: IntakeUploadPost }[];
+    }
+  | { state: "known"; job: ExportIntakeJob };
+
+type ExportIntakeRequest = { target: ExportIntakeBinding; requestId: string };
+export type PrepareExportIntakeInput = ExportIntakeRequest & { manifest: ExportManifest };
+export type QueueExportIntakeInput = ExportIntakeRequest & { jobId: string };
+export type RetryExportIntakeInput = QueueExportIntakeInput & { failedAttemptId: string };
+
 export type ExportIntakeAccess = {
   list: (
     target: ExportIntakeBinding,
     signal?: AbortSignal,
   ) => Promise<ExportIntakeResult<ExportIntakeJob[]>>;
-  submit: (input: {
-    target: ExportIntakeBinding;
-    requestId: string;
-    manifest: ExportManifest;
-    files: File[];
-  }) => Promise<ExportIntakeResult<ExportIntakeJob>>;
-  retry: (input: {
-    target: ExportIntakeBinding;
-    requestId: string;
-    jobId: string;
-    failedAttemptId: string;
-  }) => Promise<ExportIntakeResult<ExportIntakeJob>>;
+  submit: (
+    input: PrepareExportIntakeInput & { files: File[] },
+  ) => Promise<ExportIntakeResult<ExportIntakeJob>>;
+  retry: (input: RetryExportIntakeInput) => Promise<ExportIntakeResult<ExportIntakeJob>>;
 };

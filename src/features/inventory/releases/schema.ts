@@ -150,7 +150,8 @@ export const inventoryReleaseArtifacts = pgTable(
     index("inventory_release_artifacts_release_idx").on(table.releaseId),
     check(
       "inventory_release_artifacts_kind_check",
-      sql`${table.kind} IN ('pcbFabrication', 'manufacturingBom', 'placement', 'enclosure', 'firmware', 'labelArtwork', 'testInstructions')`,
+      sql`${table.kind} IN ('pcbFabrication', 'manufacturingBom', 'placement', 'enclosure', 'firmware', 'labelArtwork', 'testInstructions', 'pcbSource')
+        AND (${table.kind} <> 'pcbSource' OR ${table.state} = 'ready')`,
     ),
     check(
       "inventory_release_artifacts_name_check",

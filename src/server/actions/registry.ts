@@ -101,6 +101,11 @@ import { executeProductionAction } from "@/features/inventory/production/actions
 import { executePurchasingAction } from "@/features/inventory/purchasing/actions.backend";
 import { executeInventoryQualityAction } from "@/features/inventory/quality/actions.backend";
 import { executeManufacturingReleaseAction } from "@/features/inventory/releases/actions.backend";
+import {
+  prepareExportIntakeAction,
+  queueExportIntakeAction,
+  retryExportIntakeAction,
+} from "@/features/inventory/releases/intake/actions.backend";
 import { executeReturnAction } from "@/features/inventory/returns/actions.backend";
 import { executeSalesAction } from "@/features/inventory/sales/actions.backend";
 import { executeSourcingAction } from "@/features/inventory/sourcing/actions.backend";
@@ -188,6 +193,9 @@ export const commandHandlers = {
   "features/inventory/returns/webActions.executeReturnAction": executeReturnAction,
   "features/inventory/releases.executeManufacturingReleaseAction":
     executeManufacturingReleaseAction,
+  "features/inventory/releases/intake.prepareExportIntakeAction": prepareExportIntakeAction,
+  "features/inventory/releases/intake.queueExportIntakeAction": queueExportIntakeAction,
+  "features/inventory/releases/intake.retryExportIntakeAction": retryExportIntakeAction,
   "features/inventory/sourcing/actions.executeSourcingAction": executeSourcingAction,
   "features/inventory/warehouse/actions.executeWarehouseAction": executeWarehouseAction,
   "features/inventory/warehouse/operations/actions.executeWarehouseOperationsAction":

@@ -31,13 +31,14 @@ export function ReleaseArtifacts({
   const { checksumAlgorithm } = manufacturingReleaseLiveMessages[locale];
   const numberingSystem = useNumberingSystem();
   const size = new Intl.NumberFormat(locale, { numberingSystem, style: "unit", unit: "byte" });
-  if (release.artifacts.length === 0) {
+  const artifacts = [...release.artifacts, ...(release.pcbSourceArtifacts ?? [])];
+  if (artifacts.length === 0) {
     return <p className="text-sm text-muted-foreground">{t.noFiles}</p>;
   }
 
   return (
     <ul className="divide-y rounded-md border px-2">
-      {release.artifacts.map((artifact) => (
+      {artifacts.map((artifact) => (
         <li key={artifact.id} className="flex items-center justify-between gap-1.5 py-1.5">
           <div className="min-w-0">
             <bdi className="block break-all text-sm">{artifact.name}</bdi>

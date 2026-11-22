@@ -19,13 +19,14 @@ const existing = (name: string) =>
   }) as unknown as QueueResult;
 
 describe("finite queue manifest", () => {
-  it("contains the 24 shared application queues and the vendor scheduler queue exactly once", () => {
-    expect(QUEUE_NAMES).toHaveLength(25);
-    expect(new Set(QUEUE_NAMES).size).toBe(25);
+  it("contains the 25 shared application queues and the vendor scheduler queue exactly once", () => {
+    expect(QUEUE_NAMES).toHaveLength(26);
+    expect(new Set(QUEUE_NAMES).size).toBe(26);
     for (const name of QUEUE_NAMES) expect(queueMatchesManifest(existing(name))).toBe(true);
     expect(QUEUE_NAMES).toContain("release.check");
     expect(QUEUE_NAMES).toContain("project.automations");
     expect(QUEUE_NAMES).toContain("assets.bookings.handover.notice.v1");
+    expect(QUEUE_NAMES).toContain("inventory.release.export-intake.v1");
     expect(QUEUE_NAMES).toContain("__pgboss__send-it");
     expect(isManifestQueue("workspace-123.email.sync")).toBe(false);
   });

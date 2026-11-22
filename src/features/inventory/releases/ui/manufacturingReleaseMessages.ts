@@ -57,6 +57,7 @@ const en: ReleaseLabels = {
   previewBuild: "Preview build",
   kinds: {
     pcbFabrication: "PCB fabrication",
+    pcbSource: "PCB source",
     manufacturingBom: "Manufacturing BOM",
     placement: "Pick-and-place",
     enclosure: "Enclosure",
@@ -113,6 +114,7 @@ const de: ReleaseLabels = {
   previewBuild: "Fertigungsauftrag simulieren",
   kinds: {
     pcbFabrication: "Leiterplattenfertigung",
+    pcbSource: "Leiterplatten-Quelldatei",
     manufacturingBom: "Fertigungsstückliste",
     placement: "Bestückungsdaten",
     enclosure: "Gehäuse",
@@ -170,6 +172,7 @@ const fa: ReleaseLabels = {
   previewBuild: "پیش‌نمایش ساخت",
   kinds: {
     pcbFabrication: "ساخت برد مدار چاپی",
+    pcbSource: "فایل منبع برد مدار چاپی",
     manufacturingBom: "فهرست مواد تولید",
     placement: "داده‌های جانمایی قطعات",
     enclosure: "محفظه",

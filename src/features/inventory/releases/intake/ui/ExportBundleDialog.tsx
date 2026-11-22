@@ -33,10 +33,7 @@ type Validation =
 
 export function useIntakeKindLabels(): Record<ExportIntakeKind, string> {
   const { locale } = useLocalePreferences();
-  return {
-    ...manufacturingReleaseMessages[locale].kinds,
-    pcbSource: intakeMessages[locale].pcbSource,
-  };
+  return manufacturingReleaseMessages[locale].kinds;
 }
 
 export function IntakeIssues({

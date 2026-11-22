@@ -142,28 +142,35 @@ it("masks existing history during a focus recheck and discards a prior port's la
   const read = vi
     .fn<ExportIntakeAccess["list"]>()
     .mockResolvedValueOnce({ ok: true, value: [example] })
+    .mockResolvedValueOnce({ ok: true, value: [{ ...example }] })
     .mockReturnValueOnce(pending);
   const access: ExportIntakeAccess = { list: read, submit: vi.fn(), retry: vi.fn() };
   const denied: ExportIntakeAccess = {
     ...access,
     list: () => Promise.resolve({ ok: false, issues: [{ code: "unavailable" }] }),
   };
+  const onReady = vi.fn();
   const show = (port: ExportIntakeAccess) => (
     <LocaleProvider locale="en">
-      <ExportIntakePanel {...{ target }} canEdit access={port} />
+      <ExportIntakePanel {...{ target, onReady }} canEdit access={port} />
     </LocaleProvider>
   );
   const view = render(show(access));
   expect(await screen.findByText(digest)).toBeVisible();
+  expect(onReady).toHaveBeenCalledExactlyOnceWith(example);
+  fireEvent.click(screen.getByRole("button", { name: "Refresh imports" }));
+  expect(await screen.findByText(digest)).toBeVisible();
+  expect(onReady).toHaveBeenCalledTimes(1);
   fireEvent(window, new Event("focus"));
   expect(screen.queryByText(digest)).not.toBeInTheDocument();
   view.rerender(show(denied));
   expect(await screen.findByText("Bundle intake is unavailable for this release.")).toBeVisible();
-  expect(read.mock.calls[1]?.[1]?.aborted).toBe(true);
+  expect(read.mock.calls[2]?.[1]?.aborted).toBe(true);
   await act(async () => {
     finish({ ok: true, value: [example] });
     await pending;
   });
   expect(screen.queryByText(digest)).not.toBeInTheDocument();
+  expect(onReady).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole("button", { name: "Import exporter bundle" })).not.toBeInTheDocument();
 });

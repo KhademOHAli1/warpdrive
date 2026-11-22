@@ -207,10 +207,12 @@ function ScopedIntakePanel({
   target,
   access,
   canEdit,
+  onReady,
 }: {
   target: ExportIntakeBinding;
   access: ExportIntakeAccess;
   canEdit: boolean;
+  onReady?: (job: ExportIntakeJob) => void;
 }) {
   const t = intakeMessages[useLocalePreferences().locale];
   const headingId = useId();
@@ -220,6 +222,7 @@ function ScopedIntakePanel({
   const running = useRef(false);
   const deferredFocus = useRef(false);
   const requests = useRef(new Map<string, string>());
+  const seenReady = useRef(new Set<string>());
   const [opened, setOpened] = useState(false);
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState<"submitted" | "retried" | null>(null);
@@ -227,6 +230,14 @@ function ScopedIntakePanel({
   const { inspected, reload, rejectScope } = useIntakeHistory(target, access, pending);
   const blocked = inspected?.ok === false && denied(inspected.issues);
   const canWrite = canEdit && inspected?.ok === true;
+  useEffect(() => {
+    if (onReady === undefined || inspected?.ok !== true) return;
+    for (const job of inspected.value) {
+      if (job.state !== "ready" || seenReady.current.has(job.id)) continue;
+      seenReady.current.add(job.id);
+      onReady(job);
+    }
+  }, [inspected, onReady]);
   useEffect(() => {
     alive.current = true;
     function recheck() {
@@ -258,7 +269,8 @@ function ScopedIntakePanel({
         setOpened(false);
         return unavailable;
       }
-      requests.current.delete(key);
+      if (result.ok || !result.issues.some(({ code }) => code === "temporary"))
+        requests.current.delete(key);
       if (!result.ok && denied(result.issues)) {
         rejectScope();
         setOpened(false);
@@ -410,10 +422,12 @@ export function ExportIntakePanel({
   target,
   access,
   canEdit,
+  onReady,
 }: {
   target: ExportIntakeBinding;
   access?: ExportIntakeAccess;
   canEdit: boolean;
+  onReady?: (job: ExportIntakeJob) => void;
 }) {
   const [source, setSource] = useState({ access, generation: 0 });
   if (source.access !== access) setSource({ access, generation: source.generation + 1 });
@@ -428,7 +442,7 @@ export function ExportIntakePanel({
         source.generation,
         canEdit,
       ])}
-      {...{ target, access, canEdit }}
+      {...{ target, access, canEdit, onReady }}
     />
   );
 }

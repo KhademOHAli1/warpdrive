@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { Result } from "@/types/result";
 import { type QualityPlanVersion, qualityPlanDraft } from "../quality/contracts";
 import {
-  type ReleaseArtifactKind,
+  type ManualReleaseArtifactKind,
   releaseArtifactKinds,
   releaseFixtureMaxFileBytes,
 } from "./contracts";
@@ -75,6 +75,7 @@ export type ReleaseCommandResult = Result<
 >;
 
 type ReleaseStaff = { id: string; name: string };
+type ReleaseArtifactDetails = { id: string; name: string; sizeBytes: number; sha256: string };
 export type ReleaseView = {
   id: string;
   revision: string;
@@ -84,13 +85,8 @@ export type ReleaseView = {
   approvedAt: string | null;
   approvedBy: ReleaseStaff | null;
   qualityPlanVersionId?: string | null;
-  artifacts: {
-    id: string;
-    kind: ReleaseArtifactKind;
-    name: string;
-    sizeBytes: number;
-    sha256: string;
-  }[];
+  artifacts: (ReleaseArtifactDetails & { kind: ManualReleaseArtifactKind })[];
+  pcbSourceArtifacts?: (ReleaseArtifactDetails & { kind: "pcbSource" })[];
   bom: { itemId: string; sku: string; name: string; quantity: number }[];
   hasPlanningBom?: true;
 };
@@ -106,6 +102,7 @@ export type ReleaseWorkspace = {
   canManage: boolean;
   releases: ReleaseView[];
   qualityPlanVersions?: QualityPlanVersion[];
+  intakeAvailable?: true;
   grants: { userId: string; name: string; role: ReleaseRole }[];
   staff: ReleaseStaff[];
 };

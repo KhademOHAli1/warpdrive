@@ -9,6 +9,7 @@ import { registerAuthMailWorker } from "@/features/auth/management/workers";
 import { registerEmailJobs } from "@/features/email/workerJobs";
 import { registerReaperJob } from "@/features/files/reaper";
 import { registerImportWorkers } from "@/features/import/registerImportWorkers";
+import { registerReleaseExportWorker } from "@/features/inventory/releases/intake/worker";
 import { registerEmailNotificationWorker } from "@/features/notifications/email/job";
 import {
   OPERATIONS_WORKER_HEARTBEAT_SECONDS,
@@ -34,6 +35,7 @@ export async function registerAllJobs(boss: PgBossType): Promise<void> {
   await registerEmailJobs(boss);
   await registerReaperJob(boss);
   await registerImportWorkers(boss);
+  await registerReleaseExportWorker(boss, db);
   await registerEmailNotificationWorker(boss);
   await registerReminderWorker(boss);
   await registerCalendarReminderWorker(boss);

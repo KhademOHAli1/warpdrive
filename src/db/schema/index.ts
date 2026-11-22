@@ -22,6 +22,7 @@ export * from "@/features/inventory/production/materialSchema";
 export * from "@/features/inventory/purchasing/schema";
 export * from "@/features/inventory/quality/planSchema";
 export * from "@/features/inventory/quality/schema";
+export * from "@/features/inventory/releases/intake/schema";
 export * from "@/features/inventory/releases/schema";
 export * from "@/features/inventory/returns/schema";
 export * from "@/features/inventory/sales/schema";

@@ -12,13 +12,15 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { bomHref } from "../../bom/ui/links";
 import { bomMessages } from "../../bom/ui/messages";
 import type { InventoryItem } from "../../contracts";
-import { type ReleaseArtifactKind, releaseFixtureMaxFileBytes } from "../contracts";
+import { type ManualReleaseArtifactKind, releaseFixtureMaxFileBytes } from "../contracts";
+import { NativeExportIntake } from "../intake/ui/NativeExportIntake";
 import type {
   ReleaseCommand,
   ReleaseCommandResult,
   ReleaseView,
   ReleaseWorkspace,
 } from "../liveContracts";
+import { uploadReleaseFile } from "../uploadReleaseFile";
 import { executeManufacturingReleaseAction, readManufacturingReleasesAction } from "../webActions";
 import { ManufacturingReleasePermissions } from "./ManufacturingReleasePermissions";
 import { manufacturingReleaseLiveMessages } from "./manufacturingReleaseLiveMessages";
@@ -37,7 +39,7 @@ import {
 } from "./ReleasePackageContent";
 import { ReleaseQualityPlan } from "./ReleaseQualityPlan";
 
-type Upload = { type: "upload"; releaseId: string; kind: ReleaseArtifactKind; file: File };
+type Upload = { type: "upload"; releaseId: string; kind: ManualReleaseArtifactKind; file: File };
 type EditorCommand = ReleaseCommand | Upload;
 type SavedReleaseCommand = Extract<ReleaseCommandResult, { ok: true }>["value"];
 type RunRelease = (command: EditorCommand, notice: string) => Promise<SavedReleaseCommand | null>;
@@ -60,11 +62,7 @@ async function executeReleaseOperation(
   const { post, artifactId } = issued.value;
   if (post === undefined || artifactId === undefined)
     return { ok: false, error: errors.uploadFailed };
-  const form = new FormData();
-  for (const [field, value] of Object.entries(post.fields)) form.append(field, value);
-  form.append("file", file);
-  const transferred = await fetch(post.url, { method: "POST", body: form, credentials: "omit" });
-  if (!transferred.ok) return { ok: false, error: errors.uploadFailed };
+  if (!(await uploadReleaseFile(post, file))) return { ok: false, error: errors.uploadFailed };
   return executeManufacturingReleaseAction(
     { type: "confirmUpload", releaseId, artifactId },
     readCsrfToken(),
@@ -209,6 +207,9 @@ function ManufacturingReleaseWorkspace({
           key={selected.id}
           release={selected}
           itemId={workspace.itemId}
+          sku={workspace.sku}
+          intakeAvailable={workspace.intakeAvailable === true}
+          refresh={refresh}
           qualityPlanVersions={workspace.qualityPlanVersions}
           canEdit={workspace.canEdit}
           canApprove={workspace.canApprove}
@@ -287,6 +288,9 @@ function LiveReleaseHistory({
 function LiveReleasePackage({
   release,
   itemId,
+  sku,
+  intakeAvailable,
+  refresh,
   qualityPlanVersions,
   canEdit,
   canApprove,
@@ -295,6 +299,9 @@ function LiveReleasePackage({
 }: {
   release: ReleaseView;
   itemId: string;
+  sku: string;
+  intakeAvailable: boolean;
+  refresh: () => Promise<unknown>;
   qualityPlanVersions: ReleaseWorkspace["qualityPlanVersions"];
   canEdit: boolean;
   canApprove: boolean;
@@ -334,6 +341,18 @@ function LiveReleasePackage({
               t.notices.addArtifact,
             )) !== null
           }
+        />
+      )}
+      {intakeAvailable && (
+        <NativeExportIntake
+          target={{ itemId, releaseId: release.id, sku, revision: release.revision }}
+          canEdit={mutable}
+          onReady={(job) => {
+            const visibleIds = new Set(
+              [...release.artifacts, ...(release.pcbSourceArtifacts ?? [])].map(({ id }) => id),
+            );
+            if (job.artifacts.some(({ id }) => !visibleIds.has(id))) void refresh();
+          }}
         />
       )}
       {qualityPlanVersions !== undefined && (
