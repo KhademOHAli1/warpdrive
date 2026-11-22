@@ -67,9 +67,9 @@ async function applyCommand(
   const kits = await kitWorkspace(tx, [site.id], false);
   const before = { ...assets, sites: [site], custody, kits };
   const booking =
-    command.type === "assign" || command.type === "bulkAssign"
-      ? await bookingCapacityGuard(tx, site.id)
-      : undefined;
+    command.type === "saveCustodian" || command.type === "noteCustodian"
+      ? undefined
+      : await bookingCapacityGuard(tx, site.id, before);
   const result = applyCustodyCommand(before, command, actor.name, booking);
   if (!result.ok) return result;
   await persistCustodyChanges(tx, before, result.value, actor.id);

@@ -1,13 +1,13 @@
 import type { Db } from "@/db/client";
+import type { AssetSite } from "../contracts";
 import { custodyWorkspace } from "../custody/repository";
 import { kitWorkspace } from "../kits/repository";
 import { assetRegisterData } from "../repository";
-import { assetBookingSources } from "./resources";
 
-export async function nativeBookingResources(tx: Db, siteIds: string[]) {
-  const sites = siteIds.map((id) => ({ id, name: "", code: "", canManage: false }));
-  const data = await assetRegisterData(tx, siteIds, false);
+export async function nativeBookingAssets(tx: Db, sites: AssetSite[]) {
+  const ids = sites.map(({ id }) => id);
+  const data = await assetRegisterData(tx, ids, false);
   const custody = await custodyWorkspace(tx, sites, false);
-  const kits = await kitWorkspace(tx, siteIds, false);
-  return assetBookingSources({ ...data, sites, custody, kits });
+  const kits = await kitWorkspace(tx, ids, false);
+  return { ...data, sites, custody, kits };
 }

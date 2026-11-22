@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { BookingsWorkspace } from "./contracts";
 import { executeBookingFeedAction } from "./feedWebActions";
+import type { BookingHandoverAccess } from "./handover/contracts";
+import {
+  executeHandoverAction,
+  lookupHandoverAction,
+  readHandoverAction,
+} from "./handover/webActions";
 import type { BookingMembershipWorkspace } from "./membershipContracts";
 import { executeBookingMembershipAction } from "./membershipWebActions";
 import { BookingWorkspace } from "./ui/BookingWorkspace";
@@ -20,6 +26,14 @@ export function BookingsLive({
   canBrowseAssets: boolean;
   initialMemberships?: BookingMembershipWorkspace;
 }) {
+  const handover = useMemo<BookingHandoverAccess>(
+    () => ({
+      read: (bookingId) => readHandoverAction(actorId, bookingId, readCsrfToken()),
+      submit: (command) => executeHandoverAction(actorId, command, readCsrfToken()),
+      lookup: (bookingId, code) => lookupHandoverAction(actorId, bookingId, code, readCsrfToken()),
+    }),
+    [actorId],
+  );
   const [membershipSource, setMembershipSource] = useState(initialMemberships);
   const [memberships, setMemberships] = useState(initialMemberships);
   if (membershipSource !== initialMemberships) {
@@ -38,6 +52,7 @@ export function BookingsLive({
       submit={(command) => executeBookingAction(actorId, command, readCsrfToken())}
       checkAvailability={(input) => checkAvailabilityAction(actorId, input, readCsrfToken())}
       submitFeed={(input) => executeBookingFeedAction(actorId, input, readCsrfToken())}
+      handover={initial.handoverAvailable === true ? handover : undefined}
       membershipAccess={
         initialMemberships === undefined || memberships === undefined
           ? undefined

@@ -10,6 +10,7 @@
 import { PgBoss } from "pg-boss";
 import { describe, expect, it, vi } from "vitest";
 import {
+  PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE,
   PGBOSS_QUEUE_EMAIL_SEND,
   PGBOSS_QUEUE_EMAIL_SYNC,
   PGBOSS_QUEUE_FILE_REAPER,
@@ -112,6 +113,12 @@ describe("registerAllJobs", () => {
       expect(queueNames).toContain("project.automations");
       expect(fakeBoss.schedules).toContainEqual({ name: "project.automations", cron: "0 1 * * *" });
       expect(fakeBoss.schedules).toContainEqual({ name: "auth-maintenance", cron: "* * * * *" });
+      expect(queueNames).toContain(PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE);
+      expect(fakeBoss.workers).toContainEqual({ name: PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE });
+      expect(fakeBoss.schedules).toContainEqual({
+        name: PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE,
+        cron: "* * * * *",
+      });
 
       const scheduled = fakeBoss.schedules.find((s) => s.name === PGBOSS_QUEUE_FILE_REAPER);
       expect(scheduled).toBeDefined();

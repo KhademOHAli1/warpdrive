@@ -3,14 +3,15 @@ import type { Booking, BookingDemand, BookingResource } from "../contracts";
 import { assetBookingSources } from "../resources";
 import { type BookingState, bookingCommitments } from "../transitions";
 import {
-  emptyFixtureSession,
-  type HandoverFixtureAllocation,
-  type HandoverFixtureState,
+  emptyHandoverSession,
+  type HandoverAllocation,
+  type HandoverState,
   pickedPhysicalIds,
   remainingPickup,
 } from "./fixtureState";
 
 type Sources = ReturnType<typeof assetBookingSources>;
+type BookingClaims = Pick<BookingState, "bookings" | "maintenance">;
 type Forecast = {
   inventory: { [K in keyof BookingCapacityInventory]: BookingCapacityInventory[K][number][] };
   resources: Sources["resources"];
@@ -20,7 +21,7 @@ type Forecast = {
 function addReturningPool(
   forecast: Forecast,
   booking: Booking,
-  allocation: HandoverFixtureAllocation,
+  allocation: HandoverAllocation,
   locationId: string,
 ): BookingDemand {
   const { targetId: id, name, code, sourceBin, outstanding } = allocation;
@@ -67,19 +68,17 @@ function addReturningPool(
 
 function forecastReturn(
   forecast: Forecast,
-  { assets }: HandoverFixtureState,
+  { assets }: HandoverState,
   booking: Booking,
-  allocation: HandoverFixtureAllocation,
+  allocation: HandoverAllocation,
   kitVersions: Record<string, number>,
 ): BookingDemand | null {
   const { kind, targetId: id, sourceLocationId: locationId, holdingId, checkoutId } = allocation;
   const { siteId } = booking;
   if (allocation.outstanding === 0) return null;
   if (kind === "kit") {
-    const kit = assets.kits?.records.find((row) => row.siteId === siteId && row.id === id);
-    const out = assets.kits?.checkouts.find(
-      (row) => row.id === checkoutId && row.closedAt === null,
-    );
+    const kit = assets.kits.records.find((row) => row.siteId === siteId && row.id === id);
+    const out = assets.kits.checkouts.find((row) => row.id === checkoutId && row.closedAt === null);
     if (
       kit === undefined ||
       out === undefined ||
@@ -107,7 +106,7 @@ function forecastReturn(
     kitVersions[id] = kit.definitionVersion;
     return { kind, resourceId: id, locationId: kit.locationId, quantity: 1 };
   }
-  const hold = assets.custody?.holdings.find((row) => row.id === holdingId);
+  const hold = assets.custody.holdings.find((row) => row.id === holdingId);
   const asset = assets.records.find(
     (row) => row.id === id && row.siteId === siteId && row.archivedAt === null,
   );
@@ -128,8 +127,8 @@ function forecastReturn(
 }
 
 function expectedReturns(
-  bookings: BookingState,
-  handovers: HandoverFixtureState,
+  bookings: BookingClaims,
+  handovers: HandoverState,
   sources: Sources,
   now: string,
 ): Forecast {
@@ -171,7 +170,7 @@ function expectedReturns(
 export function handoverPhysicalSources({
   assets,
   inspection,
-}: Pick<HandoverFixtureState, "assets" | "inspection">): Sources {
+}: Pick<HandoverState, "assets" | "inspection">): Sources {
   const sources = assetBookingSources(assets);
   const heldUnits = new Set(inspection.map(({ targetId }) => targetId));
   const assetsFree = sources.inventory.assets.filter(({ id }) => !heldUnits.has(id));
@@ -211,7 +210,7 @@ export function handoverPhysicalSources({
 }
 
 function connectedCommitments(
-  handovers: HandoverFixtureState,
+  handovers: HandoverState,
   siteId: string,
   commitments: BookingCapacityCommitment[],
   candidateDemands: readonly BookingDemand[] | undefined,
@@ -241,13 +240,13 @@ function connectedCommitments(
 }
 
 function scheduledCommitments(
-  bookings: BookingState,
-  handovers: HandoverFixtureState,
+  bookings: BookingClaims,
+  handovers: HandoverState,
   siteId: string,
   exceptBookingId: string | undefined,
 ) {
   const existing = bookings.bookings.flatMap((booking) => {
-    const session = handovers.sessions[booking.id] ?? emptyFixtureSession;
+    const session = handovers.sessions[booking.id] ?? emptyHandoverSession;
     const remaining = { ...booking, lines: remainingPickup(booking, session) };
     const excludeModelAssetIds = pickedPhysicalIds(session, "asset");
     return bookingCommitments(
@@ -267,11 +266,7 @@ function scheduledCommitments(
 }
 
 /** Equipment in custody is available only after its scheduled return, excluding overdue stock. */
-export function fixtureHandoverCapacity(
-  bookings: BookingState,
-  handovers: HandoverFixtureState,
-  now: string,
-) {
+export function handoverCapacity(bookings: BookingClaims, handovers: HandoverState, now: string) {
   const sources = handoverPhysicalSources(handovers);
   const { inventory, resources, returns } = expectedReturns(bookings, handovers, sources, now);
   return {
@@ -294,3 +289,5 @@ export function fixtureHandoverCapacity(
       ),
   };
 }
+
+export { handoverCapacity as fixtureHandoverCapacity };

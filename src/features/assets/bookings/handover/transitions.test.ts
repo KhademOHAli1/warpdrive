@@ -241,6 +241,55 @@ describe("Scheduled booking handovers", () => {
     expect(kitAvailability.inventory.kits.some(({ id }) => id === kit.targetId)).toBe(false);
   });
 
+  it("emits ordered physical steps for repeated Asset changes and no steps on replay", () => {
+    const initial = seed();
+    const { value: view, now } = initial;
+    const leads = selected(view, "LEAD-SET", 4, "Bin A-01");
+    const supplies = selected(view, "FERRULE-1", 3);
+    const input = command(view, {
+      type: "pickup",
+      custodianId: custodian(view),
+      keepPickupOpen: true,
+      note: null,
+      items: [
+        leads,
+        supplies,
+        selected(view, "LEAD-SET", 2, "Receiving"),
+        selected(view, "WIRE-KIT", 1),
+      ],
+    });
+    const result = accepted(run(initial, input, now));
+    expect(result.applied).toBe(true);
+    const effects = result.physicalEffects;
+    expect(effects.map(({ kind }) => kind)).toEqual(["custody", "asset", "custody", "kit"]);
+    expect(effects.map(({ allocationId }) => allocationId)).toEqual(
+      result.value.allocations.map(({ id }) => id),
+    );
+    for (let index = 1; index < effects.length; index += 1) {
+      expect(effects[index]?.before).toBe(effects[index - 1]?.after);
+    }
+
+    const first = effects[0]?.after;
+    const repeated = effects[2]?.after;
+    const leadPrior = first?.records.find(({ id }) => id === leads.targetId);
+    const leadNext = repeated?.records.find(({ id }) => id === leads.targetId);
+    if (leadPrior === undefined || leadNext === undefined)
+      throw new Error("Missing intermediate pool changes");
+    expect(leadNext.version).toBe(leadPrior.version + 1);
+    expect(leadNext.events[1]).toBe(leadPrior.events[0]);
+    expect(repeated?.custody.events[1]).toBe(first?.custody.events[0]);
+    const supplyPrior = effects[1]?.after.records.find(({ id }) => id === supplies.targetId);
+    const supplyNext = effects[3]?.after.records.find(({ id }) => id === supplies.targetId);
+    if (supplyPrior === undefined || supplyNext === undefined)
+      throw new Error("Missing intermediate consumable changes");
+    expect(supplyNext.version).toBe(supplyPrior.version + 1);
+    expect(supplyNext.events[1]).toBe(supplyPrior.events[0]);
+
+    const replayed = accepted(run(result, input, now));
+    expect(replayed).toMatchObject({ applied: false, physicalEffects: [] });
+    expect(replayed.handovers).toBe(result.handovers);
+  });
+
   it("rejects stale or mismatched physical selections atomically and binds replay to actor and contents", () => {
     const initial = seed();
     const { value: view, now } = initial;

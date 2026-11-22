@@ -15,7 +15,7 @@ export const assetKitsEntry = classifyInventory(
     "sourceReview:src/features/assets/kits/contracts.ts#0e21128e18614e6a9fd9bf13a8a2d2fa1dd5918531deb960b10a4bc4bfb7ffd6",
     "sourceReview:src/features/assets/kits/repository.ts#ff8eb1e7d13c1d16984be8672d422b98190c13895c63c9d8e6012d98a7bae20d",
     "sourceReview:src/features/assets/kits/schema.ts#feaa8ea70a601d7bfb2b5f9b41dcb0e96e2d6c0e9a9c45bed0f1b0eeefb6abd8",
-    "sourceReview:src/features/assets/kits/service.ts#2d18c7bff9139c163d8dcaa836cd54d7d3a4742550307289149d6e56e1cb65d8",
+    "sourceReview:src/features/assets/kits/service.ts#955e5deb12ce0ef1134dbe9537ed0648590deb17bab00ed55ee4e1ba949ab04b",
     "sourceReview:src/features/assets/kits/transitions.ts#df0f15f2c2b26b65927b4f89c7f5fcce7ebe711ae2e348f075bc05a7d9d6cf78",
     "sourceReview:src/features/assets/kits/ui/KitDefinitionDialog.tsx#a770dfdc25e0f9b62d31bf9d7f2b6b4d359fc0073d985b4631466e5d54cd18fc",
     "sourceReview:src/features/assets/kits/ui/KitDetail.tsx#1e384edde023721664824651bd396c53545a9ade3c8765647b8faedc4b1f18da",

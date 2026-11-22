@@ -14,6 +14,11 @@ import {
   executeBookingAction,
 } from "@/features/assets/bookings/actions.backend";
 import { executeBookingFeedAction } from "@/features/assets/bookings/feedActions.backend";
+import {
+  executeHandoverAction,
+  lookupHandoverAction,
+  readHandoverAction,
+} from "@/features/assets/bookings/handover/actions.backend";
 import { executeBookingMembershipAction } from "@/features/assets/bookings/membershipActions.backend";
 import { executeCommissionAssetAction } from "@/features/assets/commissioning/actions.backend";
 import { executeCustodyAction } from "@/features/assets/custody/actions.backend";
@@ -176,6 +181,9 @@ export const commandHandlers = {
   "features/assets/bookings/webActions.executeBookingAction": executeBookingAction,
   "features/assets/bookings/webActions.checkAvailabilityAction": checkAvailabilityAction,
   "features/assets/bookings/feedWebActions.executeBookingFeedAction": executeBookingFeedAction,
+  "features/assets/bookings/handover/webActions.readHandoverAction": readHandoverAction,
+  "features/assets/bookings/handover/webActions.executeHandoverAction": executeHandoverAction,
+  "features/assets/bookings/handover/webActions.lookupHandoverAction": lookupHandoverAction,
   "features/assets/bookings/membershipWebActions.executeBookingMembershipAction":
     executeBookingMembershipAction,
   "features/assets/custody/webActions.executeCustodyAction": executeCustodyAction,

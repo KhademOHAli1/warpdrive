@@ -20,7 +20,7 @@ export const assetRegisterEntry = classifyInventory(
     "sourceReview:src/features/assets/repository.ts#c8ae80629775f8e62207cb6a78575032dacf5a9cefd658292eb05c98fd6adbbf",
     "sourceReview:src/features/assets/router.ts#d94a4ffd91a8139c4b1912d2236ecbba620bc180d36caf3874bc421a075809b5",
     "sourceReview:src/features/assets/schema.ts#a9912fac12e43c0d884734aa29dcc6dc4dc3ca250f3e0ff0c8262e47f01432c7",
-    "sourceReview:src/features/assets/service.ts#519582f3dcd782466a66396eaf6ccb5e6cb96c26eceff2ea49c7283d81baa820",
+    "sourceReview:src/features/assets/service.ts#21a37135d164741a7ed35b9b12c92c0998b123f28f421a284f4995bf91118419",
     "sourceReview:src/features/assets/ui/AssetEditorFields.tsx#ace9bc3c951d4d4b7e1bdbac6a9f0497ba4c539cc3d1cc51a1d4d36f1342f2b5",
     "sourceReview:src/features/assets/ui/AssetEditors.tsx#99f1ac48f0dd659ac54a551a857b79b3cf898e091ec8a163157aa16c92787e21",
     "sourceReview:src/features/assets/ui/AssetTable.tsx#231aff6e75a959922a2cb6490c159ffe23cac92d6e595168d22e5aa84666c35f",

@@ -41,6 +41,7 @@ export const PGBOSS_QUEUE_WORKFLOW_RECONCILE = "workflow.reconcile";
 export const PGBOSS_QUEUE_WORKFLOW_SCHEDULE = "workflow.schedule";
 
 export const PGBOSS_QUEUE_CALENDAR_REMINDER = "calendar.reminder";
+export const PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE = "assets.bookings.handover.notice.v1";
 
 // Daily UTC check for owner-configured internal Projects rules.
 export const PGBOSS_QUEUE_PROJECT_AUTOMATIONS = "project.automations";

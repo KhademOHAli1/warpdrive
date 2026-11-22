@@ -102,6 +102,9 @@ export const assetBookings = pgTable(
     index("asset_bookings_site_window_idx")
       .on(row.siteId, row.endAt, row.startAt)
       .where(sql`NOT ${row.archived} AND ${row.status} IN ('pending', 'confirmed')`),
+    index("asset_bookings_confirmed_due_idx")
+      .on(row.endAt, row.id)
+      .where(sql`NOT ${row.archived} AND ${row.status} = 'confirmed'`),
     index("asset_bookings_requester_site_idx").on(row.requesterId, row.siteId),
     check("asset_bookings_window_check", sql`${row.startAt} < ${row.endAt}`),
     check("asset_bookings_version_check", sql`${row.version} > 0`),

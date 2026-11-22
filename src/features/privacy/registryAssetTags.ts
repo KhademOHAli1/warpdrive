@@ -23,7 +23,7 @@ export const assetTagsEntry = classifyInventory(
     "sourceReview:src/features/assets/tags/fixtureScans.ts#f19e6966f2c019799b052922862b27763c9c5a4763530552f5570a21f3c0e350",
     "sourceReview:src/features/assets/tags/legacyImport.ts#12aa14f4892b26fccf0bbb45cd03e1418baf3b498be92a44196b74b9a035a1af",
     "sourceReview:src/features/assets/tags/nativeCommands.ts#0c7bc77f1a2d01ed884ab61aee2d46375c6ce8bb3586c7427354975dc371fe85",
-    "sourceReview:src/features/assets/tags/nativeScans.ts#3277670a8cb1a07bd3e7dd4d0fd3412efbcc6f3359d21246cf50156ea5c13866",
+    "sourceReview:src/features/assets/tags/nativeScans.ts#6eb7798e8bba5b42ac9465fb59af52130ff2d3af2725d0ea7264751bdc29deec",
     "sourceReview:src/features/assets/tags/nativeScope.ts#feac9fbe4905c9e0005c2109e53a955b8300acbd2aba7b7f0579922c4069ac80",
     "sourceReview:src/features/assets/tags/ownerContact.ts#4344b8d28daae779c122bfd6ee1b843fbe703a5a8589585615b481cb444e6b1a",
     "sourceReview:src/features/assets/tags/router.ts#5badd6a8287dfea57441825c3f56b5221201a7136027d58bef9da10c1b066c58",

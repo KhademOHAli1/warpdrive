@@ -47,6 +47,25 @@ async function findCode(tx: Db, candidate: RegistryMatch) {
   return tag;
 }
 
+/** The caller holds a shared tag namespace fence and has authorized the booking site. */
+export async function lookupEquipmentTag(
+  tx: Db,
+  identifier: string,
+  origin: string,
+  siteId: string,
+) {
+  const candidate = candidateFor(identifier, origin, false);
+  const tag = candidate === null ? undefined : await findCode(tx, candidate);
+  if (tag === undefined) return undefined;
+  if (tag.siteId !== siteId) return null;
+  const [assignment] = await tx
+    .select()
+    .from(assetTagAssignments)
+    .where(and(eq(assetTagAssignments.tagId, tag.id), isNull(assetTagAssignments.endedAt)))
+    .limit(1);
+  return assignment === undefined ? null : targetRef(assignment);
+}
+
 async function recordScan(
   tx: Db,
   tag: TagCode,

@@ -246,6 +246,7 @@ export type BookingCalendarEntry = {
 };
 
 export type BookingsWorkspace = {
+  handoverAvailable?: true;
   viewer: { id: string; name: string };
   sites: BookingSite[];
   locations: BookingLocation[];

@@ -12,7 +12,7 @@ import {
 } from "@/features/operations-access/scope";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { assetRoleSiteIds } from "./access";
-import { bookingCapacityGuard } from "./bookings/protection";
+import { bookingCapacityGuard, hasProtectedHandoverAssetIdentity } from "./bookings/protection";
 import { commissionedAssetSerial } from "./commissioning/protection";
 import {
   type AssetCommand,
@@ -113,12 +113,16 @@ function affectsBookingCapacity(command: AssetCommand, records: AssetRecord[]) {
   return (prior?.quantity ?? 0) > command.quantity;
 }
 
-async function preservesBookings(tx: Db, site: AssetSite, proposed: AssetsWorkspace) {
-  const allow = await bookingCapacityGuard(tx, site.id);
-  if (allow === undefined) return true;
+async function preservesBookings(
+  tx: Db,
+  site: AssetSite,
+  before: AssetsWorkspace,
+  proposed: AssetsWorkspace,
+) {
   const custody = await custodyWorkspace(tx, [site], false);
   const kits = await kitWorkspace(tx, [site.id], false);
-  return allow({ ...proposed, custody, kits });
+  const allow = await bookingCapacityGuard(tx, site.id, { ...before, custody, kits });
+  return allow?.({ ...proposed, custody, kits }) !== false;
 }
 
 async function permitsIdentityUpdate(
@@ -130,7 +134,8 @@ async function permitsIdentityUpdate(
   if (
     asset?.tracking === "individual" &&
     (command.modelId !== asset.modelId || command.serial !== asset.serial) &&
-    (await isKitAsset(tx, command.assetId))
+    ((await isKitAsset(tx, command.assetId)) ||
+      (await hasProtectedHandoverAssetIdentity(tx, asset.siteId, asset.id)))
   )
     return false;
   const recorded = await commissionedAssetSerial(tx, command.assetId);
@@ -174,7 +179,7 @@ async function applyCommand(
   if (!transformed.ok) return transformed;
   if (
     affectsBookingCapacity(command, before.records) &&
-    !(await preservesBookings(tx, site, transformed.value))
+    !(await preservesBookings(tx, site, before, transformed.value))
   )
     return { ok: false, error: "state" };
   await persistAssetChanges(tx, before, transformed.value, actor.id);

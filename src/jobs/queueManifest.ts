@@ -1,5 +1,8 @@
 import type { Queue, QueueResult } from "pg-boss";
-import { PGBOSS_QUEUE_PROJECT_AUTOMATIONS } from "@/constants/jobNames";
+import {
+  PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE,
+  PGBOSS_QUEUE_PROJECT_AUTOMATIONS,
+} from "@/constants/jobNames";
 
 // Fixed infrastructure, independent of workspace/account count. The update-check queue is
 // harmless when disabled; only the Worker decides whether to register its handler/schedule.
@@ -17,6 +20,7 @@ export const QUEUE_NAMES = Object.freeze([
   "activity.reminder.native.v1",
   "activity.reminder.reconcile.v1",
   "calendar.reminder",
+  PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE,
   "activity.reminder.dispatch",
   "auth-maintenance",
   "release.check",

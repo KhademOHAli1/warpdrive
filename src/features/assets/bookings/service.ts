@@ -15,8 +15,12 @@ import {
   bookingAvailabilityInput,
   bookingCommand,
 } from "./contracts";
-import { nativeBookingResources } from "./nativeResources";
+import { type HandoverState, handoverStatus } from "./handover/fixtureState";
+import { handoverCapacity } from "./handover/handoverCapacity";
+import { loadHandoverState } from "./handover/repository";
+import { nativeBookingAssets } from "./nativeResources";
 import { bookingMaintenance, bookingRecords, persistBookingState } from "./repository";
+import { assetBookingSources } from "./resources";
 import { assetBookingReceipts } from "./schema";
 import { bookingSites } from "./scope";
 import {
@@ -32,18 +36,33 @@ const conflict = { ok: false, error: "conflict" } as const;
 
 class BookingSessionExpired extends Error {}
 
-async function bookingState(
+async function bookingSnapshot(
   tx: Db,
   actor: HydratedActor,
   sites: BookingSite[],
   withHistory: boolean,
-): Promise<BookingState> {
+  now: string,
+) {
   const siteIds = sites.map(({ id }) => id);
   const viewer = { id: actor.id, name: actor.name };
-  const resources = await nativeBookingResources(tx, siteIds);
+  const assets = await nativeBookingAssets(
+    tx,
+    sites.map(({ id, code, name }) => ({ id, code, name, canManage: false })),
+  );
   const bookings = await bookingRecords(tx, siteIds, withHistory);
   const maintenance = await bookingMaintenance(tx, siteIds);
-  return { viewer, sites, bookings, maintenance, ...resources };
+  const handovers = await loadHandoverState(tx, assets, siteIds);
+  const state = { viewer, sites, bookings, maintenance, ...assetBookingSources(assets) };
+  const capacity = handoverCapacity(state, handovers, now);
+  return {
+    handovers,
+    capacity,
+    state: { ...state, resources: capacity.resources },
+  };
+}
+
+function projectWorkspace(state: BookingState) {
+  return { ...projectBookings(state), handoverAvailable: true } as const;
 }
 
 export function readBookingWorkspace(
@@ -56,9 +75,14 @@ export function readBookingWorkspace(
     const actor = await assetActor(tx, who, signal);
     if (actor === null) return unavailable;
     await lockAssetRegister(tx, "read", signal);
-    const value = projectBookings(
-      await bookingState(tx, actor, await bookingSites(tx, actor), true),
+    const { state } = await bookingSnapshot(
+      tx,
+      actor,
+      await bookingSites(tx, actor),
+      true,
+      new Date().toISOString(),
     );
+    const value = projectWorkspace(state);
     const current = await assetActor(tx, who, signal);
     return current === null ? unavailable : { ok: true, value, bookingId: null };
   });
@@ -67,8 +91,9 @@ export function readBookingWorkspace(
 async function availability(tx: Db, actor: HydratedActor, input: BookingAvailabilityInput) {
   const site = (await bookingSites(tx, actor)).find(({ id }) => id === input.siteId);
   if (site === undefined || site.archived === true) return unavailable;
-  const state = await bookingState(tx, actor, [site], false);
-  return previewBookingAvailability(state, input, new Date().toISOString());
+  const now = new Date().toISOString();
+  const { state, capacity } = await bookingSnapshot(tx, actor, [site], false, now);
+  return previewBookingAvailability(state, input, now, capacity);
 }
 
 export function checkBookingAvailability(
@@ -107,9 +132,26 @@ async function projectCommand(
   sites: BookingSite[],
   bookingId: string | null,
 ) {
-  const value = projectBookings(await bookingState(tx, actor, sites, true));
+  const { state } = await bookingSnapshot(tx, actor, sites, true, new Date().toISOString());
+  const value = projectWorkspace(state);
   if (bookingId !== null && !value.bookings.some(({ id }) => id === bookingId)) return unavailable;
   return { ok: true, value, bookingId } as const;
+}
+
+function permitsExistingBookingCommand(
+  command: BookingCommand,
+  state: BookingState,
+  handovers: HandoverState,
+  now: string,
+) {
+  if (!("bookingId" in command) || command.bookingId === null) return true;
+  const handover = handovers.sessions[command.bookingId];
+  const booking = state.bookings.find(({ id }) => id === command.bookingId);
+  if (handover === undefined || booking === undefined) return true;
+  if (state.sites[0]?.role !== "manager" && booking.requesterId !== state.viewer.id) return true;
+  if (command.type === "saveBooking" || command.type === "cancelBooking") return false;
+  if (command.type !== "archiveBooking" || !command.archived) return true;
+  return handoverStatus(booking, handover, now) === "completed";
 }
 
 async function run(tx: Db, actor: HydratedActor, command: BookingCommand): Promise<BookingResult> {
@@ -126,10 +168,19 @@ async function run(tx: Db, actor: HydratedActor, command: BookingCommand): Promi
     if (prior.siteId !== site.id || prior.fingerprint !== fingerprint) return conflict;
     return projectCommand(tx, actor, sites, prior.bookingId);
   }
-  const before = await bookingState(tx, actor, [site], false);
+  const now = new Date().toISOString();
+  const {
+    state: before,
+    handovers,
+    capacity,
+  } = await bookingSnapshot(tx, actor, [site], false, now);
+  if (!permitsExistingBookingCommand(command, before, handovers, now)) {
+    return { ok: false, error: "state" };
+  }
   const result = applyBookingCommand(before, command, {
-    now: new Date().toISOString(),
+    now,
     makeId: () => crypto.randomUUID(),
+    capacity,
   });
   if (!result.ok) return result;
   await persistBookingState(tx, before, result.state, actor.id);

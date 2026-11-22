@@ -220,6 +220,7 @@ async function persistBooking(
   prior: Booking | undefined,
   booking: Booking,
   actorId: string,
+  preserveLines = false,
 ) {
   if (prior === undefined) {
     await tx.insert(assetBookings).values(bookingColumns(booking));
@@ -231,9 +232,11 @@ async function persistBooking(
       .returning({ id: assetBookings.id });
     if (updated.length !== 1)
       throw new AppError(ERROR_IDS.DB_INVARIANT, "Booking changed under its write lock");
-    await tx.delete(assetBookingLines).where(eq(assetBookingLines.bookingId, booking.id));
+    if (!preserveLines) {
+      await tx.delete(assetBookingLines).where(eq(assetBookingLines.bookingId, booking.id));
+    }
   }
-  if (booking.lines.length > 0) {
+  if (!preserveLines && booking.lines.length > 0) {
     await tx.insert(assetBookingLines).values(
       booking.lines.map((line, position) => {
         const { name, code, bin, serial, contents, kitDefinitionVersion } = line;
@@ -312,6 +315,16 @@ async function persistMaintenance(
     .returning({ id: assetBookingMaintenance.id });
   if (written.length !== 1)
     throw new AppError(ERROR_IDS.DB_INVARIANT, "Maintenance changed under its write lock");
+}
+
+export function persistBookingDeadline(tx: Db, prior: Booking, after: Booking, actorId: string) {
+  if (prior.lines !== after.lines) {
+    throw new AppError(
+      ERROR_IDS.DB_INVARIANT,
+      "A due amendment replaced the approved booking lines",
+    );
+  }
+  return persistBooking(tx, prior, after, actorId, true);
 }
 
 export async function persistBookingState(

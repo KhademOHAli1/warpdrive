@@ -52,10 +52,8 @@ async function applyCommand(tx: Db, actor: HydratedActor, command: KitCommand): 
   };
   const result = applyKitCommand(before, command, actor.name);
   if (!result.ok) return result;
-  if (command.type !== "returnKit") {
-    const allow = await bookingCapacityGuard(tx, site.id);
-    if (allow?.(result.value) === false) return { ok: false, error: "held" };
-  }
+  const allow = await bookingCapacityGuard(tx, site.id, before);
+  if (allow?.(result.value) === false) return { ok: false, error: "held" };
   await persistKitChanges(tx, before, result.value, result.kitId, actor.id);
   await tx.insert(assetKitReceipts).values({
     actorId: actor.id,

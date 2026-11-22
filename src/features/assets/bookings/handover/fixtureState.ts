@@ -1,6 +1,6 @@
 import type { AssetsWorkspace } from "../../contracts";
-import { emptyCustodyWorkspace } from "../../custody/contracts";
-import { emptyKitWorkspace } from "../../kits/contracts";
+import { type CustodyWorkspace, emptyCustodyWorkspace } from "../../custody/contracts";
+import { emptyKitWorkspace, type KitWorkspace } from "../../kits/contracts";
 import type { Booking, BookingDemand, BookingLine } from "../contracts";
 import type {
   BookingHandoverAllocation,
@@ -8,16 +8,16 @@ import type {
   BookingHandoverStatus,
 } from "./contracts";
 
-export type HandoverFixtureAllocation = BookingHandoverAllocation & {
+export type HandoverAllocation = BookingHandoverAllocation & {
   holdingId: string | null;
   checkoutId: string | null;
 };
 
-export type HandoverFixtureSession = {
+export type HandoverSession = {
   version: number;
   pickupClosed: boolean;
   custodian: { id: string; name: string } | null;
-  allocations: HandoverFixtureAllocation[];
+  allocations: HandoverAllocation[];
   receipts: BookingHandoverReceipt[];
 };
 
@@ -30,14 +30,19 @@ export type HandoverInspectionHold = {
   condition: "damaged" | "needs_inspection";
 };
 
-export type HandoverFixtureState = {
-  assets: AssetsWorkspace;
-  sessions: Readonly<Record<string, HandoverFixtureSession>>;
+export type HandoverAssetsWorkspace = AssetsWorkspace & {
+  custody: CustodyWorkspace;
+  kits: KitWorkspace;
+};
+
+export type HandoverState = {
+  assets: HandoverAssetsWorkspace;
+  sessions: Readonly<Record<string, HandoverSession>>;
   inspection: readonly HandoverInspectionHold[];
   requests: Readonly<Record<string, string>>;
 };
 
-export const emptyFixtureSession: HandoverFixtureSession = {
+export const emptyHandoverSession: HandoverSession = {
   version: 0,
   pickupClosed: false,
   custodian: null,
@@ -45,7 +50,7 @@ export const emptyFixtureSession: HandoverFixtureSession = {
   receipts: [],
 };
 
-export function createHandoverFixture(assets: AssetsWorkspace): HandoverFixtureState {
+export function createHandoverState(assets: AssetsWorkspace): HandoverState {
   return {
     assets: {
       ...assets,
@@ -58,7 +63,7 @@ export function createHandoverFixture(assets: AssetsWorkspace): HandoverFixtureS
   };
 }
 
-export function hasFixtureHandover(state: HandoverFixtureState, bookingId: string) {
+export function hasHandover(state: HandoverState, bookingId: string) {
   return state.sessions[bookingId] !== undefined;
 }
 
@@ -66,18 +71,18 @@ export function handoverLineKey({ kind, resourceId, locationId }: BookingDemand)
   return `${kind}:${resourceId}:${locationId ?? ""}`;
 }
 
-export function pickedQuantity(session: HandoverFixtureSession, key: string) {
+export function pickedQuantity(session: HandoverSession, key: string) {
   return session.allocations.reduce(
     (total, item) => total + (item.lineKey === key ? item.issued : 0),
     0,
   );
 }
 
-export function pickedPhysicalIds(session: HandoverFixtureSession, kind: "asset" | "kit") {
+export function pickedPhysicalIds(session: HandoverSession, kind: "asset" | "kit") {
   return session.allocations.flatMap((row) => (row.kind === kind ? [row.targetId] : []));
 }
 
-export function remainingPickup(booking: Booking, session: HandoverFixtureSession): BookingLine[] {
+export function remainingPickup(booking: Booking, session: HandoverSession): BookingLine[] {
   if (session.pickupClosed) return [];
   return booking.lines.flatMap((line) => {
     const quantity = line.quantity - pickedQuantity(session, handoverLineKey(line));
@@ -85,9 +90,9 @@ export function remainingPickup(booking: Booking, session: HandoverFixtureSessio
   });
 }
 
-export function fixtureHandoverStatus(
+export function handoverStatus(
   booking: Booking,
-  session: HandoverFixtureSession,
+  session: HandoverSession,
   now: string,
 ): BookingHandoverStatus {
   const deadlinePassed = Date.parse(booking.window.endAt) <= Date.parse(now);
@@ -98,3 +103,10 @@ export function fixtureHandoverStatus(
   if (session.pickupClosed || deadlinePassed) return "completed";
   return session.allocations.length > 0 ? "ongoing" : "ready";
 }
+
+export type {
+  HandoverAllocation as HandoverFixtureAllocation,
+  HandoverSession as HandoverFixtureSession,
+  HandoverState as HandoverFixtureState,
+};
+export { createHandoverState as createHandoverFixture, hasHandover as hasFixtureHandover };

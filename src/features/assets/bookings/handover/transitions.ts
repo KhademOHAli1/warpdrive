@@ -1,4 +1,3 @@
-import type { AssetsWorkspace } from "../../contracts";
 import { applyCustodyCommand } from "../../custody/transitions";
 import { applyKitCommand } from "../../kits/transitions";
 import { applyAssetWorkspaceCommand } from "../../registerCommands";
@@ -14,50 +13,82 @@ import {
   bookingHandoverCommand,
 } from "./contracts";
 import {
-  emptyFixtureSession,
-  type HandoverFixtureAllocation,
-  type HandoverFixtureSession,
-  type HandoverFixtureState,
+  emptyHandoverSession,
+  type HandoverAllocation,
+  type HandoverAssetsWorkspace,
   type HandoverInspectionHold,
+  type HandoverSession,
+  type HandoverState,
   handoverLineKey,
   pickedPhysicalIds,
   pickedQuantity,
   remainingPickup,
 } from "./fixtureState";
-import { fixtureHandoverCapacity, handoverPhysicalSources } from "./handoverCapacity";
+import { handoverCapacity, handoverPhysicalSources } from "./handoverCapacity";
 import {
   handoverBookingScope,
   handoverCustodians,
   handoverPickupOptions,
   pickupWindowOpen,
-  projectFixtureHandover,
+  projectHandover,
 } from "./projection";
 
 type Clock = { now: string; makeId: () => string };
 type ReceiptLine = BookingHandoverReceipt["items"][number];
 type Failure = { ok: false; error: BookingError };
-type Success = Extract<BookingHandoverWrite, { ok: true }> & {
-  state: BookingState;
-  handovers: HandoverFixtureState;
-};
+type Application =
+  | { applied: true; physicalEffects: HandoverPhysicalEffect[] }
+  | { applied: false; physicalEffects: [] };
+type Success = Extract<BookingHandoverWrite, { ok: true }> &
+  Application & {
+    state: BookingState;
+    handovers: HandoverState;
+  };
 type Result = Success | Failure;
 type Context = {
   booking: Booking;
   site: BookingSite;
   state: BookingState;
-  handovers: HandoverFixtureState;
-  session: HandoverFixtureSession;
+  handovers: HandoverState;
+  session: HandoverSession;
   clock: Clock;
   command: BookingHandoverCommand;
 };
 type Effect = {
-  assets: AssetsWorkspace;
+  assets: HandoverAssetsWorkspace;
   booking: Booking;
-  session: HandoverFixtureSession;
+  session: HandoverSession;
   items: ReceiptLine[];
   changedDemands?: readonly BookingDemand[];
   inspections?: HandoverInspectionHold[];
+  physicalEffects?: HandoverPhysicalEffect[];
 };
+type AssetStep = {
+  allocationId: string;
+  before: HandoverAssetsWorkspace;
+  after: HandoverAssetsWorkspace;
+};
+
+export type HandoverPhysicalEffect = AssetStep &
+  ({ kind: "asset" | "custody" } | { kind: "kit"; kitId: string });
+
+function physicalEffect(
+  allocation: HandoverAllocation,
+  before: HandoverAssetsWorkspace,
+  after: HandoverAssetsWorkspace,
+): HandoverPhysicalEffect {
+  const step = { allocationId: allocation.id, before, after };
+  switch (allocation.kind) {
+    case "kit":
+      return { ...step, kind: "kit", kitId: allocation.targetId };
+    case "consumable_pool":
+      return { ...step, kind: "asset" };
+    case "asset":
+    case "returnable_pool":
+      return { ...step, kind: "custody" };
+  }
+}
+
 type Pickup = Extract<BookingHandoverCommand, { type: "pickup" }>;
 
 const fail = (error: BookingError): Failure => ({ ok: false, error });
@@ -72,7 +103,7 @@ function receiptLine(
   return { targetId, name, code, serial, sourceBin, quantity, disposition, destinationBin };
 }
 
-function remainingReceiptLines(allocations: readonly HandoverFixtureAllocation[]) {
+function remainingReceiptLines(allocations: readonly HandoverAllocation[]) {
   return allocations.flatMap((row) => {
     if (row.outstanding === 0) return [];
     if (row.kind !== "kit") return [receiptLine(row, row.outstanding, "issued")];
@@ -100,8 +131,8 @@ function uncollected(lines: readonly BookingLine[]): ReceiptLine[] {
   );
 }
 
-function frozenMembers(assets: AssetsWorkspace, checkoutId: string): BookingKitMember[] {
-  const checkout = assets.kits?.checkouts.find(({ id }) => id === checkoutId);
+function frozenMembers(assets: HandoverAssetsWorkspace, checkoutId: string): BookingKitMember[] {
+  const checkout = assets.kits.checkouts.find(({ id }) => id === checkoutId);
   return (checkout?.lines ?? []).map((line) => ({
     id: line.id,
     targetId: line.assetId,
@@ -115,15 +146,15 @@ function frozenMembers(assets: AssetsWorkspace, checkoutId: string): BookingKitM
 
 function issueKit(
   ctx: Context,
-  assets: AssetsWorkspace,
-  allocation: HandoverFixtureAllocation,
+  assets: HandoverAssetsWorkspace,
+  allocation: HandoverAllocation,
   { custodianId, requestId }: Pickup,
 ) {
   const { targetId } = allocation;
   const { siteId } = ctx.booking;
   const actor = ctx.state.viewer.name;
   const note = `Booking handover ${ctx.booking.id}`;
-  const kit = assets.kits?.records.find(({ id }) => id === targetId);
+  const kit = assets.kits.records.find(({ id }) => id === targetId);
   if (kit === undefined) return fail("unavailable");
   const result = applyKitCommand(
     assets,
@@ -144,25 +175,26 @@ function issueKit(
     (row) => row.kitId === kit.id && row.closedAt === null,
   );
   if (checkout === undefined) return fail("state");
+  const after = { ...result.value, custody: assets.custody };
   return {
-    assets: result.value,
+    assets: after,
     allocation: {
       ...allocation,
       checkoutId: checkout.id,
-      members: frozenMembers(result.value, checkout.id),
+      members: frozenMembers(after, checkout.id),
     },
   };
 }
 
 function issueItem(
   ctx: Context,
-  assets: AssetsWorkspace,
+  assets: HandoverAssetsWorkspace,
   command: Pickup,
   item: Pickup["items"][number],
   line: BookingLine,
   remaining: number,
   picked: ReadonlySet<string>,
-): { assets: AssetsWorkspace; allocation: HandoverFixtureAllocation } | Failure {
+): { assets: HandoverAssetsWorkspace; allocation: HandoverAllocation } | Failure {
   const { siteId } = ctx.booking;
   const { targetId, lineKey, quantity } = item;
   const sources = handoverPhysicalSources({ assets, inspection: ctx.handovers.inspection });
@@ -185,7 +217,7 @@ function issueItem(
   if (origin === undefined) return fail("unavailable");
 
   const { name, code, serial, bin: sourceBin, locationId: sourceLocationId } = origin;
-  const allocation: HandoverFixtureAllocation = {
+  const allocation: HandoverAllocation = {
     id: ctx.clock.makeId(),
     lineKey,
     kind,
@@ -224,7 +256,10 @@ function issueItem(
       actor,
     );
     return used.ok
-      ? { assets: used.value, allocation: { ...allocation, outstanding: 0 } }
+      ? {
+          assets: { ...used.value, custody: assets.custody, kits: assets.kits },
+          allocation: { ...allocation, outstanding: 0 },
+        }
       : fail("capacity");
   }
 
@@ -244,7 +279,10 @@ function issueItem(
   if (!result.ok) return fail("capacity");
   const event = result.value.custody.events[0];
   if (event?.assetId !== asset.id || event.action !== "assign") return fail("state");
-  return { assets: result.value, allocation: { ...allocation, holdingId: event.holdingId } };
+  return {
+    assets: { ...result.value, kits: assets.kits },
+    allocation: { ...allocation, holdingId: event.holdingId },
+  };
 }
 
 function pickup(ctx: Context, command: Pickup): Effect | Failure {
@@ -266,6 +304,7 @@ function pickup(ctx: Context, command: Pickup): Effect | Failure {
   };
   const items: ReceiptLine[] = [];
   const changedDemands: BookingDemand[] = [];
+  const physicalEffects: HandoverPhysicalEffect[] = [];
   const lines = new Map(booking.lines.map((line) => [handoverLineKey(line), line]));
   const alreadyPicked = new Set([
     ...pickedPhysicalIds(session, "asset"),
@@ -277,8 +316,9 @@ function pickup(ctx: Context, command: Pickup): Effect | Failure {
     const remaining = line.quantity - pickedQuantity(next, item.lineKey);
     const result = issueItem(ctx, assets, command, item, line, remaining, alreadyPicked);
     if ("error" in result) return result;
-    assets = result.assets;
     const { allocation } = result;
+    physicalEffects.push(physicalEffect(allocation, assets, result.assets));
+    assets = result.assets;
     next.allocations.push(allocation);
     if (allocation.kind === "asset" || allocation.kind === "kit")
       alreadyPicked.add(allocation.targetId);
@@ -298,19 +338,27 @@ function pickup(ctx: Context, command: Pickup): Effect | Failure {
     booking,
     items,
     changedDemands,
+    physicalEffects,
     session: { ...next, pickupClosed: pending.length === 0 || !command.keepPickupOpen },
   };
 }
 
+type CheckInEffect = {
+  assets: HandoverAssetsWorkspace;
+  allocation: HandoverAllocation;
+  items: ReceiptLine[];
+  inspection: HandoverInspectionHold | null;
+};
+
 function returnKit(
   ctx: Context,
-  assets: AssetsWorkspace,
-  allocation: HandoverFixtureAllocation,
+  assets: HandoverAssetsWorkspace,
+  allocation: HandoverAllocation,
   item: Extract<BookingCheckInItem, { kind: "kit" }>,
-) {
+): CheckInEffect | Failure {
   const { targetId, checkoutId } = allocation;
-  const kit = assets.kits?.records.find(({ id }) => id === targetId);
-  const frozen = assets.kits?.checkouts.find(({ id }) => id === checkoutId);
+  const kit = assets.kits.records.find(({ id }) => id === targetId);
+  const frozen = assets.kits.checkouts.find(({ id }) => id === checkoutId);
   if (kit === undefined || frozen === undefined || checkoutId === null) return fail("state");
   const items: ReceiptLine[] = [];
   for (const entry of item.members) {
@@ -357,21 +405,27 @@ function returnKit(
     ctx.state.viewer.name,
   );
   if (!result.ok) return fail(result.error === "invalid" ? "invalid" : "state");
-  const members = frozenMembers(result.value, checkoutId);
+  const after = { ...result.value, custody: assets.custody };
+  const members = frozenMembers(after, checkoutId);
   const outstanding = members.some((line) => line.outstanding > 0) ? 1 : 0;
-  return { assets: result.value, allocation: { ...allocation, members, outstanding }, items };
+  return {
+    assets: after,
+    allocation: { ...allocation, members, outstanding },
+    items,
+    inspection: null,
+  };
 }
 
 function returnEquipment(
   ctx: Context,
-  assets: AssetsWorkspace,
-  allocation: HandoverFixtureAllocation,
+  assets: HandoverAssetsWorkspace,
+  allocation: HandoverAllocation,
   item: Extract<BookingCheckInItem, { kind: "equipment" }>,
-) {
+): CheckInEffect | Failure {
   const { targetId, holdingId, outstanding } = allocation;
   if (holdingId === null || item.quantity > outstanding) return fail("state");
   const asset = assets.records.find(({ id }) => id === targetId);
-  const hold = assets.custody?.holdings.find(({ id }) => id === holdingId);
+  const hold = assets.custody.holdings.find(({ id }) => id === holdingId);
   const destination = assets.locations.find(
     (bin) => bin.id === item.locationId && !bin.archived && bin.siteId === ctx.booking.siteId,
   );
@@ -410,7 +464,7 @@ function returnEquipment(
           condition: disposition,
         };
   return {
-    assets: result.value,
+    assets: { ...result.value, kits: assets.kits },
     allocation: { ...allocation, outstanding: outstanding - item.quantity },
     items: [receiptLine(allocation, item.quantity, disposition, destination.name)],
     inspection,
@@ -425,6 +479,7 @@ function checkIn(
   const allocations = [...ctx.session.allocations];
   const items: ReceiptLine[] = [];
   const inspections: HandoverInspectionHold[] = [];
+  const physicalEffects: HandoverPhysicalEffect[] = [];
   for (const item of command.items) {
     const index = allocations.findIndex(({ id }) => id === item.allocationId);
     const allocation = allocations[index];
@@ -439,10 +494,11 @@ function checkIn(
         ? returnKit(ctx, assets, allocation, item)
         : returnEquipment(ctx, assets, allocation, item);
     if ("error" in result) return result;
+    physicalEffects.push(physicalEffect(allocation, assets, result.assets));
     assets = result.assets;
     allocations[index] = result.allocation;
     items.push(...result.items);
-    if ("inspection" in result && result.inspection !== null) inspections.push(result.inspection);
+    if (result.inspection !== null) inspections.push(result.inspection);
   }
   return {
     assets,
@@ -450,6 +506,7 @@ function checkIn(
     session: { ...ctx.session, allocations },
     items,
     inspections,
+    physicalEffects,
   };
 }
 
@@ -516,17 +573,20 @@ function effect(ctx: Context): Effect | Failure {
 
 function success(
   state: BookingState,
-  handovers: HandoverFixtureState,
+  handovers: HandoverState,
   booking: Booking,
   now: string,
+  application: Application,
 ): Result {
-  const projected = projectFixtureHandover(state, handovers, booking.id, now);
-  return projected.ok ? { ok: true, value: projected.value, booking, state, handovers } : projected;
+  const projected = projectHandover(state, handovers, booking.id, now);
+  return projected.ok
+    ? { ok: true, value: projected.value, booking, state, handovers, ...application }
+    : projected;
 }
 
-export function applyFixtureHandover(
+export function applyHandover(
   state: BookingState,
-  handovers: HandoverFixtureState,
+  handovers: HandoverState,
   raw: unknown,
   clock: Clock,
 ): Result {
@@ -545,9 +605,11 @@ export function applyFixtureHandover(
   const fingerprint = JSON.stringify(command);
   const prior = handovers.requests[request];
   if (prior !== undefined) {
-    return prior === fingerprint ? success(state, handovers, booking, clock.now) : fail("conflict");
+    return prior === fingerprint
+      ? success(state, handovers, booking, clock.now, { applied: false, physicalEffects: [] })
+      : fail("conflict");
   }
-  const session = handovers.sessions[booking.id] ?? emptyFixtureSession;
+  const session = handovers.sessions[booking.id] ?? emptyHandoverSession;
   if (command.bookingVersion !== booking.version || command.handoverVersion !== session.version)
     return fail("stale");
   const next = effect({ booking, site, state, handovers, session, clock, command });
@@ -567,7 +629,7 @@ export function applyFixtureHandover(
     items: next.items,
     remaining: remainingReceiptLines(next.session.allocations),
   };
-  const updated: HandoverFixtureState = {
+  const updated: HandoverState = {
     assets,
     inspection: [...handovers.inspection, ...(next.inspections ?? [])],
     sessions: {
@@ -584,7 +646,7 @@ export function applyFixtureHandover(
     ...state,
     bookings: state.bookings.map((row) => (row.id === booking.id ? next.booking : row)),
   };
-  const capacity = fixtureHandoverCapacity(nextState, updated, clock.now);
+  const capacity = handoverCapacity(nextState, updated, clock.now);
   if (
     changedDemands !== undefined &&
     !planBookingCapacity(
@@ -604,5 +666,8 @@ export function applyFixtureHandover(
     updated,
     next.booking,
     clock.now,
+    { applied: true, physicalEffects: next.physicalEffects ?? [] },
   );
 }
+
+export { applyHandover as applyFixtureHandover };

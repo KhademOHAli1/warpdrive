@@ -12,7 +12,7 @@ export const assetCustodyEntry = classifyInventory(
     "sourceReview:src/features/assets/custody/contracts.ts#51ff421149453f84d6a0e3645d5ed8b5289c504ac217822e2e62221567e4db70",
     "sourceReview:src/features/assets/custody/repository.ts#fc62c5db672f1102c0d7b4ad08a3600010d7659849b578bf2124f0bc03c9303a",
     "sourceReview:src/features/assets/custody/schema.ts#78fe08d886e893ac286ac84f7d2c3bba4fc2c47eedfa94864919d03abfca23a3",
-    "sourceReview:src/features/assets/custody/service.ts#65d6a2e88a311e82d48d1d6190feb9d85961a9d9ad127d5f76bdb89eb16d1620",
+    "sourceReview:src/features/assets/custody/service.ts#5006c6600f445a34f9f82641ae583ae45acfd0d2692dd60a6b11682ad5b72586",
     "sourceReview:src/features/assets/custody/transitions.ts#214b42a61199a30f1147cc653d17a3d678cc86910bba6a4f7a22a5c96ab67460",
     "sourceReview:src/features/assets/custody/ui/CustodyDialogs.tsx#efdce9cf32c42f8a48e9cbea51671ecb01e5b0f571f7e5f6f5b35fad8468e1f0",
     "sourceReview:src/features/assets/custody/ui/CustodyPanels.tsx#81c04bf3a09892a9c5d080cb628311db2e0f456be00e9cccd963618614791c09",

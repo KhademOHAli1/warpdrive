@@ -7,11 +7,11 @@ import type {
   BookingPickupOption,
 } from "./contracts";
 import {
-  emptyFixtureSession,
-  fixtureHandoverStatus,
-  type HandoverFixtureAllocation,
-  type HandoverFixtureState,
+  emptyHandoverSession,
+  type HandoverAllocation,
+  type HandoverState,
   handoverLineKey,
+  handoverStatus,
   pickedPhysicalIds,
   pickedQuantity,
 } from "./fixtureState";
@@ -60,7 +60,10 @@ export function handoverPickupOptions(
   }));
 }
 
-export function handoverBookingScope(state: BookingState, bookingId: string) {
+export function handoverBookingScope(
+  state: Pick<BookingState, "bookings" | "sites" | "viewer">,
+  bookingId: string,
+) {
   const booking = state.bookings.find(({ id }) => id === bookingId);
   const site = state.sites.find(({ id }) => id === booking?.siteId);
   if (booking === undefined || site === undefined || booking.status !== "confirmed") return null;
@@ -78,7 +81,7 @@ export function pickupWindowOpen(booking: Booking, now: string) {
   return Date.parse(booking.window.startAt) <= at && at < Date.parse(booking.window.endAt);
 }
 
-function projectAllocation(row: HandoverFixtureAllocation): BookingHandoverAllocation {
+function projectAllocation(row: HandoverAllocation): BookingHandoverAllocation {
   const {
     id,
     lineKey,
@@ -109,9 +112,9 @@ function projectAllocation(row: HandoverFixtureAllocation): BookingHandoverAlloc
   };
 }
 
-export function projectFixtureHandover(
+export function projectHandover(
   bookings: BookingState,
-  handovers: HandoverFixtureState,
+  handovers: HandoverState,
   bookingId: string,
   now: string,
 ): BookingHandoverRead {
@@ -121,8 +124,8 @@ export function projectFixtureHandover(
   const { assets } = handovers;
   const canOperate =
     scope.canOperate && assets.sites.some(({ id, canManage }) => id === site.id && canManage);
-  const session = handovers.sessions[bookingId] ?? emptyFixtureSession;
-  const status = fixtureHandoverStatus(booking, session, now);
+  const session = handovers.sessions[bookingId] ?? emptyHandoverSession;
+  const status = handoverStatus(booking, session, now);
   const dueAt = booking.window.endAt;
   const pickupClosed = session.pickupClosed || Date.parse(dueAt) <= Date.parse(now);
   const canPickup = canOperate && !pickupClosed && pickupWindowOpen(booking, now);
@@ -177,3 +180,5 @@ export function projectFixtureHandover(
     },
   };
 }
+
+export { projectHandover as projectFixtureHandover };
