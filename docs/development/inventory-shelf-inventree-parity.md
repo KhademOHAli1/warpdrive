@@ -273,6 +273,12 @@ Native Chrome verified a printed equipment tag, separate pool counts, a reasoned
 
 The independent Web rollback to `c42bd8fc` kept Core, PostgreSQL and Silo running. Earlier Web still opened CRM, Assets, kits, custody, bookings, labels, tags and Warehouse. Core still enforced current access to the audit and served the same private photo bytes. PostgreSQL and object inventory stayed unchanged while earlier Web was running. Restoring Web recovered the completed audit and the same exact photo. The manager appended one review, the 15-event CSV matched, and the revoked session remained denied. Audit links from equipment history, Companion, field devices and installed images remain separate acceptance items.
 
+### Equipment audit history (SHELF-08-HISTORY)
+
+An equipment detail shows the latest completed audit and up to three earlier ones, including archived audits. Each finding retains the recorded equipment identity, frozen placement and count history. A finding can show what the operator first counted, why they undid it and what they counted afterward. The link opens the exact audit. General notes, private files and unattributed scans remain in the audit workspace under its own access rules. [Shelf audit history source](https://github.com/Shelf-nu/shelf.nu/blob/66dea8d079a1e8e6a65563a3632c55725bde3c76/apps/webapp/app/modules/audit/asset-audit-history.server.ts#L37)
+
+The Web fixture at `0b0c46cb` passed 90 targeted unit tests and desktop and 390-pixel Chrome. The lead set kept two separate frozen bins. One recorded 4, an undo reason and a recount to 7. The other remained uncounted. Live fixture balances stayed at 12 and 8. Keyboard and pointer opened the exact archived audit and focused its heading. Chrome also verified a serial finding, the ordinary Audit demo and denied invalid or unscoped links. The fixture made zero business writes across 326 checked public tables. Only three existing session activity timestamps advanced. Core and Web rollback qualification are pending. The [operations backlog](warpdrive-operations-backlog.tsv) links the evidence.
+
 ## InvenTree coverage
 
 | Capability family | Warpdrive coverage today | Target and acceptance |
