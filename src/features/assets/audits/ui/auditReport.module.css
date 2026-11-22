@@ -1,0 +1,8 @@
+.report {
+  page: equipment-audit;
+}
+
+@page equipment-audit {
+  size: A4;
+  margin: 14mm;
+}
