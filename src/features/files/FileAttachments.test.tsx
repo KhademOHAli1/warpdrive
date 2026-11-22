@@ -55,6 +55,29 @@ it("renders the confirmed files from the query", () => {
   expect(screen.getByText("report.pdf")).toBeInTheDocument();
 });
 
+it("shows filename format icons and the generic fallback beside attachments", () => {
+  useQuery.mockReturnValueOnce({
+    data: [
+      { id: "f1", filename: "report.PDF", sizeBytes: 2048, contentType: "application/pdf" },
+      {
+        id: "f2",
+        filename: "payload.unknown",
+        sizeBytes: 12,
+        contentType: "application/octet-stream",
+      },
+    ],
+    refetch,
+  });
+  render(<FileAttachments entityType="deal" entityId="d1" />);
+  const known = screen.getByRole("button", { name: "Download report.PDF" });
+  const unknown = screen.getByRole("button", { name: "Download payload.unknown" });
+  expect(known.querySelector('img[alt=""]')).toHaveAttribute("src", "/file-format-icons/pdf.svg");
+  expect(unknown.querySelector('img[alt=""]')).toHaveAttribute(
+    "src",
+    "/file-format-icons/file.svg",
+  );
+});
+
 it("hides the upload control in readOnly mode but keeps the list + download", () => {
   render(<FileAttachments entityType="deal" entityId="d1" readOnly />);
   // The confirmed file list and its download affordance still render.

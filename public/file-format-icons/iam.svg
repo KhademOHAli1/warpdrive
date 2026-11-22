@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Inventor assembly">
+  <title>Inventor assembly</title>
+  <desc>File extensions: .iam.</desc>
+  <path fill="#275FD0" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#688FDE" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M15.88 47.3V35.3H18.87V47.3ZM20.73 47.3 25.06 35.3H28.52L32.85 47.3H29.77L29 45.08H24.56L23.79 47.3ZM25.37 42.7H28.21L26.79 38.55ZM34.69 47.3V35.3H38.65L41.41 43.4L44.16 35.3H48.12V47.3H45.13V40.11L42.54 47.26H40.26L37.68 40.11V47.3Z"/>
+</svg>

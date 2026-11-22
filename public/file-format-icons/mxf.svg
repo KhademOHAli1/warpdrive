@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Material Exchange Format">
+  <title>Material Exchange Format</title>
+  <desc>File extensions: .mxf.</desc>
+  <path fill="#6D45C3" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#997DD5" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M13.6 47.3V35.3H17.52L20.24 43.4L22.97 35.3H26.88V47.3H23.92V40.11L21.36 47.26H19.11L16.56 40.11V47.3ZM28.58 47.3 32.67 41.28 28.62 35.3H32.04L34.44 39.04L36.75 35.3H40.19L36.15 41.25L40.23 47.3H36.81L34.4 43.49L32.03 47.3ZM41.94 47.3V35.3H50.4V37.74H43.22L44.9 35.99V41.49L43.22 40.22H50.1V42.65H43.22L44.9 41.38V47.3Z"/>
+</svg>

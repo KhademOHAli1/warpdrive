@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Wavefront material library">
+  <title>Wavefront material library</title>
+  <desc>File extensions: .mtl.</desc>
+  <path fill="#644BC6" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#9281D7" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M14.35 47.3V35.3H18.31L21.07 43.4L23.82 35.3H27.78V47.3H24.79V40.11L22.2 47.26H19.92L17.34 40.11V47.3ZM33.03 47.3V37.74H29.49V35.3H39.58V37.74H36.04V47.3ZM41.3 47.3V35.3H44.3V46.61L42.61 44.86H49.65V47.3Z"/>
+</svg>

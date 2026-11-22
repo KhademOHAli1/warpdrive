@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Additive Manufacturing File Format">
+  <title>Additive Manufacturing File Format</title>
+  <desc>File extensions: .amf.</desc>
+  <path fill="#644BC6" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#9281D7" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M13.6 47.3 17.72 35.3H21.02L25.14 47.3H22.21L21.48 45.08H17.25L16.52 47.3ZM18.02 42.7H20.72L19.38 38.55ZM26.9 47.3V35.3H30.67L33.3 43.4L35.92 35.3H39.7V47.3H36.84V40.11L34.38 47.26H32.21L29.75 40.11V47.3ZM42.24 47.3V35.3H50.4V37.74H43.48L45.1 35.99V41.49L43.48 40.22H50.11V42.65H43.48L45.1 41.38V47.3Z"/>
+</svg>

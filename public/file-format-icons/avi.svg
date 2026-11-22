@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Audio Video Interleave">
+  <title>Audio Video Interleave</title>
+  <desc>File extensions: .avi.</desc>
+  <path fill="#6D45C3" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#997DD5" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M16.95 47.3 21.28 35.3H24.74L29.06 47.3H25.99L25.22 45.08H20.78L20.01 47.3ZM21.59 42.7H24.42L23.01 38.55ZM34.41 47.3 30.08 35.3H33.16L36.15 43.92L39.13 35.3H42.21L37.85 47.3ZM44.05 47.3V35.3H47.05V47.3Z"/>
+</svg>

@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useId } from "react";
+import { AttachmentIcon } from "@/features/files/AttachmentIcon";
 import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { type BomWords, bomMessages } from "../../../bom/ui/messages";
 import { manufacturingReleaseMessages } from "../../ui/manufacturingReleaseMessages";
@@ -33,12 +34,15 @@ function Difference({
 function fileDetails(file: ChangeFile | null): ReactNode {
   if (file === null) return null;
   return (
-    <>
-      <bdi className="block">{file.name}</bdi>
-      <bdi dir="ltr" className="block font-mono text-xs text-muted-foreground">
-        {file.sha256}
-      </bdi>
-    </>
+    <div className="flex min-w-0 items-start gap-1.5">
+      <AttachmentIcon filename={file.name} size={20} />
+      <div className="min-w-0">
+        <bdi className="block">{file.name}</bdi>
+        <bdi dir="ltr" className="block font-mono text-xs text-muted-foreground">
+          {file.sha256}
+        </bdi>
+      </div>
+    </div>
   );
 }
 

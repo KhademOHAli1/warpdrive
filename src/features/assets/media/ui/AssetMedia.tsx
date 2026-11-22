@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AttachmentIcon } from "@/features/files/AttachmentIcon";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { SalesInput } from "@/features/inventory/sales/ui/SalesFields";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
@@ -116,9 +117,12 @@ function MediaFile({
       className="min-w-0 space-y-1.5 p-2.5"
     >
       <div className="flex flex-wrap items-center gap-1.5">
-        <bdi dir="auto" className="min-w-0 wrap-anywhere font-medium">
-          {file.name}
-        </bdi>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <AttachmentIcon filename={file.name} />
+          <bdi dir="auto" className="min-w-0 wrap-anywhere font-medium">
+            {file.name}
+          </bdi>
+        </div>
         {current && <Badge variant="secondary">{t.currentCover}</Badge>}
       </div>
       <p className="min-w-0 wrap-anywhere text-xs text-muted-foreground">

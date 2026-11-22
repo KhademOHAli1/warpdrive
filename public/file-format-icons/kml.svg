@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Keyhole Markup Language">
+  <title>Keyhole Markup Language</title>
+  <desc>File extensions: .kml.</desc>
+  <path fill="#177493" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#5D9EB3" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M13.6 47.3V35.3H16.6V40.26L20.55 35.3H23.98L19.69 40.63L24.23 47.3H20.89L17.73 42.6L16.6 43.95V47.3ZM25.95 47.3V35.3H29.91L32.67 43.4L35.42 35.3H39.38V47.3H36.39V40.11L33.8 47.26H31.52L28.95 40.11V47.3ZM42.05 47.3V35.3H45.05V46.61L43.35 44.86H50.4V47.3Z"/>
+</svg>

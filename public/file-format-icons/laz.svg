@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Compressed LiDAR point cloud">
+  <title>Compressed LiDAR point cloud</title>
+  <desc>File extensions: .laz.</desc>
+  <path fill="#644BC6" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#9281D7" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M15.84 47.3V35.3H18.84V46.61L17.14 44.86H24.19V47.3ZM25.43 47.3 29.75 35.3H33.21L37.54 47.3H34.46L33.7 45.08H29.25L28.49 47.3ZM30.07 42.7H32.9L31.49 38.55ZM38.69 47.3V44.97L44.15 37.74H38.98V35.3H47.92V37.63L42.33 44.86H48.16V47.3Z"/>
+</svg>

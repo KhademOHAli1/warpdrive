@@ -1,5 +1,6 @@
 "use client";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { AttachmentIcon } from "@/features/files/AttachmentIcon";
 // AttachmentList: shows confirmed uploads with a remove control per item.
 
 export interface AttachedFile {
@@ -27,6 +28,7 @@ export function AttachmentList({ attachments, onRemove }: AttachmentListProps): 
     <ul className="flex flex-col gap-1 px-2 py-1">
       {attachments.map((f) => (
         <li key={f.fileId} className="flex items-center gap-2 text-xs text-muted-foreground">
+          <AttachmentIcon filename={f.filename} size={20} />
           <span className="truncate flex-1">{f.filename}</span>
           <span className="shrink-0 text-muted-foreground/70">{formatBytes(f.size)}</span>
           <button

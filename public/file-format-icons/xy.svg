@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="XY placement coordinates">
+  <title>XY placement coordinates</title>
+  <desc>File extensions: .xy.</desc>
+  <path fill="#A3572C" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#BF896B" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M20.04 47.4 24.24 41.28 20.07 35.2H23.59L26.06 39L28.43 35.2H31.98L27.82 41.25L32.02 47.4H28.5L26.03 43.53L23.58 47.4ZM36.7 47.4V42.76L32.49 35.2H35.81L38.24 39.82L40.64 35.2H43.96L39.76 42.76V47.4Z"/>
+</svg>

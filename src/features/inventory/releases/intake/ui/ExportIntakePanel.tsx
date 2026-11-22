@@ -4,6 +4,7 @@ import { FilePlus } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { AttachmentIcon } from "@/features/files/AttachmentIcon";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { formatDateTime } from "@/lib/localeFormatting";
@@ -136,15 +137,18 @@ function JobCard({
               data-export-intake-artifact={name}
               data-export-intake-artifact-kind={kind}
               data-export-intake-artifact-hash={sha256}
-              className="space-y-0.5 py-1.5 wrap-anywhere"
+              className="flex items-start gap-1.5 py-1.5 wrap-anywhere"
             >
-              <div className="flex flex-wrap justify-between gap-x-2">
-                <bdi dir="auto">{name}</bdi>
-                <span className="text-xs text-muted-foreground">{kinds[kind]}</span>
+              <AttachmentIcon filename={name} />
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <div className="flex flex-wrap justify-between gap-x-2">
+                  <bdi dir="auto">{name}</bdi>
+                  <span className="text-xs text-muted-foreground">{kinds[kind]}</span>
+                </div>
+                <bdi dir="ltr" className="block font-mono text-xs text-muted-foreground">
+                  {sha256}
+                </bdi>
               </div>
-              <bdi dir="ltr" className="block font-mono text-xs text-muted-foreground">
-                {sha256}
-              </bdi>
             </li>
           ))}
         </ul>

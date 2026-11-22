@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Plain text">
+  <title>Plain text</title>
+  <desc>File extensions: .txt, .text, .asc.</desc>
+  <path fill="#225ABA" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#648CCF" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M18.79 47.3V37.74H15.25V35.3H25.34V37.74H21.8V47.3ZM26.11 47.3 30.25 41.28 26.14 35.3H29.61L32.03 39.04L34.37 35.3H37.85L33.77 41.25L37.89 47.3H34.43L32 43.49L29.6 47.3ZM42.2 47.3V37.74H38.66V35.3H48.75V37.74H45.21V47.3Z"/>
+</svg>

@@ -21,7 +21,12 @@ describe("AttachmentList", () => {
   it("renders a row for each attachment with filename", () => {
     render(<AttachmentList attachments={FILES} onRemove={vi.fn()} />);
     expect(screen.getByText("invoice.pdf")).toBeInTheDocument();
-    expect(screen.getByText("photo.png")).toBeInTheDocument();
+    const photo = screen.getByText("photo.png");
+    expect(photo).toBeInTheDocument();
+    expect(photo.closest("li")?.querySelector('img[alt=""]')).toHaveAttribute(
+      "src",
+      "/file-format-icons/png.svg",
+    );
   });
 
   it("calls onRemove with the fileId when the remove button is clicked", () => {

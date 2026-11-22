@@ -1,8 +1,8 @@
 "use client";
 
-import { Download } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { AttachmentIcon } from "@/features/files/AttachmentIcon";
 import { useFormatters } from "@/lib/useFormatters";
 import { useHydrated } from "@/lib/useHydrated";
 import type {
@@ -126,7 +126,7 @@ function InspectionLine({
                 download={file.name}
                 data-quality-evidence-id={file.id}
               >
-                <Download aria-hidden="true" className="size-3.5 shrink-0" />
+                <AttachmentIcon filename={file.name} size={18} />
                 <bdi className="[overflow-wrap:anywhere]">{file.name}</bdi>
               </a>
             </li>

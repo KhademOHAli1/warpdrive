@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="TrueType font">
+  <title>TrueType font</title>
+  <desc>File extensions: .ttf, .ttc.</desc>
+  <path fill="#505F73" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#848F9D" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M19.93 47.3V37.74H16.39V35.3H26.48V37.74H22.94V47.3ZM30.78 47.3V37.74H27.24V35.3H37.33V37.74H33.79V47.3ZM39.05 47.3V35.3H47.61V37.74H40.35L42.05 35.99V41.49L40.35 40.22H47.31V42.65H40.35L42.05 41.38V47.3Z"/>
+</svg>

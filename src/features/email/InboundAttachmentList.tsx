@@ -1,9 +1,9 @@
 "use client";
 import { useEmailMessages } from "@/features/email/useEmailMessages";
+import { AttachmentIcon } from "@/features/files/AttachmentIcon";
 import type { AttachmentMeta } from "./attachmentReads";
 
-// Same B/KB/MB convention as composer/AttachmentList.tsx and files/FileAttachments.tsx,
-// kept as a small local pure function so this file has no cross-feature import.
+// Same B/KB/MB convention as composer/AttachmentList.tsx and files/FileAttachments.tsx.
 
 interface InboundAttachmentListProps {
   attachments: AttachmentMeta[];
@@ -27,12 +27,13 @@ export function InboundAttachmentList({
   return (
     <ul className="mt-2 flex flex-wrap gap-2">
       {attachments.map((a) => (
-        <li key={a.id}>
+        <li key={a.id} className="min-w-0 max-w-full">
           <a
             href={`/api/email/attachments/${a.id}`}
             download
-            className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground hover:bg-accent"
+            className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground hover:bg-accent"
           >
+            <AttachmentIcon filename={a.filename} size={20} />
             <span className="truncate max-w-[16rem]">{a.filename}</span>
             <span className="shrink-0 text-muted-foreground">{formatBytes(a.sizeBytes)}</span>
           </a>

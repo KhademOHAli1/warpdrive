@@ -4,6 +4,7 @@ import { Download, Trash2 } from "lucide-react";
 import { useId } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonVariants } from "@/components/ui/Button";
+import { AttachmentIcon } from "@/features/files/AttachmentIcon";
 import { useLocalePreferences, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { localeTagForFormatting } from "@/lib/localeFormatting";
 import { useHydrated } from "@/lib/useHydrated";
@@ -41,16 +42,19 @@ export function ReleaseArtifacts({
     <ul className="divide-y rounded-md border px-2">
       {artifacts.map((artifact) => (
         <li key={artifact.id} className="flex items-center justify-between gap-1.5 py-1.5">
-          <div className="min-w-0">
-            <bdi className="block break-all text-sm">{artifact.name}</bdi>
-            <span className="text-xs text-muted-foreground">
-              {t.kinds[artifact.kind]} · {size.format(artifact.sizeBytes)}
-            </span>
-            <span className="block break-all font-mono text-xs text-muted-foreground">
-              <bdi dir="ltr">
-                {checksumAlgorithm} {artifact.sha256}
-              </bdi>
-            </span>
+          <div className="flex min-w-0 items-start gap-1.5">
+            <AttachmentIcon filename={artifact.name} />
+            <div className="min-w-0">
+              <bdi className="block break-all text-sm">{artifact.name}</bdi>
+              <span className="text-xs text-muted-foreground">
+                {t.kinds[artifact.kind]} · {size.format(artifact.sizeBytes)}
+              </span>
+              <span className="block break-all font-mono text-xs text-muted-foreground">
+                <bdi dir="ltr">
+                  {checksumAlgorithm} {artifact.sha256}
+                </bdi>
+              </span>
+            </div>
           </div>
           <div className="flex shrink-0 items-center">
             <a

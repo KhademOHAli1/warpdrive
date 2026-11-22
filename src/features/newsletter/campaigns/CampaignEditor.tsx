@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { RichTextBody } from "@/features/email/composer/RichTextBodyLazy";
+import { AttachmentIcon } from "@/features/files/AttachmentIcon";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { AudiencePanel } from "@/features/newsletter/crmAudience/AudiencePanel";
 import type { SealedAudience } from "@/features/newsletter/crmAudience/contracts";
@@ -319,6 +320,7 @@ function AttachmentPicker({
         <ul className="flex flex-wrap gap-2" aria-label={m.selectedAttachments}>
           {media.map((item) => (
             <li key={item.id} className="flex items-center gap-2 rounded-md border ps-2 text-sm">
+              <AttachmentIcon filename={item.filename} size={20} />
               <bdi>{item.filename}</bdi>
               {!disabled && (
                 <Button
@@ -366,6 +368,7 @@ function AttachmentPicker({
                     size="sm"
                     onClick={() => onChange([...media, { id: item.id, filename: item.filename }])}
                   >
+                    <AttachmentIcon filename={item.filename} size={20} />
                     <bdi>{item.filename}</bdi>
                   </Button>
                 </li>

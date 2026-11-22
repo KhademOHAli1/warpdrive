@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Email message">
+  <title>Email message</title>
+  <desc>File extensions: .eml.</desc>
+  <path fill="#505F73" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#848F9D" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M14.25 47.3V35.3H22.91V37.74H17.25V40.07H22.71V42.5H17.25V44.86H23.05V47.3ZM25.29 47.3V35.3H29.25L32.01 43.4L34.76 35.3H38.73V47.3H35.73V40.11L33.14 47.26H30.86L28.29 40.11V47.3ZM41.4 47.3V35.3H44.39V46.61L42.7 44.86H49.75V47.3Z"/>
+</svg>

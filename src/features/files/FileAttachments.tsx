@@ -11,6 +11,7 @@ import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { trpc } from "@/lib/trpc-client";
 import { useFormatters } from "@/lib/useFormatters";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import { AttachmentIcon } from "./AttachmentIcon";
 import { ALLOWED_CONTENT_TYPES } from "./contentTypes";
 import type { FileEntityType, FileListItem } from "./listFilesForEntity";
 import { requestDownloadAction } from "./serverActions";
@@ -119,9 +120,12 @@ export function FileAttachments({
                 type="button"
                 onClick={() => void handleDownload(file.id)}
                 aria-label={t("download", { name: file.filename })}
-                className="truncate text-start text-primary hover:underline"
+                className="flex min-w-0 items-center gap-1.5 text-start text-primary hover:underline"
               >
-                <bdi dir="auto">{file.filename}</bdi>
+                <AttachmentIcon filename={file.filename} />
+                <bdi dir="auto" className="truncate">
+                  {file.filename}
+                </bdi>
               </button>
               <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                 {formatBytes(file.sizeBytes)}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Windows executable">
+  <title>Windows executable</title>
+  <desc>File extensions: .exe.</desc>
+  <path fill="#38647B" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#7492A3" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M15.81 47.3V35.3H24.47V37.74H18.8V40.07H24.26V42.5H18.8V44.86H24.6V47.3ZM25.89 47.3 30.03 41.28 25.92 35.3H29.39L31.81 39.04L34.15 35.3H37.63L33.55 41.25L37.67 47.3H34.21L31.78 43.49L29.38 47.3ZM39.4 47.3V35.3H48.06V37.74H42.4V40.07H47.86V42.5H42.4V44.86H48.19V47.3Z"/>
+</svg>

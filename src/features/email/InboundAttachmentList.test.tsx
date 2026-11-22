@@ -16,6 +16,7 @@ describe("InboundAttachmentList", () => {
       />,
     );
     const link = screen.getByRole("link", { name: /invoice\.pdf/ });
+    expect(link.querySelector('img[alt=""]')).toHaveAttribute("src", "/file-format-icons/pdf.svg");
     expect(link).toHaveAttribute("href", "/api/email/attachments/at1");
     expect(link).toHaveAttribute("download");
     expect(screen.getByText(/86 KB/)).toBeInTheDocument();

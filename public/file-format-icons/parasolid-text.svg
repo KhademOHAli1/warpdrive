@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Parasolid text model">
+  <title>Parasolid text model</title>
+  <desc>File extensions: .x_t, .xmt_txt.</desc>
+  <path fill="#275FD0" d="M16.4375 0H37.8125L55.9375 18.75V55.625a8.375 8.375 0 0 1-8.375 8.375H16.4375a8.375 8.375 0 0 1-8.375-8.375V8.375a8.375 8.375 0 0 1 8.375-8.375Z"/>
+  <path fill="#688FDE" d="M37.8125 0 55.9375 18.75H37.8125Z"/>
+  <path fill="#FFF" d="M18.37 45.35 21.83 40.31 18.39 35.3H21.3L23.33 38.43L25.28 35.3H28.2L24.78 40.28L28.23 45.35H25.33L23.3 42.16L21.29 45.35ZM29.21 47.3V45.35H36.21V47.3ZM40.15 45.35V37.35H37.18V35.3H45.63V37.35H42.67V45.35Z"/>
+</svg>
