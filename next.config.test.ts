@@ -99,6 +99,22 @@ async function cspForPath(path: string): Promise<string> {
   return values.join("");
 }
 
+describe("physical label scanner document", () => {
+  it("allows only same-origin camera access on the scanner document", async () => {
+    const scanner = await headersForPath("/operations/scan");
+    expect(scanner.get("permissions-policy")?.at(-1)).toBe(
+      "camera=(self), microphone=(), geolocation=(), payment=()",
+    );
+    expect(scanner.get("referrer-policy")?.at(-1)).toBe("no-referrer");
+    for (const path of ["/operations/labels", "/operations/scanner", "/assets", "/login"]) {
+      const headers = await headersForPath(path);
+      expect(headers.get("permissions-policy")).toEqual([
+        "camera=(), microphone=(), geolocation=(), payment=()",
+      ]);
+    }
+  });
+});
+
 const ORDINARY_PATH = "/deals";
 
 describe("next.config security headers", () => {

@@ -22,14 +22,20 @@ export default async function InventoryPage({
   const { dealId, tab, itemId } = await searchParams;
   const parsed = z.uuid().toLowerCase().optional().safeParse(dealId);
   if (!parsed.success) notFound();
+  const selected = z.uuid().toLowerCase().optional().safeParse(itemId);
+  if (!selected.success) notFound();
   const view = parsed.data ?? "catalog";
   const openReleases = tab === "releases" && parsed.data === undefined;
   if (inventoryFixturesEnabled()) {
+    const initial = inventoryFixture(parsed.data);
+    if (selected.data !== undefined && !initial.items.some(({ id }) => id === selected.data))
+      notFound();
     return (
       <InventoryFixture
-        key={openReleases ? "catalog-releases" : view}
-        initial={inventoryFixture(parsed.data)}
+        key={`${openReleases ? "catalog-releases" : view}:${selected.data ?? ""}`}
+        initial={initial}
         openReleases={openReleases}
+        initialItemId={selected.data}
       />
     );
   }
@@ -41,8 +47,6 @@ export default async function InventoryPage({
       if (!(error instanceof TRPCClientError)) throw error;
       return { ok: false, error: "Inventory could not be loaded." } as const;
     });
-  const selected = z.uuid().toLowerCase().optional().safeParse(itemId);
-  if (!selected.success) notFound();
   return (
     <InventoryLive
       key={`${actor.id}:${view}:${selected.data ?? ""}:${openReleases}`}

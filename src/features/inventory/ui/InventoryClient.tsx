@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
+import { LabelRegistryLink } from "@/features/physical-labels/ui/LabelRegistryLink";
 import { cn } from "@/lib/utils";
 import type { InventoryCommand, InventoryResult, InventoryWorkspace } from "../contracts";
 import {
@@ -113,7 +114,14 @@ export function InventoryClient({
       <PageHeading
         title={workspace.deal === null ? t.inventory : t.inventoryOrders}
         description={workspace.deal === null ? undefined : workspace.deal.name}
-        actions={workspace.fixture ? <Badge variant="outline">{t.demo}</Badge> : undefined}
+        actions={
+          workspace.fixture ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {workspace.deal === null && <LabelRegistryLink />}
+              <Badge variant="outline">{t.demo}</Badge>
+            </div>
+          ) : undefined
+        }
       />
       <nav aria-label={t.sections} className="mb-4 flex gap-4 border-b has-[a]:flex-wrap">
         <button

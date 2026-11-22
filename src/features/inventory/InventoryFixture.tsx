@@ -13,9 +13,11 @@ import { InventoryClient } from "./ui/InventoryClient";
 export function InventoryFixture({
   initial,
   openReleases,
+  initialItemId,
 }: {
   initial: InventoryWorkspace;
   openReleases: boolean;
+  initialItemId?: string;
 }) {
   const workspace = useRef(initial);
   function submit(command: InventoryCommand) {
@@ -31,6 +33,7 @@ export function InventoryFixture({
         submit={submit}
         ProductReleases={ManufacturingReleasesFixture}
         openReleases={openReleases}
+        initialItemId={initialItemId}
         catalogLinks={initial.deal === null && <InventoryCatalogLinks fixture />}
       />
     </ManufacturingReleaseFixtureProvider>

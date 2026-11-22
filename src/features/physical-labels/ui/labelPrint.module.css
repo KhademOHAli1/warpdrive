@@ -1,0 +1,131 @@
+.output {
+  display: none;
+}
+
+.preview {
+  max-block-size: min(58dvh, 35rem);
+  overflow: auto;
+}
+
+.paper {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: white;
+  color: black;
+}
+
+.previewPaper {
+  margin-inline: auto;
+  zoom: 0.62;
+}
+
+.cell {
+  position: absolute;
+  box-sizing: border-box;
+  display: grid;
+  min-inline-size: 0;
+  grid-template: auto minmax(0, 1fr) var(--label-line) / minmax(0, 1fr);
+  align-items: center;
+  gap: var(--label-gap);
+  padding: var(--label-inset);
+  overflow: hidden;
+  font:
+    7pt / var(--label-line) system-ui,
+    sans-serif;
+  text-align: center;
+}
+
+.previewPaper .cell {
+  outline: 1px dashed #b8bec8;
+  outline-offset: -1px;
+}
+
+.title,
+.subtitle,
+.readable {
+  display: block;
+  overflow: hidden;
+  block-size: var(--label-line);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.title {
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 6.5pt;
+}
+
+.readable {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--readable-font);
+}
+
+.symbol {
+  display: block;
+  justify-self: center;
+  object-fit: fill;
+}
+
+.compact {
+  grid-template: minmax(0, 1fr) var(--label-line) / var(--caption-width) minmax(0, 1fr);
+}
+
+.compact .caption {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  text-align: start;
+}
+
+.compact .symbol {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.compact .readable {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+@media (max-width: 50rem) {
+  .previewPaper {
+    zoom: 0.47;
+  }
+}
+
+@media (max-width: 32rem) {
+  .previewPaper {
+    zoom: 0.34;
+  }
+}
+
+@media print {
+  :global(body):has(> .output[data-label-print-document]) {
+    /* biome-ignore lint/complexity/noImportantStyles: Undo Radix's print-time scroll lock compensation. */
+    margin: 0 !important;
+    padding: 0;
+    /* biome-ignore lint/complexity/noImportantStyles: Undo Radix's print-time scroll lock. */
+    overflow: visible !important;
+  }
+
+  :global(body):has(> .output) > :not(.output) {
+    display: none;
+  }
+
+  .output {
+    display: block;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .paper {
+    break-after: page;
+  }
+
+  .paper:last-child {
+    break-after: auto;
+  }
+}

@@ -5,6 +5,12 @@ const PUBLICATION_PATH =
 const BOOKING_CALENDAR_PATH =
   /(?:\/|%2f|%252f)api(?:\/|%2f|%252f)assets(?:\/|%2f|%252f)bookings(?:\/|%2f|%252f)/iu;
 const BOOKING_FEED_SECRET = /wd_booking_/iu;
+const PHYSICAL_LABEL_LINK = /(?:\/|%2f|%252f)operations(?:\/|%2f|%252f)scan(?:\?|%3f|%253f)/iu;
+const PHYSICAL_LABEL_CODE = /wd-label(?::|%3a|%253a)v1(?::|%3a|%253a)/iu;
+
+export function containsPhysicalLabelLink(value: string): boolean {
+  return PHYSICAL_LABEL_LINK.test(value) || PHYSICAL_LABEL_CODE.test(value);
+}
 
 export function containsPrivateBookingCalendar(value: string): boolean {
   return BOOKING_CALENDAR_PATH.test(value) || BOOKING_FEED_SECRET.test(value);
@@ -41,7 +47,11 @@ export function containsProjectPublicationLink(value: string): boolean {
 }
 
 function containsPrivateLink(value: string) {
-  return containsProjectPublicationLink(value) || containsPrivateBookingCalendar(value);
+  return (
+    containsProjectPublicationLink(value) ||
+    containsPrivateBookingCalendar(value) ||
+    containsPhysicalLabelLink(value)
+  );
 }
 
 function scrubUrlFields(props: Record<string, unknown>): Record<string, unknown> {

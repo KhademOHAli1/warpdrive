@@ -14,7 +14,13 @@ import { applyKitCommand } from "../kits/transitions";
 import { applyAssetWorkspaceCommand } from "../registerCommands";
 import { AssetsRegister } from "./AssetsWorkspace";
 
-export function AssetsFixture({ canManage }: { canManage: boolean }) {
+export function AssetsFixture({
+  canManage,
+  initialAssetId,
+}: {
+  canManage: boolean;
+  initialAssetId?: string | null;
+}) {
   const [initial] = useState<AssetsWorkspace>(() => ({
     ...assetsFixture(canManage),
     kits: emptyKitWorkspace(),
@@ -87,6 +93,7 @@ export function AssetsFixture({ canManage }: { canManage: boolean }) {
   return (
     <AssetsRegister
       initial={initial}
+      initialAssetId={initialAssetId}
       submit={submit}
       submitCustody={submitCustody}
       submitKit={submitKit}

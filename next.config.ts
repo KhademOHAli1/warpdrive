@@ -55,7 +55,7 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
     // Full URLs leak record ids (/deals/<uuid>) and the consent query string, which carries the
     // CSRF token, into any cross-origin navigation.
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-    // No app surface uses these; denying them shrinks what injected content could ask for.
+    // The standalone label scanner overrides only camera access on its own document.
     { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
   ];
 }
@@ -69,7 +69,9 @@ const nextConfig: NextConfig = {
   // Action arguments include credentials, CSRF tokens and private email content.
   logging: {
     serverFunctions: false,
-    incomingRequests: { ignore: [/\/api\/assets\/bookings\/feeds\//u] },
+    incomingRequests: {
+      ignore: [/\/api\/assets\/bookings\/feeds\//u, /(?:\/|%2f)operations(?:\/|%2f)scan/iu],
+    },
   },
   // HSTS is set by Caddy, not here: it terminates TLS and so is the layer that knows the
   // response actually went out over HTTPS. See Caddyfile.
@@ -77,6 +79,16 @@ const nextConfig: NextConfig = {
     return Promise.resolve([
       { source: CONSENT_PATH, headers: securityHeaders(BASE_CSP) },
       { source: ALL_ROUTES_EXCEPT_CONSENT, headers: securityHeaders([...BASE_CSP, FORM_ACTION]) },
+      {
+        source: "/operations/scan",
+        headers: [
+          {
+            key: "Permissions-Policy",
+            value: "camera=(self), microphone=(), geolocation=(), payment=()",
+          },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
     ]);
   },
   // "x-powered-by: Next.js" hands a scanner the framework for free.

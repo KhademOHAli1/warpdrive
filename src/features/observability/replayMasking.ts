@@ -14,6 +14,10 @@ export const sessionRecordingOptions = {
     containsProjectPublicationLink(request.name) ||
     containsPrivateBookingCalendar(request.name) ||
     request.name.includes("/assets/bookings") ||
+    containsPhysicalLabelLink(request.name) ||
+    request.name.includes("/operations/scan") ||
+    request.name.includes("/operations/labels") ||
+    request.name.includes("physicalLabels.") ||
     request.name.includes("internalProjects.publication") ||
     request.name.includes("internalProjects.integrator")
       ? null
@@ -21,4 +25,8 @@ export const sessionRecordingOptions = {
 } satisfies NonNullable<PostHogConfig["session_recording"]>;
 
 import type { PostHogConfig } from "posthog-js";
-import { containsPrivateBookingCalendar, containsProjectPublicationLink } from "./scrub";
+import {
+  containsPhysicalLabelLink,
+  containsPrivateBookingCalendar,
+  containsProjectPublicationLink,
+} from "./scrub";

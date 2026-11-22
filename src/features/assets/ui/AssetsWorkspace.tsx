@@ -12,6 +12,7 @@ import { Select, type SelectOption } from "@/components/ui/Select";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
+import { LabelRegistryLink } from "@/features/physical-labels/ui/LabelRegistryLink";
 import { useHydrated } from "@/lib/useHydrated";
 import {
   type AssetCommand,
@@ -707,6 +708,7 @@ export function AssetsRegister({
         title={t.title}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {fixture && <LabelRegistryLink />}
             {bookingsAvailable && (
               <Link
                 href="/assets/bookings"

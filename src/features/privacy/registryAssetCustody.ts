@@ -19,7 +19,7 @@ export const assetCustodyEntry = classifyInventory(
     "sourceReview:src/features/assets/custody/ui/messages.ts#b512d91984d8abdf2e0b1ebcac5026c1b58b74c52905b1b1d295c304659401be",
     "sourceReview:src/features/assets/custody/ui/useCustodyWorkspace.ts#258cfe10d618525835a125193bfda9fcd1c3664014a8963e4cec5513cc84c22f",
     "sourceReview:src/features/assets/custody/webActions.ts#d7d88cf25b869c840f5b65beb3dccb322810e8499597fb33f0a2a12882b25442",
-    "sourceReview:src/features/assets/ui/AssetsFixture.tsx#0aa18053e7c03cdd1e609a912658167743107f7e7d817e8e891dcec17aa1b8df",
+    "sourceReview:src/features/assets/ui/AssetsFixture.tsx#842445da1b45a2500c0e20a0f041ac2f3ad8f0ee68cb34bdf25cb0a2ce9f33da",
     "table:asset_custodian_notes",
     "table:asset_custodians",
     "table:asset_custody_history",

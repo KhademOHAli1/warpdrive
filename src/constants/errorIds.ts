@@ -323,6 +323,9 @@ export const ERROR_IDS = {
   RUNTIME_CORE_API_DRAIN_FAILED: "E_RUNTIME_016",
   RUNTIME_CORE_API_STREAM_UNSETTLED: "E_RUNTIME_017",
   RUNTIME_CORE_API_HEALTH_FAILED: "E_RUNTIME_018",
+
+  // Physical label scanner.
+  LABEL_CAMERA_UNAVAILABLE: "E_LABEL_CAMERA_001",
 } as const;
 
 export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];

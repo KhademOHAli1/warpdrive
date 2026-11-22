@@ -60,6 +60,27 @@ describe("private booking calendars", () => {
   });
 });
 
+describe("physical label privacy", () => {
+  it("redacts printed label codes and nested scan destinations", () => {
+    const code = "wd-label:v1:111111111111111111111A";
+    const link = `/operations/scan?code=${encodeURIComponent(code)}`;
+    expect(
+      scrubProperties({
+        $current_url: `/login?returnTo=${encodeURIComponent(link)}`,
+        $set_once: { $initial_referrer: link },
+        $pathname: "/operations/scan",
+        message: `Scan failed for ${code}`,
+      }),
+    ).toEqual({
+      $current_url: "[redacted]",
+      $set_once: { $initial_referrer: "[redacted]" },
+      $pathname: "/operations/scan",
+      message: "[redacted]",
+    });
+    expect(sanitizeErrorEmails(`Lookup failed: ${link}`)).toBe("[redacted]");
+  });
+});
+
 describe("sanitizeErrorEmails", () => {
   it("redacts emails from an Error message and stack", () => {
     const out = sanitizeErrorEmails(new Error("failed for jane@acme.com"));

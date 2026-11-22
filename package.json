@@ -41,6 +41,7 @@
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.27",
     "@better-auth/passkey": "1.7.27",
+    "@bwip-js/generic": "4.11.4",
     "@daypicker/persian": "^10.0.2",
     "@daypicker/react": "^10.0.2",
     "@dnd-kit/core": "^6.3.1",
@@ -79,6 +80,7 @@
     "@trpc/react-query": "^11.29.5",
     "@trpc/server": "^11.29.5",
     "@xyflow/react": "13.0.2",
+    "@zxing/library": "0.23.0",
     "better-auth": "1.7.27",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

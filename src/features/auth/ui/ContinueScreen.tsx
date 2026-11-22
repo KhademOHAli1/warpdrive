@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { useLocale } from "@/features/i18n/LocaleProvider";
+import { physicalLabelScanPath } from "@/features/physical-labels/formats";
 import { authScreensMessagesForLocale } from "../authScreensMessages";
 import { AssistedRecovery } from "./AssistedRecovery";
 import { AuthFrame } from "./AuthFrame";
@@ -20,7 +21,11 @@ export function ContinueScreen({ returnTo }: { returnTo?: string }) {
   useEffect(() => {
     if (status?.emailVerified === true && !status.needsMfa && !status.needsEnrollment) {
       rememberSignInMethod(status.authMethod, config ?? undefined);
-      router.replace(safeAuthDestination(returnTo));
+      const destination = safeAuthDestination(returnTo);
+      // Only a fresh scanner document receives the camera policy.
+      if (destination.split("?", 1)[0] === physicalLabelScanPath)
+        window.location.replace(destination);
+      else router.replace(destination);
     }
   }, [status, config, returnTo, router]);
   const title =
