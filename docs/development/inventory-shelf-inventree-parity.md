@@ -211,6 +211,12 @@ The populated 0148 to 0149 upgrade and migration replay preserved existing label
 
 Physical label printer calibration, supported field devices and Companion qualification remain open. Imported identifiers resolve in the Warpdrive scanner. Existing QR URLs on physical labels still send external devices to their original host until reprinted or redirected. The finder form creates a private inbox record. Optional email delivery remains in PLAT-05.
 
+### Scheduled equipment handover (SHELF-07)
+
+The booking handover fixture has explicit checkout and check-in. The operator can split a pickup into sessions, select the exact serial and source bin, settle part of the original kit, amend the due date when capacity permits, and print a receipt with the remaining quantities and signature fields.
+
+Chrome at `672a780f` qualified scoped sign-in, wrong-model, wrong-site and duplicate scan denials, two same-model serials in separate pickups, quantities from two bins, a kit and loose consumables, and the conflicting and accepted deadline changes. The controlled clock distinguished overdue custody from an expired pickup. Returning the remaining items preserved the previous receipt with its original kit member quantities. Chrome produced a measured A4 sheet. The fixture sent zero business writes and preserved 120 checked tables and the migration ledger. The [operations backlog](warpdrive-operations-backlog.tsv) links the fixture evidence. Core persistence, overdue notification delivery, the populated upgrade and Web rollback remain open.
+
 ## InvenTree coverage
 
 | Capability family | Warpdrive coverage today | Target and acceptance |
