@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import NextImage from "next/image";
-import { type CSSProperties, useEffect, useId, useState } from "react";
+import { type CSSProperties, useEffect, useId, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import {
@@ -538,6 +538,13 @@ function PrintPreview({
 }
 
 function PrintOutput({ scene }: { scene: PrintScene }) {
+  // The portal can remount when freshly-sized symbols become ready. Keep print isolation
+  // explicit instead of relying on a relational selector being invalidated during reprint.
+  useLayoutEffect(() => {
+    const { body } = document;
+    body.setAttribute("data-label-printing", "");
+    return () => body.removeAttribute("data-label-printing");
+  }, []);
   const {
     layout: { paper, pages },
   } = scene;

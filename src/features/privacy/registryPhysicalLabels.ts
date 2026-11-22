@@ -20,7 +20,7 @@ export const physicalLabelsEntry = classifyInventory(
     "sourceReview:src/features/physical-labels/formats.ts#0d43e8ac495e0d443a1d47d8f0129aaab2686ba9319c5e595dbc65149e58622a",
     "sourceReview:src/features/physical-labels/printLayout.ts#498a2b5f23c0b0db1a54b6eccdfcb657c2839ee2a9f86067b9d8231af5151989",
     "sourceReview:src/features/physical-labels/ui/LabelEditorDialog.tsx#1162831058954ef9b3ebf3a8405c98250cd0a7c4e958bb31e52805bd62830f3c",
-    "sourceReview:src/features/physical-labels/ui/LabelPrintDialog.tsx#db8724b11f6130fe64347df73272308c3f512f493cb756c2b9e9c4bb6dc5aa4e",
+    "sourceReview:src/features/physical-labels/ui/LabelPrintDialog.tsx#afd8e1165305049a10884b5f551fb245141100e3e9ffadda1705b2304f0cc0de",
     "sourceReview:src/features/physical-labels/ui/LabelRegistryLink.tsx#10ed91bd92a6a517a4ea4631ce6597600a84e946d39d85bfc86fd8248d190747",
     "sourceReview:src/features/physical-labels/ui/LabelScanner.tsx#135e913b82a1ca14481a658a7f3309146b154cbbafb697ad302ffac78e3bd67b",
     "sourceReview:src/features/physical-labels/ui/LabelWorkspace.tsx#afd94249a563ac622aa0fcabb24142c3c849e5b133d816d7c8316aac1b31d890",

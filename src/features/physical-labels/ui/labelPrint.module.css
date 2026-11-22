@@ -103,7 +103,8 @@
 }
 
 @media print {
-  :global(body):has(> .output[data-label-print-document]) {
+  :global(body[data-label-printing][data-scroll-locked]):has(> .output),
+  :global(body[data-label-printing]):has(> .output) {
     /* biome-ignore lint/complexity/noImportantStyles: Undo Radix's print-time scroll lock compensation. */
     margin: 0 !important;
     padding: 0;
@@ -111,8 +112,9 @@
     overflow: visible !important;
   }
 
-  :global(body):has(> .output) > :not(.output) {
-    display: none;
+  :global(body[data-label-printing]) > :not(.output) {
+    /* biome-ignore lint/complexity/noImportantStyles: The private output must override shell visibility. */
+    display: none !important;
   }
 
   .output {
