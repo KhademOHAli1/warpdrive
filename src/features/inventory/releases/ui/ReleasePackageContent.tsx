@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { useLocalePreferences, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { localeTagForFormatting } from "@/lib/localeFormatting";
+import { useHydrated } from "@/lib/useHydrated";
 import type { ReleaseView } from "../liveContracts";
 import { manufacturingReleaseLiveMessages } from "./manufacturingReleaseLiveMessages";
 import { manufacturingReleaseMessages } from "./manufacturingReleaseMessages";
@@ -101,11 +102,13 @@ export function ReleaseApprovalHistory({ release }: { release: ReleaseView }) {
   const preferences = useLocalePreferences();
   const t = manufacturingReleaseLiveMessages[preferences.locale];
   const headingId = useId();
+  const hydrated = useHydrated();
   const dates = new Intl.DateTimeFormat(localeTagForFormatting(preferences), {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: preferences.timeZone,
   });
+  const displayTime = (value: string) => (hydrated ? dates.format(new Date(value)) : value);
 
   return (
     <section aria-labelledby={headingId} className="space-y-2">
@@ -118,7 +121,7 @@ export function ReleaseApprovalHistory({ release }: { release: ReleaseView }) {
           <dd className="flex flex-wrap items-baseline gap-x-2 break-all">
             <bdi>{release.createdBy.name}</bdi>
             <time className="text-xs text-muted-foreground" dateTime={release.createdAt}>
-              {dates.format(new Date(release.createdAt))}
+              {displayTime(release.createdAt)}
             </time>
           </dd>
         </div>
@@ -128,7 +131,7 @@ export function ReleaseApprovalHistory({ release }: { release: ReleaseView }) {
             <dd className="flex flex-wrap items-baseline gap-x-2 break-all">
               <bdi>{release.approvedBy.name}</bdi>
               <time className="text-xs text-muted-foreground" dateTime={release.approvedAt}>
-                {dates.format(new Date(release.approvedAt))}
+                {displayTime(release.approvedAt)}
               </time>
             </dd>
           </div>
