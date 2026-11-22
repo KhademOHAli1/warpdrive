@@ -85,6 +85,7 @@ function stockChangingEvents() {
     ne(events.onHandDelta, 0),
     ne(events.reservedDelta, 0),
     eq(events.kind, "state"),
+    eq(events.kind, "engineering-disposition"),
     eq(events.kind, "production-accept"),
     eq(events.kind, "quality-release"),
     eq(events.kind, "return-restock"),

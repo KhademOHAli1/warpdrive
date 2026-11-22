@@ -12,6 +12,7 @@ import { readCsrfToken } from "@/utils/csrfCookie";
 import { bomHref } from "../../bom/ui/links";
 import { bomMessages } from "../../bom/ui/messages";
 import type { InventoryItem } from "../../contracts";
+import { NativeEngineeringChanges } from "../changes/ui/NativeEngineeringChanges";
 import { type ManualReleaseArtifactKind, releaseFixtureMaxFileBytes } from "../contracts";
 import { NativeExportIntake } from "../intake/ui/NativeExportIntake";
 import type {
@@ -212,10 +213,13 @@ function ManufacturingReleaseWorkspace({
           refresh={refresh}
           qualityPlanVersions={workspace.qualityPlanVersions}
           canEdit={workspace.canEdit}
-          canApprove={workspace.canApprove}
+          canApprove={workspace.canApprove && workspace.engineeringChangeControlled !== true}
           pending={pending}
           run={run}
         />
+      )}
+      {workspace.engineeringChangesAvailable === true && (
+        <NativeEngineeringChanges {...{ workspace, refresh }} />
       )}
       {workspace.canManage && (
         <ManufacturingReleasePermissions

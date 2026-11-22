@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { catalogItemPolicy } from "../../catalog/policy";
 import { isQualityControlledPosition } from "../../quality/gates";
+import { isEngineeringControlledPosition } from "../../releases/changes/dispositionGuards";
 import { isReturnControlledPosition } from "../../returns/protection";
 import type { lockInventoryStock } from "../../stock";
 import { managedWarehouseLocation, type WarehouseAccess } from "../access";
@@ -63,7 +64,8 @@ export async function requireUncontrolledPosition(tx: Db, position: Position) {
   if (
     (await isSubcontractControlledPosition(tx, position)) ||
     (await isQualityControlledPosition(tx, position)) ||
-    (await isReturnControlledPosition(tx, position))
+    (await isReturnControlledPosition(tx, position)) ||
+    (await isEngineeringControlledPosition(tx, position))
   )
     failOperations("incompatibleStock");
 }

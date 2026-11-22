@@ -132,6 +132,50 @@ async function choose(id: string = candidate.id) {
 
 afterEach(cleanup);
 
+it("uses Core time for scheduled cutovers and rechecks refreshed release data without clearing the proposal", async () => {
+  const scheduled: EngineeringChange = {
+    ...record,
+    id: "change-d",
+    status: "approved",
+    effectiveAt: "2001-01-02T12:01:00Z",
+    review: {
+      ...review,
+      candidate: { id: "release-d", revision: "D", status: "released" },
+    },
+  };
+  const checkedWorkspace: EngineeringChangeWorkspace = {
+    ...workspace,
+    observedAt: "2001-01-02T12:00:00Z",
+    changes: [scheduled],
+  };
+  const { access, preview, read } = setup(checkedWorkspace);
+  const firstKey = {};
+  const { rerender } = render(
+    <EngineeringChangePanel itemId={workspace.itemId} access={access} refreshKey={firstKey} />,
+  );
+  await choose();
+  expect(await screen.findByText("Scheduled")).toBeVisible();
+  fireEvent.change(await screen.findByLabelText("Reason for change"), {
+    target: { value: "Keep the draft while checking the new package" },
+  });
+
+  const recheck = deferred<EngineeringChangeResult<EngineeringChangeWorkspace>>();
+  read.mockReturnValueOnce(recheck.promise);
+  rerender(<EngineeringChangePanel itemId={workspace.itemId} access={access} refreshKey={{}} />);
+  expect(screen.queryByText("Scheduled")).not.toBeInTheDocument();
+  expect(screen.queryByText("board-b.kicad_pcb")).not.toBeInTheDocument();
+  await act(async () => {
+    recheck.resolve(allow(checkedWorkspace));
+    await recheck.promise;
+  });
+  expect(await screen.findByLabelText("Reason for change")).toHaveValue(
+    "Keep the draft while checking the new package",
+  );
+  expect(screen.getByText("Scheduled")).toBeVisible();
+  expect(read).toHaveBeenCalledTimes(2);
+  expect(preview).toHaveBeenCalledTimes(2);
+});
+
 it("shows exact before and after values when material flags and piece counts are the only changes", async () => {
   const { access, preview } = setup();
   const sameMaterial = { quantity: "2", unit: "ea", childRelease: null, alternatives: [] };

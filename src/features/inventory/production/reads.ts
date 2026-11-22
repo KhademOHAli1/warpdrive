@@ -9,6 +9,7 @@ import { readBomNodes, readBomReleaseDirectory } from "../bom/reads";
 import { inventoryPartProfiles } from "../catalog/schema";
 import { inventoryProjectsEnabled } from "../projectBridge";
 import { inventoryQualityTargets } from "../quality/schema";
+import { readManagedEngineeringReleases } from "../releases/changes/effectivity";
 import { inventoryItems, inventoryTemplates } from "../schema";
 import { readSubcontractDetail } from "../subcontract/reads";
 import type { WarehouseAccess } from "../warehouse/access";
@@ -388,7 +389,14 @@ export async function projectProductionWorkspace(
     query.releaseId === undefined
       ? undefined
       : (await readBomNodes(tx, scope, [query.releaseId]))[0];
-  const releases = await readBomReleaseDirectory(tx, scope, preferred?.release ?? null);
+  const directory = await readBomReleaseDirectory(tx, scope, preferred?.release ?? null);
+  const controlled = await readManagedEngineeringReleases(
+    tx,
+    directory.map(({ part }) => part.id),
+  );
+  const releases = directory.filter(
+    ({ id, part }) => !controlled.has(part.id) || controlled.get(part.id) === id,
+  );
   const templates = await permittedTemplates(tx, actor, releases, signal);
   return {
     builds: await buildHeaders(

@@ -14,6 +14,7 @@ import { lockInventoryCatalog } from "../catalog/policy";
 import { InventoryDomainError } from "../errors";
 import { PurchasingFailure } from "../purchasing/scope";
 import { requireItemReleaseAccess } from "../releases/access";
+import { readEngineeringReleasePolicy } from "../releases/changes/effectivity";
 import { inventoryProductReleases } from "../releases/schema";
 import { lockSourcingRecords } from "../sourcing/scope";
 import { InventoryStockError, lockInventoryStock } from "../stock";
@@ -153,6 +154,20 @@ async function authorizedGraph(
   return readBomGraph(tx, scope, releaseId, signal);
 }
 
+async function createEffectiveProductionRoot(
+  tx: Db,
+  actor: HydratedActor,
+  access: WarehouseAccess,
+  command: Extract<ProductionCommand, { type: "createBuild" }>,
+  signal: AbortSignal,
+) {
+  requireManagedBuildBin(access, command.siteId, command.locationId);
+  const graph = await authorizedGraph(tx, actor, command.releaseId, signal);
+  const policy = await readEngineeringReleasePolicy(tx, graph.root.release.part.id);
+  if (policy.managed && policy.releaseId !== command.releaseId) failProduction("stale");
+  return createProductionTree(tx, actor, command, graph, signal);
+}
+
 async function applyProductionCommand(
   tx: Db,
   actor: HydratedActor,
@@ -160,11 +175,8 @@ async function applyProductionCommand(
   command: ProductionCommand,
   signal: AbortSignal,
 ) {
-  if (command.type === "createBuild") {
-    requireManagedBuildBin(access, command.siteId, command.locationId);
-    const graph = await authorizedGraph(tx, actor, command.releaseId, signal);
-    return createProductionTree(tx, actor, command, graph, signal);
-  }
+  if (command.type === "createBuild")
+    return createEffectiveProductionRoot(tx, actor, access, command, signal);
   const purchase =
     command.type === "linkSubcontract" ? await lockSubcontractPurchase(tx, command.orderId) : null;
   const build = await lockProductionBuild(tx, access, command.buildId);

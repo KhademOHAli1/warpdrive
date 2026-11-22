@@ -68,6 +68,7 @@ export type OldReleasePosition = {
 };
 
 export type EngineeringChangeWorkspace = {
+  observedAt?: string;
   itemId: string;
   sku: string;
   effectiveRelease: ChangeRelease | null;

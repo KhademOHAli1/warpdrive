@@ -25,9 +25,10 @@ import {
 import { EngineeringComparison } from "./EngineeringComparison";
 import { type EngineeringLabels, engineeringMessages } from "./messages";
 
-type Props = { itemId: string; access: EngineeringChangeAccess };
+type Props = { itemId: string; access: EngineeringChangeAccess; refreshKey?: object };
 type ReadState = {
   epoch: number;
+  refreshKey?: object;
   observedAt: number;
   result: EngineeringChangeResult<EngineeringChangeWorkspace>;
 };
@@ -53,25 +54,30 @@ function nextCutover(workspace: EngineeringChangeWorkspace, now: number) {
   return next;
 }
 
-function useEngineeringWorkspace({ itemId, access }: Props) {
+function useEngineeringWorkspace({ itemId, access, refreshKey }: Props) {
   const [epoch, setEpoch] = useState(0);
   const [read, setRead] = useState<ReadState | null>(null);
-  const current = read?.epoch === epoch ? read : null;
+  const current = read?.epoch === epoch && read.refreshKey === refreshKey ? read : null;
   const reload = useCallback(() => setEpoch((value) => value + 1), []);
 
   useEffect(() => {
     const request = new AbortController();
     function keep(result: EngineeringChangeResult<EngineeringChangeWorkspace>) {
       if (request.signal.aborted) return;
+      const coreTime =
+        result.ok && result.value.observedAt !== undefined
+          ? Date.parse(result.value.observedAt)
+          : Number.NaN;
       setRead({
         epoch,
-        observedAt: Date.now(),
+        refreshKey,
+        observedAt: Number.isFinite(coreTime) ? coreTime : Date.now(),
         result: result.ok && result.value.itemId !== itemId ? unavailable : result,
       });
     }
     void access.read(itemId, request.signal).then(keep, () => keep(temporary));
     return () => request.abort();
-  }, [access, epoch, itemId]);
+  }, [access, epoch, itemId, refreshKey]);
 
   useEffect(() => {
     window.addEventListener("focus", reload);
@@ -80,10 +86,10 @@ function useEngineeringWorkspace({ itemId, access }: Props) {
 
   useEffect(() => {
     if (current?.result.ok !== true) return;
-    const now = Date.now();
     const cutover = nextCutover(current.result.value, current.observedAt);
     if (!Number.isFinite(cutover)) return;
-    const timer = window.setTimeout(reload, Math.max(1, Math.min(cutover - now, 2_147_483_647)));
+    const delay = Math.max(500, Math.min(cutover - current.observedAt, 2_147_483_647));
+    const timer = window.setTimeout(reload, delay);
     return () => window.clearTimeout(timer);
   }, [current, reload]);
   return { current, reload };
@@ -321,10 +327,10 @@ function ProposeSelected({
   );
 }
 
-function ScopedEngineeringChangePanel({ itemId, access }: Props) {
+function ScopedEngineeringChangePanel({ itemId, access, refreshKey }: Props) {
   const t = engineeringMessages[useLocale()];
   const heading = useId();
-  const { current, reload } = useEngineeringWorkspace({ itemId, access });
+  const { current, reload } = useEngineeringWorkspace({ itemId, access, refreshKey });
   const [draft, setDraft] = useState(emptyProposal);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [pending, setPending] = useState(false);
@@ -475,11 +481,13 @@ function ScopedEngineeringChangePanel({ itemId, access }: Props) {
   );
 }
 
-export function EngineeringChangePanel({ itemId, access }: Props) {
+export function EngineeringChangePanel({ itemId, access, refreshKey }: Props) {
   const [scope, setScope] = useState({ itemId, access, generation: 0 });
   if (scope.itemId !== itemId || scope.access !== access) {
     setScope({ itemId, access, generation: scope.generation + 1 });
     return null;
   }
-  return <ScopedEngineeringChangePanel key={scope.generation} {...{ itemId, access }} />;
+  return (
+    <ScopedEngineeringChangePanel key={scope.generation} {...{ itemId, access, refreshKey }} />
+  );
 }

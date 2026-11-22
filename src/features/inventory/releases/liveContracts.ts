@@ -103,6 +103,8 @@ export type ReleaseWorkspace = {
   releases: ReleaseView[];
   qualityPlanVersions?: QualityPlanVersion[];
   intakeAvailable?: true;
+  engineeringChangesAvailable?: true;
+  engineeringChangeControlled?: true;
   grants: { userId: string; name: string; role: ReleaseRole }[];
   staff: ReleaseStaff[];
 };

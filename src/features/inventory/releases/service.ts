@@ -26,6 +26,13 @@ import {
 } from "./approvedBom";
 import { parseReleaseBom } from "./bomCsv";
 import {
+  allowEngineeringApprovalReplay,
+  type ReviewedEngineeringApproval,
+  saveEngineeringApproval,
+  verifyEngineeringApproval,
+} from "./changes/approvalControl";
+import { readEngineeringReleasePolicy } from "./changes/effectivity";
+import {
   type BuildRelease,
   type ReleaseMetadataCommand,
   type ReleaseView,
@@ -66,7 +73,13 @@ async function withReleaseActor<T>(
   }
 }
 
-export async function findActiveRelease(tx: Db, itemId: string) {
+export async function findActiveRelease(
+  tx: Db,
+  itemId: string,
+  policy?: Awaited<ReturnType<typeof readEngineeringReleasePolicy>>,
+) {
+  const selection = policy ?? (await readEngineeringReleasePolicy(tx, itemId));
+  if (selection.managed && selection.releaseId === null) return null;
   const [release] = await tx
     .select()
     .from(inventoryProductReleases)
@@ -74,6 +87,9 @@ export async function findActiveRelease(tx: Db, itemId: string) {
       and(
         eq(inventoryProductReleases.itemId, itemId),
         eq(inventoryProductReleases.status, "released"),
+        selection.releaseId === null
+          ? undefined
+          : eq(inventoryProductReleases.id, selection.releaseId),
       ),
     )
     .orderBy(desc(inventoryProductReleases.approvedAt), desc(inventoryProductReleases.id))
@@ -202,7 +218,8 @@ export async function readReleaseWorkspace(
     // Hold the product lock through projection so revocation and approval order consistently.
     await lockReleaseProduct(tx, itemId, "share");
     const { item, permissions } = await requireItemReleaseAccess(tx, actor, itemId, "view");
-    const activeRelease = await findActiveRelease(tx, itemId);
+    const control = await readEngineeringReleasePolicy(tx, itemId);
+    const activeRelease = await findActiveRelease(tx, itemId, control);
     const releases = await releaseViews(tx, itemId);
     const administration = permissions.manage
       ? await readReleaseAdministration(tx, itemId)
@@ -214,11 +231,13 @@ export async function readReleaseWorkspace(
       releaseRequired: item.releaseRequired,
       activeReleaseId: activeRelease?.id ?? null,
       canEdit: permissions.edit,
-      canApprove: permissions.approve,
+      canApprove: permissions.approve && !control.managed,
       canManage: permissions.manage,
       releases,
       qualityPlanVersions: await readQualityPlanVersions(tx, itemId),
       intakeAvailable: true,
+      ...(control.available ? { engineeringChangesAvailable: true as const } : {}),
+      ...(control.managed ? { engineeringChangeControlled: true as const } : {}),
       ...administration,
     };
   });
@@ -274,6 +293,7 @@ async function readApprovalCandidate(
   actor: HydratedActor,
   releaseId: string,
   expectedQualityPlanVersionId: string | null,
+  reviewed?: ReviewedEngineeringApproval,
 ) {
   const [candidate] = await tx
     .select({ itemId: inventoryProductReleases.itemId })
@@ -283,17 +303,48 @@ async function readApprovalCandidate(
   const { itemId } = candidate;
   await lockReleaseProduct(tx, itemId, "share");
   const release = await requireApprovalTarget(tx, actor, itemId, releaseId, "share");
-  if (release.status === "released") return null;
+  if (await isApprovalReplay(tx, actor, itemId, releaseId, release.status, reviewed)) return null;
+  await requireApprovalChannel(tx, itemId, reviewed);
   if (release.qualityPlanVersionId !== expectedQualityPlanVersionId)
-    fail("The test plan changed. Review the pinned version before approving.");
+    fail(
+      reviewed === undefined
+        ? "The test plan changed. Review the pinned version before approving."
+        : "staleReview",
+    );
   return {
     itemId,
     qualityPlanVersionId: release.qualityPlanVersionId,
-    ...(await approvalManifest(tx, releaseId)),
+    ...(await approvalManifest(tx, releaseId, reviewed !== undefined)),
   };
 }
 
-async function approvalManifest(tx: Db, releaseId: string) {
+async function isApprovalReplay(
+  tx: Db,
+  actor: HydratedActor,
+  itemId: string,
+  releaseId: string,
+  status: ReleaseView["status"],
+  reviewed?: ReviewedEngineeringApproval,
+) {
+  if (status !== "released") return false;
+  if (reviewed !== undefined)
+    await allowEngineeringApprovalReplay(tx, actor, reviewed, itemId, releaseId);
+  return true;
+}
+
+async function requireApprovalChannel(
+  tx: Db,
+  itemId: string,
+  reviewed?: ReviewedEngineeringApproval,
+) {
+  if (reviewed !== undefined) {
+    if (reviewed.itemId !== itemId) fail("unavailable");
+  } else if ((await readEngineeringReleasePolicy(tx, itemId)).managed) {
+    fail("Use engineering change review to approve this release.");
+  }
+}
+
+async function approvalManifest(tx: Db, releaseId: string, reviewed = false) {
   const files = await tx
     .select({
       id: inventoryReleaseArtifacts.id,
@@ -316,7 +367,11 @@ async function approvalManifest(tx: Db, releaseId: string) {
     .orderBy(asc(inventoryReleaseArtifacts.id));
   const bomEntries = files.find(({ kind }) => kind === "manufacturingBom")?.bomEntries;
   if (bomEntries == null || !files.some(({ kind }) => kind === "pcbFabrication")) {
-    fail("Confirm a PCB fabrication ZIP and manufacturing BOM CSV before approval.");
+    fail(
+      reviewed
+        ? "staleReview"
+        : "Confirm a PCB fabrication ZIP and manufacturing BOM CSV before approval.",
+    );
   }
   return { files, bomEntries };
 }
@@ -352,9 +407,10 @@ async function approveRelease(
   expectedQualityPlanVersionId: string | null,
   signal: AbortSignal,
   storage?: StorageClient,
+  reviewed?: ReviewedEngineeringApproval,
 ) {
   const preflight = await withReleaseActor(db, who, signal, (tx, actor) =>
-    readApprovalCandidate(tx, actor, releaseId, expectedQualityPlanVersionId),
+    readApprovalCandidate(tx, actor, releaseId, expectedQualityPlanVersionId, reviewed),
   );
   if (!preflight.ok) return preflight;
   if (preflight.value === null) return ok({ releaseId });
@@ -368,7 +424,9 @@ async function approveRelease(
   );
   if (!verified)
     return err(
-      "An attachment failed its integrity check. Restore the confirmed file or upload it again.",
+      reviewed === undefined
+        ? "An attachment failed its integrity check. Restore the confirmed file or upload it again."
+        : "packageIncomplete",
     );
 
   return withReleaseActor(db, who, signal, async (tx, actor) => {
@@ -384,33 +442,67 @@ async function approveRelease(
     );
     await lockBomApprovalParts(tx, itemId, graph.parts);
     const release = await requireApprovalTarget(tx, actor, itemId, releaseId, "update");
-    if (release.status === "released") return { releaseId };
+    if (await isApprovalReplay(tx, actor, itemId, releaseId, release.status, reviewed))
+      return { releaseId };
+    await requireApprovalChannel(tx, itemId, reviewed);
     await requireApprovalGraphAccess(tx, actor, graph);
 
-    const manifest = await approvalManifest(tx, releaseId);
+    const manifest = await approvalManifest(tx, releaseId, reviewed !== undefined);
     if (
       release.qualityPlanVersionId !== verifiedManifest.qualityPlanVersionId ||
       !isDeepStrictEqual(manifest.files, verifiedManifest.files)
     ) {
-      fail("The package changed during verification. Review its files and approve again.");
+      fail(
+        reviewed === undefined
+          ? "The package changed during verification. Review its files and approve again."
+          : "staleReview",
+      );
     }
     if (
       release.qualityPlanVersionId !== null &&
       (await catalogItemPolicy(tx, itemId))?.flags.trackable !== true
     ) {
-      fail("Enable serial tracking for this product before approving a test plan.");
+      fail(
+        reviewed === undefined
+          ? "Enable serial tracking for this product before approving a test plan."
+          : "packageIncomplete",
+      );
     }
-    await tx
+    const change =
+      reviewed === undefined
+        ? null
+        : await verifyEngineeringApproval(tx, actor, reviewed, itemId, releaseId, graph.bom);
+    const [saved] = await tx
       .update(inventoryProductReleases)
       .set({
         status: "released",
         approvedBy: actor.id,
-        approvedAt: sql`clock_timestamp()`,
+        approvedAt:
+          reviewed === undefined
+            ? sql`clock_timestamp()`
+            : sql`date_trunc('milliseconds', clock_timestamp())`,
         bom: graph.bom,
       })
-      .where(eq(inventoryProductReleases.id, releaseId));
+      .where(eq(inventoryProductReleases.id, releaseId))
+      .returning({ approvedAt: inventoryProductReleases.approvedAt });
+    if (reviewed !== undefined && change !== null) {
+      if (saved?.approvedAt == null) fail("temporary");
+      await saveEngineeringApproval(tx, actor, reviewed, change, saved.approvedAt);
+    }
     return { releaseId };
   });
+}
+
+export function approveReviewedEngineeringRelease(
+  db: Db,
+  who: NativeSessionRef,
+  command: ReviewedEngineeringApproval,
+  releaseId: string,
+  qualityPlanVersionId: string | null,
+  signal: AbortSignal,
+  storage?: StorageClient,
+) {
+  return approveRelease(db, who, releaseId, qualityPlanVersionId, signal, storage, command);
 }
 
 async function createDraft(tx: Db, actor: HydratedActor, itemId: string, revision: string) {

@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { deals, permissionSets, pipelines, sessions, stages, users } from "@/db/schema";
 import { agencyProjectSettings } from "@/features/agency-projects/schema/agencyProjectSettings";
@@ -31,6 +31,7 @@ import {
   readReleaseArtifactDownload,
   requestReleaseArtifactUpload,
 } from "./releases/artifacts";
+import { executeEngineeringChange, readEngineeringChangeReview } from "./releases/changes/service";
 import { createReleaseFixture } from "./releases/fixtures";
 import {
   inventoryBuildReleases,
@@ -695,13 +696,13 @@ test("approves versioned Gerber packages and pins builds, materials and authoriz
     return { releaseId, artifactId: id };
   }
 
-  async function place(quantity: number) {
+  async function place(quantity: number, requestId = randomUUID()) {
     const snapshot = inventory(
       await command(
         seller,
         {
           type: "place",
-          requestId: randomUUID(),
+          requestId,
           dealId: deal.id,
           itemId: product.id,
           quantity,
@@ -765,6 +766,101 @@ test("approves versioned Gerber packages and pins builds, materials and authoriz
   storage.objectBytes.set(stored.key, Buffer.alloc(gerber.length, 0));
   expect(await access(operator, manifestA, a.id)).toMatchObject({ ok: false });
   expect(value(await access(operator, manifestB, b.id)).bytes).toEqual(gerber);
+
+  const { releaseId: candidate } = value(
+    await metadata(editor, { type: "createDraft", itemId: product.id, revision: "C" }),
+  );
+  if (candidate === undefined) throw new Error("Expected a controlled candidate release");
+  await upload(candidate, "pcbFabrication", "gerber-C.zip", gerber);
+  await upload(
+    candidate,
+    "manufacturingBom",
+    "bom-C.csv",
+    Buffer.from(`sku,quantity\n${component.sku},7\n`),
+  );
+  const effectiveAt = new Date(Date.now() + 8_000).toISOString();
+  const engineering = (who: NativeSessionRef, input: Record<string, unknown>) =>
+    executeEngineeringChange(
+      fixture.db,
+      who,
+      { itemId: product.id, requestId: randomUUID(), ...input },
+      signal(),
+      storage,
+    );
+  const preview = () =>
+    readEngineeringChangeReview(fixture.db, editor, product.id, candidate, signal());
+  const first = value(await preview());
+  expect(first.materials[0]).toMatchObject({
+    sku: component.sku,
+    before: { quantity: "4" },
+    after: { quantity: "7" },
+  });
+  const proposal = {
+    type: "submit",
+    candidateReleaseId: candidate,
+    baseReleaseId: manifestB.releaseId,
+    effectiveAt,
+    reason: "Change the released material count",
+  };
+  const submitted = value(
+    await engineering(editor, { ...proposal, fingerprint: first.fingerprint }),
+  ).changes[0];
+  if (submitted === undefined) throw new Error("Expected the engineering change proposal");
+  expect(await metadata(approver, { type: "approve", releaseId: candidate })).toMatchObject({
+    ok: false,
+  });
+  await upload(candidate, "pcbFabrication", "gerber-C-updated.zip", gerber);
+  const decision = {
+    type: "approve",
+    changeId: submitted.id,
+    expectedVersion: submitted.version,
+    fingerprint: first.fingerprint,
+  };
+  expect(await engineering(editor, decision)).toEqual({ ok: false, error: "unavailable" });
+  expect(await engineering(approver, decision)).toEqual({ ok: false, error: "staleReview" });
+  const returned = value(
+    await engineering(approver, {
+      type: "return",
+      changeId: submitted.id,
+      expectedVersion: submitted.version,
+      note: "Review the added fabrication set",
+    }),
+  ).changes[0];
+  if (returned?.status !== "returned") throw new Error("Expected the exact returned review");
+  const revised = value(await preview());
+  const resubmitted = value(
+    await engineering(editor, {
+      ...proposal,
+      fingerprint: revised.fingerprint,
+      revise: { changeId: returned.id, expectedVersion: returned.version },
+    }),
+  ).changes[0];
+  if (resubmitted === undefined) throw new Error("Expected the revised submission");
+  const approveCommand = {
+    ...decision,
+    expectedVersion: resubmitted.version,
+    fingerprint: revised.fingerprint,
+    requestId: randomUUID(),
+  };
+  const approved = value(await engineering(approver, approveCommand));
+  expect(approved.effectiveRelease?.id).toBe(manifestB.releaseId);
+  expect(
+    value(await engineering(approver, approveCommand)).changes[0]?.history.map(({ type }) => type),
+  ).toEqual(["submitted", "returned", "submitted", "approved"]);
+
+  const priorRequest = randomUUID();
+  const beforeCutover = await place(5, priorRequest);
+  expect(beforeCutover.materials).toEqual([{ itemId: component.id, quantity: 20 }]);
+  expect(value(await build(operator, beforeCutover.id)).release.id).toBe(manifestB.releaseId);
+  await fixture.db.execute(
+    sql`SELECT pg_sleep(greatest(0, extract(epoch FROM (${effectiveAt}::timestamptz - clock_timestamp()))) + 0.02)`,
+  );
+  const afterCutover = await place(6);
+  expect(afterCutover.materials).toEqual([{ itemId: component.id, quantity: 42 }]);
+  expect(value(await build(operator, afterCutover.id)).release.id).toBe(candidate);
+  expect((await place(5, priorRequest)).id).toBe(beforeCutover.id);
+  expect(value(await build(operator, a.id)).release.id).toBe(manifestA.releaseId);
+  expect(value(await build(operator, b.id)).release.id).toBe(manifestB.releaseId);
 });
 
 test("plans a released diamond BOM by exact child revision and preserves incumbent CRM build materials", async () => {

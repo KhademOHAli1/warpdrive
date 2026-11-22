@@ -394,6 +394,11 @@ export const movementKindMessages = {
     "Seriennummer nach Qualitätsprüfung freigegeben",
     "شماره سریال در بازرسی کیفیت قبول شد",
   ],
+  "engineering-disposition": [
+    "Engineering stock disposition",
+    "Bestandsdisposition nach technischer Änderung",
+    "تعیین وضعیت موجودی پس از تغییر مهندسی",
+  ],
   "sales-reserve": [
     "Sales stock reserved",
     "Bestand für Kundenauftrag reserviert",
