@@ -192,19 +192,20 @@ async function pendingBooking(h: TestDb, f: Fixture, assetId: string, title: str
   return booking;
 }
 
-async function queueExactSentBackRun(
+async function seedScheduledSentBackRun(
   h: TestDb,
   record: Pick<Booking, "id" | "siteId" | "version">,
+  scheduledAt: string,
 ) {
-  // Mirror the worker's provenance join, including the full precision of the persisted event.
-  await h.db.execute(sql`INSERT INTO ${assetBookingAutomationRuns}
+  const { rows } = await h.db.execute(sql`INSERT INTO ${assetBookingAutomationRuns}
     (site_id, principal_id, booking_id, recipient_id, trigger, source_version, scheduled_at)
-    SELECT b.site_id, p.principal_id, b.id, b.requester_id, 'request_sent_back', e.version, e.at
+    SELECT b.site_id, p.principal_id, b.id, b.requester_id, 'request_sent_back', e.version, ${scheduledAt}::timestamptz
     FROM ${assetBookings} b
     JOIN ${assetBookingEvents} e ON (e.site_id, e.booking_id, e.version) = (b.site_id, b.id, b.version)
     JOIN ${assetBookingAutomationProfiles} p ON p.site_id = b.site_id
     WHERE b.site_id = ${record.siteId} AND b.id = ${record.id} AND e.version = ${record.version} AND e.kind = 'sent_back'
-    ON CONFLICT DO NOTHING`);
+    RETURNING id`);
+  expect(rows).toHaveLength(1);
 }
 
 async function archiveSite(h: TestDb, f: Fixture) {
@@ -326,7 +327,6 @@ it("retries only the current failure, retains immutable attempts, and delivers o
         reason: "Private changes requested text",
       }),
     );
-    await queueExactSentBackRun(h, sentBack);
     expect(await dispatchBookingAutomations(h.db, signal(), () => "temporary")).toBe(1);
     const [failed] = success(await list(h, f.manager, { siteId: f.siteId, status: "failed" })).value
       .runs;
@@ -428,7 +428,6 @@ it("retries only the current failure, retains immutable attempts, and delivers o
         reason: null,
       }),
     );
-    await queueExactSentBackRun(h, nextReview);
     expect(await dispatchBookingAutomations(h.db, signal(), () => "temporary")).toBe(1);
     const [nextFailure] = success(await list(h, f.manager, { siteId: f.siteId, status: "failed" }))
       .value.runs;
@@ -476,6 +475,20 @@ it("paginates actual scoped runs at microsecond precision and rejects the cursor
   try {
     const f = await seedScopes(h);
     const assetId = await configureBookings(h, f);
+    const sentBack: Booking[] = [];
+    for (let index = 0; index < 7; index += 1) {
+      const booking = await pendingBooking(h, f, assetId, `Instrument ${index}`, index);
+      sentBack.push(
+        bookingAt(
+          await run(h, f.manager, {
+            type: "reviewBooking",
+            ...pin(booking),
+            decision: "request_changes",
+            reason: null,
+          }),
+        ),
+      );
+    }
     success(
       await save(h, f.manager, {
         siteId: f.siteId,
@@ -484,49 +497,26 @@ it("paginates actual scoped runs at microsecond precision and rejects the cursor
         requestId: randomUUID(),
       }),
     );
-    // The test creates each valid pending booking through its ordinary native service. The source
-    // activities then land inside one display millisecond so JS Date alone cannot paginate them.
-    const pending: Booking[] = [];
-    for (let index = 0; index < 7; index += 1)
-      pending.push(await pendingBooking(h, f, assetId, `Instrument ${index}`, index));
+    expect(success(await list(h, f.manager, { siteId: f.siteId })).value.runs).toEqual([]);
+    // Choose one display millisecond after opt-in without depending on elapsed wall-clock time.
+    // Each seeded run still references its real Booking event and satisfies the database guards.
     const clock = await h.db.execute<{ at: string }>(
-      sql`SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS') AS at`,
+      sql`SELECT to_char((date_trunc('milliseconds', created_at) + interval '1 millisecond')
+        AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS') AS at
+        FROM ${assetBookingAutomationProfiles} WHERE site_id = ${f.siteId}`,
     );
     const [tick] = clock.rows;
     assert(tick !== undefined);
-    for (const [index, booking] of pending.entries()) {
+    for (const [index, booking] of sentBack.entries()) {
       const at = `${tick.at}${String(index + 1).padStart(3, "0")}Z`;
-      const version = booking.version + 1;
-      await h.db.transaction(async (tx) => {
-        await tx
-          .update(assetBookings)
-          .set({ version, status: "draft", updatedAt: sql`${at}::timestamptz` })
-          .where(eq(assetBookings.id, booking.id));
-        await tx.insert(assetBookingEvents).values({
-          siteId: f.siteId,
-          bookingId: booking.id,
-          version,
-          actorId: f.manager.userId,
-          at: sql`${at}::timestamptz`,
-          kind: "sent_back",
-          reason: null,
-          snapshot: {
-            title: booking.title,
-            window: booking.window,
-            status: "draft",
-            archived: false,
-            lines: booking.lines,
-          },
-        });
-      });
-      await queueExactSentBackRun(h, { ...booking, version });
+      await seedScheduledSentBackRun(h, booking, at);
     }
     const input = { siteId: f.siteId, status: "pending" } as const;
     const first = success(await list(h, f.manager, input)).value;
     const cursor = first.nextCursor;
     assert(cursor !== null);
     expect(first.runs.map(({ bookingId }) => bookingId)).toEqual(
-      pending
+      sentBack
         .slice(2)
         .reverse()
         .map(({ id }) => id),
@@ -535,7 +525,7 @@ it("paginates actual scoped runs at microsecond precision and rejects the cursor
     expect(cursor).toContain(`${tick.at}003Z`);
     const second = success(await list(h, f.manager, { ...input, cursor })).value;
     expect(second.runs.map(({ bookingId }) => bookingId)).toEqual(
-      pending
+      sentBack
         .slice(0, 2)
         .reverse()
         .map(({ id }) => id),
