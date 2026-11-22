@@ -293,6 +293,8 @@ Booking settings gives each active site’s managers a versioned rule for notify
 
 Core will register the supported triggers and an in-app action under a site-scoped service principal. The Worker will read the original event or deadline, verify the current booking and recipient, and persist a deduplicated result. Retry keeps the original attempt and rechecks the same authority. Qualification covers a delayed run, a revoked recipient, a duplicate event, a failed attempt and retry, and Web rollback over retained Core and PostgreSQL. External email, push, and additional Inventory and Assets producers have their own acceptance scenarios.
 
+Chrome at `0d329fa2` verified the exact booking link and keyboard focus, two disjoint pages of runs, the status filter, a rule edit isolated to its site, and retry of the named failure. The previous attempt stayed visible. Only the requester saw the one delivered notice, and calendar-only viewers saw generic occupancy. An actual return-to-draft action recorded a skipped run when the rule was disabled. Chrome also checked the layout at 390 pixels, denied guest access, and preserved the regular and handover fixtures. The run observed 68 authenticated Web-to-Core requests, zero automation requests from browser or server rendering, and zero business writes across 326 checked PostgreSQL tables. [Operations backlog](warpdrive-operations-backlog.tsv)
+
 ## InvenTree coverage
 
 | Capability family | Warpdrive coverage today | Target and acceptance |
