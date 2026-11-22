@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
+import { assetTagLandingToken } from "@/features/assets/tags/tagCodes";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { physicalLabelScanPath } from "@/features/physical-labels/formats";
 import { authScreensMessagesForLocale } from "../authScreensMessages";
@@ -22,9 +23,10 @@ export function ContinueScreen({ returnTo }: { returnTo?: string }) {
     if (status?.emailVerified === true && !status.needsMfa && !status.needsEnrollment) {
       rememberSignInMethod(status.authMethod, config ?? undefined);
       const destination = safeAuthDestination(returnTo);
-      // Only a fresh scanner document receives the camera policy.
-      if (destination.split("?", 1)[0] === physicalLabelScanPath)
-        window.location.replace(destination);
+      const pathname = destination.split("?", 1)[0];
+      // A fresh document receives its scanner or tag permissions policy.
+      const equipmentTag = assetTagLandingToken(pathname ?? "") !== null;
+      if (pathname === physicalLabelScanPath || equipmentTag) window.location.replace(destination);
       else router.replace(destination);
     }
   }, [status, config, returnTo, router]);

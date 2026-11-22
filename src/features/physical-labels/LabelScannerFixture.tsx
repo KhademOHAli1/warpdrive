@@ -1,5 +1,6 @@
 "use client";
 
+import { scanTagFromLabelFixture } from "@/features/assets/tags/fixtureScans";
 import { useHydrated } from "@/lib/useHydrated";
 import type { ScanInput } from "./contracts";
 import { resolveLabelFixture } from "./fixtureState";
@@ -16,7 +17,11 @@ export function LabelScannerFixture({
 }) {
   const hydrated = useHydrated();
   function resolve(input: ScanInput) {
-    return Promise.resolve(resolveLabelFixture(actorId, canManage, window.location.origin, input));
+    const origin = window.location.origin;
+    return Promise.resolve(
+      scanTagFromLabelFixture(actorId, canManage, origin, input) ??
+        resolveLabelFixture(actorId, canManage, origin, input),
+    );
   }
   return hydrated ? (
     <LabelScanner initialCode={initialCode} resolve={resolve} registryVisible fixture />

@@ -17,7 +17,9 @@ export const sessionRecordingOptions = {
     containsPhysicalLabelLink(request.name) ||
     request.name.includes("/operations/scan") ||
     request.name.includes("/operations/labels") ||
+    request.name.includes("/assets/tags") ||
     request.name.includes("physicalLabels.") ||
+    request.name.includes("assets.tags.") ||
     request.name.includes("internalProjects.publication") ||
     request.name.includes("internalProjects.integrator")
       ? null

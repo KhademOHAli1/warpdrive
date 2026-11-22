@@ -7,9 +7,16 @@ const BOOKING_CALENDAR_PATH =
 const BOOKING_FEED_SECRET = /wd_booking_/iu;
 const PHYSICAL_LABEL_LINK = /(?:\/|%2f|%252f)operations(?:\/|%2f|%252f)scan(?:\?|%3f|%253f)/iu;
 const PHYSICAL_LABEL_CODE = /wd-label(?::|%3a|%253a)v1(?::|%3a|%253a)/iu;
+const EQUIPMENT_TAG_LINK = /(?:\/|%2f|%252f)equipment-tag(?:\/|%2f|%252f)[A-Za-z0-9_-]{22}/iu;
+const EQUIPMENT_TAG_CODE = /wd-tag(?::|%3a|%253a)v1(?::|%3a|%253a)/iu;
 
 export function containsPhysicalLabelLink(value: string): boolean {
-  return PHYSICAL_LABEL_LINK.test(value) || PHYSICAL_LABEL_CODE.test(value);
+  return (
+    PHYSICAL_LABEL_LINK.test(value) ||
+    PHYSICAL_LABEL_CODE.test(value) ||
+    EQUIPMENT_TAG_LINK.test(value) ||
+    EQUIPMENT_TAG_CODE.test(value)
+  );
 }
 
 export function containsPrivateBookingCalendar(value: string): boolean {

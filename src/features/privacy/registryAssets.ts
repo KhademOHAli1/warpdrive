@@ -25,7 +25,7 @@ export const assetRegisterEntry = classifyInventory(
     "sourceReview:src/features/assets/ui/AssetEditors.tsx#99f1ac48f0dd659ac54a551a857b79b3cf898e091ec8a163157aa16c92787e21",
     "sourceReview:src/features/assets/ui/AssetTable.tsx#231aff6e75a959922a2cb6490c159ffe23cac92d6e595168d22e5aa84666c35f",
     "sourceReview:src/features/assets/ui/AssetsLive.tsx#6f00f9ee34f8e067af58053502a824cd4c0f07401513e942bb65df0c3e7da1bd",
-    "sourceReview:src/features/assets/ui/AssetsWorkspace.tsx#508f4b97511b15c0d9f8a66f94660bb6c7fcd8d6bd0ce4638347b117f1f7b3fd",
+    "sourceReview:src/features/assets/ui/AssetsWorkspace.tsx#cf455208b2f4c1cfc63fa80332bbc71282bb40d080faf733570ebcd9cc22c3d0",
     "sourceReview:src/features/assets/webActions.ts#3973cc2b7096adab82796d4b1f21a04f3600614cf326eac67e92d3cd079b696c",
     "table:asset_balances",
     "table:asset_categories",

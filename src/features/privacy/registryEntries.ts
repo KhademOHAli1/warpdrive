@@ -20,6 +20,7 @@ import { assetCommissioningEntry } from "./registryAssetCommissioning";
 import { assetCustodyEntry } from "./registryAssetCustody";
 import { assetKitsEntry } from "./registryAssetKits";
 import { assetRegisterEntry } from "./registryAssets";
+import { assetTagsEntry } from "./registryAssetTags";
 import { billingInventoryEntry } from "./registryBilling";
 import { bomPlanningEntry } from "./registryBomPlanning";
 import { calendarInventoryEntries } from "./registryCalendar";
@@ -145,6 +146,7 @@ export const registryEntries: RegistryEntry[] = [
   assetRegisterEntry,
   assetCustodyEntry,
   assetKitsEntry,
+  assetTagsEntry,
   physicalLabelsEntry,
   assetBookingsEntry,
   assetCommissioningEntry,

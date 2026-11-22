@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
 import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AssetTagsLink } from "@/features/assets/tags/ui/AssetTagsLink";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { LabelRegistryLink } from "@/features/physical-labels/ui/LabelRegistryLink";
@@ -711,6 +712,7 @@ export function AssetsRegister({
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {physicalLabelsAvailable && <LabelRegistryLink />}
+            {fixture && <AssetTagsLink />}
             {bookingsAvailable && (
               <Link
                 href="/assets/bookings"

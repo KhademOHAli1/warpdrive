@@ -14,7 +14,7 @@ export const physicalLabelsEntry = classifyInventory(
     "sourceReview:drizzle/0148_physical_label_registry.sql#0e24f0bad43a79d709ec4dc78c002a40919f8e391344cb7e80feac7fcee755c9",
     "sourceReview:src/app/(app)/operations/labels/page.tsx#43f48d292afabd4bc3d4ae634c04fb21891eaae8bdb0eb083ec82d1bcf53a626",
     "sourceReview:src/app/operations/scan/page.tsx#b1d3e5713eed97c65faf0d8f2702cfb4de1e50bbbec00cd29254c609cf377c9e",
-    "sourceReview:src/features/physical-labels/LabelScannerFixture.tsx#bf60c2cae44f90bb67e24c1072e1916726e891c58c856183701337160282a72b",
+    "sourceReview:src/features/physical-labels/LabelScannerFixture.tsx#5b165ee6f0c263507e87ec969399f4da819179e95a9af8e96bcc1b457411f835",
     "sourceReview:src/features/physical-labels/LabelsFixture.tsx#2020594478cebc713d735e25495815a0046cca7cc613c4f1e1a95ef871c1cf5d",
     "sourceReview:src/features/physical-labels/LabelsLive.tsx#c643994afc96a3187704a2458d6a0184417a03af0454eb1065c323f29dac08fd",
     "sourceReview:src/features/physical-labels/actions.backend.ts#49500927fbb7382211cbc6ce4b86eb350f7c2a059cda967ccbfcee2c609de005",

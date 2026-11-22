@@ -79,6 +79,22 @@ describe("physical label privacy", () => {
     });
     expect(sanitizeErrorEmails(`Lookup failed: ${link}`)).toBe("[redacted]");
   });
+
+  it("redacts equipment tag links and namespaced tag codes", () => {
+    const token = "222222222222222222222A";
+    const path = `/equipment-tag/${token}`;
+    expect(
+      scrubProperties({
+        $current_url: `/login?returnTo=${encodeURIComponent(path)}`,
+        $set_once: { $initial_referrer: path },
+        message: `Scan failed for wd-tag:v1:${token}`,
+      }),
+    ).toEqual({
+      $current_url: "[redacted]",
+      $set_once: { $initial_referrer: "[redacted]" },
+      message: "[redacted]",
+    });
+  });
 });
 
 describe("sanitizeErrorEmails", () => {

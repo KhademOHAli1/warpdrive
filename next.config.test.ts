@@ -115,6 +115,23 @@ describe("physical label scanner document", () => {
   });
 });
 
+describe("equipment tag document", () => {
+  it("permits same-origin location only on a valid equipment-tag path", async () => {
+    const tag = await headersForPath("/equipment-tag/222222222222222222222A");
+    expect(tag.get("permissions-policy")?.at(-1)).toBe(
+      "camera=(), microphone=(), geolocation=(self), payment=()",
+    );
+    expect(tag.get("referrer-policy")?.at(-1)).toBe("no-referrer");
+    expect(tag.get("x-robots-tag")?.at(-1)).toBe("noindex, nofollow");
+    for (const path of ["/equipment-tag/invalid", "/assets/tags", "/login"]) {
+      const headers = await headersForPath(path);
+      expect(headers.get("permissions-policy")).toEqual([
+        "camera=(), microphone=(), geolocation=(), payment=()",
+      ]);
+    }
+  });
+});
+
 const ORDINARY_PATH = "/deals";
 
 describe("next.config security headers", () => {

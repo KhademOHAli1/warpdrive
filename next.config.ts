@@ -55,7 +55,7 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
     // Full URLs leak record ids (/deals/<uuid>) and the consent query string, which carries the
     // CSRF token, into any cross-origin navigation.
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-    // The standalone label scanner overrides only camera access on its own document.
+    // Standalone scanner and tag pages set their own document permissions.
     { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
   ];
 }
@@ -70,7 +70,11 @@ const nextConfig: NextConfig = {
   logging: {
     serverFunctions: false,
     incomingRequests: {
-      ignore: [/\/api\/assets\/bookings\/feeds\//u, /(?:\/|%2f)operations(?:\/|%2f)scan/iu],
+      ignore: [
+        /\/api\/assets\/bookings\/feeds\//u,
+        /(?:\/|%2f)operations(?:\/|%2f)scan/iu,
+        /(?:\/|%2f)equipment-tag(?:\/|%2f)/iu,
+      ],
     },
   },
   // HSTS is set by Caddy, not here: it terminates TLS and so is the layer that knows the
@@ -87,6 +91,17 @@ const nextConfig: NextConfig = {
             value: "camera=(self), microphone=(), geolocation=(), payment=()",
           },
           { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
+        source: "/equipment-tag/:token([A-Za-z0-9_-]{22})",
+        headers: [
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(self), payment=()",
+          },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
         ],
       },
     ]);
