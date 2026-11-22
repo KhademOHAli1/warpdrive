@@ -132,6 +132,21 @@ describe("equipment tag document", () => {
   });
 });
 
+describe("private equipment media routes", () => {
+  it("adds media sandboxing at the Web boundary and preserves the ordinary policy", async () => {
+    const id = "db6e9d20-a077-47bd-9127-ff279999ae2d";
+    for (const path of [`/api/assets/media/asset/${id}`, `/api/assets/media/model/${id}/`]) {
+      const csp = await cspForPath(path);
+      expect(csp).toContain("frame-ancestors 'none'");
+      expect(csp).toContain("sandbox; default-src 'none'");
+      expect((await headersForPath(path)).get("referrer-policy")).toEqual(["same-origin"]);
+    }
+    for (const path of ["/assets", `/api/assets/media/unknown/${id}`]) {
+      expect(await cspForPath(path)).not.toContain("sandbox");
+    }
+  });
+});
+
 const ORDINARY_PATH = "/deals";
 
 describe("next.config security headers", () => {

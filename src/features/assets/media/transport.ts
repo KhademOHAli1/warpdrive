@@ -1,5 +1,7 @@
 import type { AssetMediaTarget } from "./contracts";
 
+export const assetMediaBinaryCsp = "sandbox; default-src 'none'";
+
 export const assetMediaHeaders = {
   actor: "x-asset-media-actor",
   csrf: "x-csrf-token",

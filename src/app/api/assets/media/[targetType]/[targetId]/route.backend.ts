@@ -15,7 +15,7 @@ import {
   assetMediaVersion,
 } from "@/features/assets/media/nativeContracts";
 import { readAssetMediaFile, uploadAssetMediaFile } from "@/features/assets/media/service";
-import { assetMediaHeaders } from "@/features/assets/media/transport";
+import { assetMediaBinaryCsp, assetMediaHeaders } from "@/features/assets/media/transport";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { createContext } from "@/server/trpc/context";
 
@@ -37,6 +37,7 @@ const privacyHeaders = {
   "cache-control": "private, no-store",
   "x-content-type-options": "nosniff",
   "cross-origin-resource-policy": "same-origin",
+  "referrer-policy": "same-origin",
 };
 const statusFor = { unavailable: 404, invalid: 400, conflict: 409, storage: 503 };
 const invalid = { ok: false, error: "invalid" } as const;
@@ -139,7 +140,7 @@ export async function GET(request: Request, route: RouteContext) {
       "content-type": mime,
       "content-length": String(bytes.length),
       "content-disposition": view.data === "preview" ? "inline" : attachmentFilename(name),
-      "content-security-policy": "sandbox; default-src 'none'",
+      "content-security-policy": assetMediaBinaryCsp,
     },
   });
 }

@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import { applyDevelopmentCachePolicy } from "./src/config/developmentCache";
+import { assetMediaBinaryCsp } from "./src/features/assets/media/transport";
 
 // Security response headers, applied to every route.
 //
@@ -19,12 +20,10 @@ import { applyDevelopmentCachePolicy } from "./src/config/developmentCache";
 // cannot see that attack; only refusing to be framed can.
 export const CONSENT_PATH = "/oauth/authorize/consent";
 
-// Every route except the consent screen. Next applies every matching headers() entry and a browser
-// intersects two Content-Security-Policy headers, so the consent screen cannot relax a directive by
-// adding a second header: it has to be carved out of the strict entry. Pinned by next.config.test.
-// The `/?` matters: without it the trailing-slash spelling slips past the carve-out and matches
-// both entries, which is the two-header case described above.
-const ALL_ROUTES_EXCEPT_CONSENT = "/((?!oauth/authorize/consent/?$).*)";
+// Give the consent and media routes exactly one policy, including trailing-slash requests.
+const ASSET_MEDIA_PATH = "/api/assets/media/:targetType(asset|model)/:targetId";
+const ORDINARY_ROUTES =
+  "/((?!(?:oauth/authorize/consent|api/assets/media/(?:asset|model)/[^/]+)/?$).*)";
 
 const BASE_CSP = [
   "frame-ancestors 'none'",
@@ -46,7 +45,10 @@ const BASE_CSP = [
 // the route handler before any redirect is issued.
 const FORM_ACTION = "form-action 'self'";
 
-function securityHeaders(directives: string[]): { key: string; value: string }[] {
+function securityHeaders(
+  directives: string[],
+  referrerPolicy = "strict-origin-when-cross-origin",
+): { key: string; value: string }[] {
   return [
     { key: "Content-Security-Policy", value: directives.join("; ") },
     // Redundant with frame-ancestors on current browsers, kept for the pre-CSP-2 tail.
@@ -54,7 +56,7 @@ function securityHeaders(directives: string[]): { key: string; value: string }[]
     { key: "X-Content-Type-Options", value: "nosniff" },
     // Full URLs leak record ids (/deals/<uuid>) and the consent query string, which carries the
     // CSRF token, into any cross-origin navigation.
-    { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    { key: "Referrer-Policy", value: referrerPolicy },
     // Standalone scanner and tag pages set their own document permissions.
     { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
   ];
@@ -82,7 +84,11 @@ const nextConfig: NextConfig = {
   headers() {
     return Promise.resolve([
       { source: CONSENT_PATH, headers: securityHeaders(BASE_CSP) },
-      { source: ALL_ROUTES_EXCEPT_CONSENT, headers: securityHeaders([...BASE_CSP, FORM_ACTION]) },
+      { source: ORDINARY_ROUTES, headers: securityHeaders([...BASE_CSP, FORM_ACTION]) },
+      {
+        source: ASSET_MEDIA_PATH,
+        headers: securityHeaders([...BASE_CSP, FORM_ACTION, assetMediaBinaryCsp], "same-origin"),
+      },
       {
         source: "/operations/scan",
         headers: [
