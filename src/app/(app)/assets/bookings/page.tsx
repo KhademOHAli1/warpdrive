@@ -14,6 +14,7 @@ export default async function AssetBookingsPage() {
       actorId={actor.id}
       actorName={actor.name}
       admin={actor.type === "admin"}
+      initialNow={new Date().toISOString()}
     />
   );
 }

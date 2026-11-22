@@ -29,17 +29,17 @@ export function BookingsFixture({
   actorId,
   actorName,
   admin,
+  initialNow,
 }: {
   actorId: string;
   actorName: string;
   admin: boolean;
+  initialNow: string;
 }) {
   const t = words[useLocale()];
   const principal = { id: actorId, name: actorName };
   const [role, setRole] = useState<FixtureRole>(admin ? "manager" : "base");
-  const [initial] = useState(() =>
-    createBookingFixture(principal, admin, new Date().toISOString()),
-  );
+  const [initial] = useState(() => createBookingFixture(principal, admin, initialNow));
   const state = useRef(initial);
   const [view, setView] = useState(() => projectBookings(initial));
   const requests = useRef(new Map<string, { signature: string; bookingId: string | null }>());
