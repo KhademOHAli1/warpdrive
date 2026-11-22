@@ -3,10 +3,10 @@ import { eq, sql } from "drizzle-orm";
 import { assert, expect, it } from "vitest";
 import { applyMigrations } from "@/db/migrate";
 import {
-  canonicalFolder,
   freshMigrationDb,
   installPrefix,
   ledger,
+  migrationFolder,
 } from "@/db/migrationAdmission.test-helpers";
 import { users } from "@/db/schema/identity";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
@@ -313,6 +313,7 @@ async function populatedAudit(h: TestDb) {
 
 it("projects exact frozen observations and corrections after a populated 0153 to 0154 upgrade", async () => {
   const h = await freshMigrationDb();
+  const target = await migrationFolder(155);
   try {
     await installPrefix(h, 154);
     const f = await populatedAudit(h);
@@ -323,7 +324,7 @@ it("projects exact frozen observations and corrections after a populated 0153 to
     );
     expect(targetRows.rows).toEqual([{ idx: null }]);
 
-    expectOk(await applyMigrations(h.db, signal(), canonicalFolder));
+    expectOk(await applyMigrations(h.db, signal(), target.folder));
     const upgraded = await ledger(h);
     expect(upgraded).toHaveLength(prefix.length + 1);
     expect(upgraded.slice(0, -1)).toEqual(prefix);
@@ -435,11 +436,11 @@ it("projects exact frozen observations and corrections after a populated 0153 to
     );
     expect(Buffer.from(photo.value.bytes)).toEqual(png);
     expect(await incumbentRows(h)).toEqual(before);
-    expectOk(await applyMigrations(h.db, signal(), canonicalFolder));
+    expectOk(await applyMigrations(h.db, signal(), target.folder));
     expect(await ledger(h)).toEqual(upgraded);
     expect(await history(h, f.manager, f.pooled.id)).toEqual(pool);
   } finally {
-    await h.close();
+    await Promise.all([target.dispose(), h.close()]);
   }
 });
 

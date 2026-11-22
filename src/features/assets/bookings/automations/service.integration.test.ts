@@ -184,7 +184,7 @@ async function pendingBooking(h: TestDb, f: Fixture, assetId: string, title: str
         startAt: new Date(start).toISOString(),
         endAt: new Date(start + 3_600_000).toISOString(),
       },
-      lines: [{ kind: "asset", resourceId: assetId, locationId: null, quantity: 1 }],
+      lines: [{ kind: "asset", resourceId: assetId, locationId: f.binId, quantity: 1 }],
     }),
   );
   const booking = bookingAt(await run(h, f.requester, { type: "submitBooking", ...pin(draft) }));
@@ -208,6 +208,14 @@ async function queueExactSentBackRun(
 }
 
 async function archiveSite(h: TestDb, f: Fixture) {
+  success(
+    await executeLocationsCommand(
+      h.db,
+      f.admin,
+      { type: "setLocationArchived", requestId: randomUUID(), id: f.binId, archived: true },
+      signal(),
+    ),
+  );
   success(
     await executeLocationsCommand(
       h.db,
