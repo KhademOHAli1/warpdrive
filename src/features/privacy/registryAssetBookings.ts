@@ -81,7 +81,7 @@ export const assetBookingsEntry = classifyInventory(
     "writer:src/features/assets/bookings/membershipService.ts#delete:assetBookingMemberships",
     "writer:src/features/assets/bookings/membershipService.ts#insert:assetBookingMemberships",
     "writer:src/features/assets/bookings/membershipService.ts#insert:assetBookingReceipts",
-    "writer:src/features/assets/bookings/membershipService.ts#update:booking-membership\\u0000",
+    "writer:src/features/assets/bookings/membershipService.ts#update:booking-membership\u0000",
     "writer:src/features/assets/bookings/membershipService.ts#update:dynamic",
     "writer:src/features/assets/bookings/repository.ts#delete:assetBookingLines",
     "writer:src/features/assets/bookings/repository.ts#insert:assetBookingEvents",
