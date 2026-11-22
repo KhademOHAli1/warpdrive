@@ -4,6 +4,7 @@
 // files under the project's line-count limit.
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
@@ -30,7 +31,6 @@ vi.mock("@/lib/trpc-client", () => ({
 
 import type { SearchResults } from "@/types/search";
 import { CommandPalette } from "./CommandPalette";
-import type { EquipmentSearchEntry } from "./equipmentFixture";
 import { OPEN_SEARCH_EVENT } from "./events";
 
 const EMPTY_RESULTS: SearchResults = { deals: [], people: [], organizations: [], leads: [] };
@@ -51,14 +51,8 @@ beforeEach(() => {
 
 // Opens the palette, types a query, and advances past the debounce so the
 // results list (rather than the idle placeholder) is rendered.
-function openAndSearch(
-  query: string,
-  fixtureEquipment?: readonly EquipmentSearchEntry[],
-  equipmentAvailable?: boolean,
-) {
-  render(
-    <CommandPalette fixtureEquipment={fixtureEquipment} equipmentAvailable={equipmentAvailable} />,
-  );
+function openAndSearch(query: string, options?: ComponentProps<typeof CommandPalette>) {
+  render(<CommandPalette {...options} />);
   fireEvent(window, new Event(OPEN_SEARCH_EVENT));
   const input = screen.getByRole("searchbox", { name: "Search" });
   fireEvent.change(input, { target: { value: query } });
@@ -81,7 +75,7 @@ describe("CommandPalette keyboard navigation", () => {
     useEquipmentMock.mockReturnValue({
       data: [{ id: "kit", kind: "kit", primary: "Bench kit", secondary: "BENCH-1" }],
     });
-    const input = openAndSearch("Bench", undefined, true);
+    const input = openAndSearch("Bench", { equipmentAvailable: true });
     expect(useEquipmentMock).toHaveBeenLastCalledWith(
       { q: "Bench" },
       expect.objectContaining({ enabled: true, staleTime: 0 }),
@@ -101,7 +95,7 @@ describe("CommandPalette keyboard navigation", () => {
         data: [{ id: "kit", kind: "kit", primary: "Private kit", secondary: "BENCH-1" }],
         ...state,
       });
-      openAndSearch("Bench", undefined, true);
+      openAndSearch("Bench", { equipmentAvailable: true });
       expect(screen.queryByRole("group", { name: "Equipment" })).not.toBeInTheDocument();
       screen.getByText("Deal A").click();
       expect(pushMock).toHaveBeenCalledWith("/deals/d1");
@@ -221,7 +215,7 @@ describe("CommandPalette keyboard navigation", () => {
       { id: "asset10", name: "Signal generator", code: "SIGNAL-10", serial: "SG-10" },
       { id: "asset2", name: "Signal generator", code: "SIGNAL-02", serial: "SG-2" },
     ];
-    const input = openAndSearch("sg-2", assets);
+    const input = openAndSearch("sg-2", { fixtureEquipment: assets });
     expect(screen.getByRole("group", { name: "Equipment" })).toBeVisible();
     expect(screen.queryByText("SIGNAL-10 · SG-10")).not.toBeInTheDocument();
 
@@ -234,5 +228,51 @@ describe("CommandPalette keyboard navigation", () => {
   it("omits the equipment group unless fixture data was supplied", () => {
     openAndSearch("signal");
     expect(screen.queryByRole("group", { name: "Equipment" })).not.toBeInTheDocument();
+  });
+
+  it("keeps separate operations groups in keyboard order and routes an exact location", () => {
+    setResults(MIXED_RESULTS);
+    const input = openAndSearch("bench", {
+      fixtureEquipment: [{ id: "l1", name: "Bench meter", code: "M-1", serial: null }],
+      fixtureOperations: [
+        { id: "l1", kind: "booking", primary: "Bench reservation", secondary: "Studio" },
+        { id: "l1", kind: "location", primary: "Bench room", secondary: "Studio" },
+      ],
+    });
+    expect(
+      screen
+        .getAllByRole("group")
+        .slice(-3)
+        .map((group) => group.getAttribute("aria-label")),
+    ).toEqual(["Equipment", "Locations", "Bookings"]);
+    for (let n = 0; n < 3; n++) fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(screen.getByRole("option", { name: /^Bench room/u })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByRole("option", { name: /^Bench reservation/u })).toHaveAttribute(
+      "aria-selected",
+      "false",
+    );
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(pushMock).toHaveBeenCalledWith("/locations?locationId=l1");
+  });
+
+  it("opens the selected booking by pointer from the fixture", () => {
+    openAndSearch("studio", {
+      fixtureOperations: [
+        { id: "bk1", kind: "booking", primary: "Bench reservation", secondary: "Studio" },
+      ],
+    });
+    expect(screen.queryByRole("group", { name: "Locations" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("option", { name: /^Bench reservation/u }));
+    expect(pushMock).toHaveBeenCalledWith("/assets/bookings?bookingId=bk1");
+  });
+
+  it("leaves operations search hidden when the fixture prop is absent", () => {
+    const input = openAndSearch("studio");
+    expect(input).not.toHaveAttribute("placeholder", expect.stringMatching(/locations|bookings/iu));
+    expect(screen.queryByRole("group", { name: "Locations" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Bookings" })).not.toBeInTheDocument();
   });
 });

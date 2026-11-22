@@ -80,6 +80,7 @@ import { newsletterInventoryEntry } from "./registryNewsletter";
 import { newsletterOperationalInventoryEntry } from "./registryNewsletterOperations";
 import { operationsContractInventoryEntry } from "./registryOperations";
 import { operationsAccessEntry } from "./registryOperationsAccess";
+import { operationsSearchEntry } from "./registryOperationsSearch";
 import { physicalLabelsEntry } from "./registryPhysicalLabels";
 import { productionBuildsEntry } from "./registryProductionBuilds";
 import { projectDocumentsInventoryEntry } from "./registryProjectDocuments";
@@ -147,6 +148,7 @@ export const registryEntries: RegistryEntry[] = [
   operationsAccessEntry,
   sharedLocationsEntry,
   assetDiscoveryEntry,
+  operationsSearchEntry,
   assetMediaEntry,
   assetRegisterEntry,
   assetCustodyEntry,

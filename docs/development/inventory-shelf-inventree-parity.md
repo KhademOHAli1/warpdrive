@@ -171,6 +171,10 @@ Native Chrome saved and reapplied the private view across reload, rejected a sta
 
 Web rolled back independently to `c6a71ef6` while Core, PostgreSQL and Silo stayed running. The earlier Web reopened CRM, Assets, kits, Warehouse, bookings and audits. It retained access to authorized private media and audit evidence. Core still served the current private view to its owner and denied the revoked viewer. Restored Web reopened the saved view, the changed model and exact kit. PostgreSQL and all three original private objects stayed intact throughout. The [operations backlog](warpdrive-operations-backlog.tsv) links the receipts and screenshots.
 
+### Location and booking workspace search (SHELF-02-SEARCH)
+
+Workspace search groups locations and bookings by record type alongside CRM and equipment. A result opens its exact record and focuses the detail heading. Location results follow the Directory’s site access. Booking managers see the site’s bookings, Base and Self-service users see their own, and calendar occupancy never exposes booking titles. Search omits archived records and archived sites. An authorized reader can still open an archived record through its direct link. [Shelf’s scoped palette implementation](https://github.com/Shelf-nu/shelf.nu/blob/66dea8d079a1e8e6a65563a3632c55725bde3c76/apps/webapp/app/routes/api%2B/command-palette.search.ts#L177) · [Shelf’s booking visibility rules](https://www.shelf.nu/knowledge-base/configure-what-self-service-and-base-users-can-see)
+
 ### Commissioning stock as equipment (PLAT-01)
 
 The Warehouse Positions view lets an operator with both Warehouse and Asset management at the same site commission one available, unreserved, company-owned serial into the Asset register. The dialog shows the part revision, original serial, lot and bin, and requires a handoff reason. Core verifies the exact stock position and its custody before posting one Inventory debit, one individual Asset and a handoff linked to both ledgers. A draft or in-transit transfer, an active assembly relation and other custody holds prevent commissioning.

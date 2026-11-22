@@ -22,11 +22,28 @@ import { PRIVACY_CASE_PATH_HEADER, privacyCaseReturnPath } from "@/features/priv
 import { ProjectGuestShell } from "@/features/projects/guests/ProjectGuestShell";
 import { PROJECT_GUEST_PATH_HEADER } from "@/features/projects/guests/requestPath";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
+import { projectOperationsSearchFixture } from "@/features/search/operationsFixture";
 import { CommandPalette } from "@/features/search/ui/CommandPalette";
 import { projectFixtureEquipment } from "@/features/search/ui/equipmentFixture";
 import { GlobalShortcuts } from "@/features/shortcuts/GlobalShortcuts";
 import { appearanceSeedScript, parseAppearance } from "@/features/theme/appearance";
 import { createContext, getBootstrap } from "@/frontend/context";
+
+function searchFixtures(
+  enabled: boolean,
+  actor: { id: string; name: string; type: string; isActive: boolean; projectsGuestOnly?: boolean },
+) {
+  if (!enabled || !actor.isActive || actor.projectsGuestOnly === true) return {};
+  const canManage = actor.type === "admin";
+  return {
+    fixtureEquipment: projectFixtureEquipment(assetsDiscoveryFixture(canManage)),
+    fixtureOperations: projectOperationsSearchFixture({
+      id: actor.id,
+      name: actor.name,
+      canManage,
+    }),
+  };
+}
 
 export default async function AppLayout({ children }: { children: ReactNode }): Promise<ReactNode> {
   const ctx = await createContext();
@@ -57,10 +74,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   if (shell === null) redirect("/login");
   const { prefs, baseCurrency, brand, navigation, projects } = shell;
   const inventoryFixtures = inventoryFixturesEnabled();
-  const fixtureEquipment =
-    inventoryFixtures && ctx.actor.isActive && !ctx.actor.projectsGuestOnly
-      ? projectFixtureEquipment(assetsDiscoveryFixture(ctx.actor.type === "admin"))
-      : undefined;
+  const fixtures = searchFixtures(inventoryFixtures, ctx.actor);
   return (
     <NativeActorProvider key={ctx.actor.id} actorId={ctx.actor.id}>
       <WorkspaceShellProvider
@@ -133,7 +147,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                     </div>
                   </div>
                   <CommandPalette
-                    fixtureEquipment={fixtureEquipment}
+                    {...fixtures}
                     equipmentAvailable={
                       !inventoryFixtures && shell.equipmentSearchAvailable === true
                     }

@@ -2,13 +2,15 @@
 import { useMemo, useState } from "react";
 import type { SearchResult, SearchResults } from "@/types/search";
 import type { EquipmentSearchResult } from "../equipmentContracts";
+import { type OperationSearchGroups, operationSearchKinds } from "./operationsSearchMessages";
 
 export type ResultKind =
   | "deal"
   | "person"
   | "organization"
   | "lead"
-  | EquipmentSearchResult["kind"];
+  | EquipmentSearchResult["kind"]
+  | keyof OperationSearchGroups;
 
 export function resultKey(kind: ResultKind, id: string) {
   return `${kind}:${id}`;
@@ -19,7 +21,7 @@ export interface FlatResult {
   r: SearchResult;
 }
 
-// Flattens the CRM and equipment sections into a single ordered keyboard list
+// Flattens the search sections into a single ordered keyboard list
 // and tracks a clamped active index
 // across it, for arrow-key navigation in the command palette. The index
 // resets to the first row whenever the result set's CONTENT changes (not
@@ -29,6 +31,7 @@ export interface FlatResult {
 export function useActiveIndex(
   results: SearchResults,
   equipment: EquipmentSearchResult[],
+  operations: OperationSearchGroups,
 ): {
   flat: FlatResult[];
   active: number;
@@ -42,8 +45,9 @@ export function useActiveIndex(
       ...results.organizations.map((r) => ({ kind: "organization" as const, r })),
       ...results.leads.map((r) => ({ kind: "lead" as const, r })),
       ...equipment.map((r) => ({ kind: r.kind, r })),
+      ...operationSearchKinds.flatMap((kind) => operations[kind].map((r) => ({ kind, r }))),
     ],
-    [results, equipment],
+    [results, equipment, operations],
   );
   const [active, setActive] = useState(0);
 

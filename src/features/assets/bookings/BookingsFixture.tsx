@@ -62,17 +62,20 @@ export function BookingsFixture({
   actorName,
   admin,
   initialNow,
+  initialBookingId,
   handoverDemo = false,
 }: {
   actorId: string;
   actorName: string;
   admin: boolean;
   initialNow: string;
+  initialBookingId?: string;
   handoverDemo?: boolean;
 }) {
   const t = words[useLocale()];
   const principal = useMemo(() => ({ id: actorId, name: actorName }), [actorId, actorName]);
   const [role, setRole] = useState<FixtureRole>(admin ? "manager" : "base");
+  const [linkedBookingId, setLinkedBookingId] = useState(initialBookingId);
   const [initial] = useState(() => {
     if (!handoverDemo) {
       return {
@@ -152,6 +155,7 @@ export function BookingsFixture({
 
   function preview(next: FixtureRole) {
     setView(projectBookings(fixtureBookingScope(state.current, principal, next)));
+    setLinkedBookingId(undefined);
     setRole(next);
   }
 
@@ -255,6 +259,7 @@ export function BookingsFixture({
       <BookingWorkspace
         key={role}
         initial={view}
+        initialBookingId={linkedBookingId}
         handover={handover}
         submit={submit}
         checkAvailability={checkAvailability}

@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarDays, Printer } from "lucide-react";
-import { useRef, useState } from "react";
+import { type Ref, useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
@@ -189,6 +189,7 @@ export function BookingDetail({
   calendarHref,
   handover,
   onHandoverBooking,
+  titleRef,
   words: t,
 }: {
   booking: Booking;
@@ -199,6 +200,7 @@ export function BookingDetail({
   calendarHref?: string;
   handover?: BookingHandoverAccess;
   onHandoverBooking?: (booking: Booking) => void;
+  titleRef?: Ref<HTMLHeadingElement>;
   words: BookingWords;
 }) {
   const hydrated = useHydrated();
@@ -216,7 +218,11 @@ export function BookingDetail({
     >
       <div className="space-y-3 p-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <h2 className="text-lg font-semibold [overflow-wrap:anywhere]">
+          <h2
+            ref={titleRef}
+            tabIndex={-1}
+            className="text-lg font-semibold [overflow-wrap:anywhere]"
+          >
             <bdi>{booking.title}</bdi>
           </h2>
           <Badge variant="outline" data-booking-status={bookingStatus(booking)}>

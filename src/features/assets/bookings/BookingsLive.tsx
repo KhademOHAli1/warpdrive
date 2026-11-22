@@ -18,11 +18,13 @@ import { checkAvailabilityAction, executeBookingAction } from "./webActions";
 export function BookingsLive({
   actorId,
   initial,
+  initialBookingId,
   canBrowseAssets,
   initialMemberships,
 }: {
   actorId: string;
   initial: BookingsWorkspace;
+  initialBookingId?: string;
   canBrowseAssets: boolean;
   initialMemberships?: BookingMembershipWorkspace;
 }) {
@@ -47,6 +49,7 @@ export function BookingsLive({
   return (
     <BookingWorkspace
       initial={initial}
+      initialBookingId={initialBookingId}
       fixture={false}
       canBrowseAssets={canBrowseAssets}
       submit={(command) => executeBookingAction(actorId, command, readCsrfToken())}

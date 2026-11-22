@@ -8,9 +8,11 @@ import { LocationsDirectory } from "./LocationsDirectory";
 export function LocationsFixture({
   initial,
   canManage,
+  initialLocationId,
 }: {
   initial: LocationDirectory;
   canManage: boolean;
+  initialLocationId?: string;
 }) {
   const [initialWorkspace] = useState<LocationsWorkspace>(() => ({
     directory: initial,
@@ -37,5 +39,12 @@ export function LocationsFixture({
     });
   }
 
-  return <LocationsDirectory initial={initialWorkspace} submit={submit} fixture />;
+  return (
+    <LocationsDirectory
+      initial={initialWorkspace}
+      initialLocationId={initialLocationId}
+      submit={submit}
+      fixture
+    />
+  );
 }

@@ -27,8 +27,9 @@ vi.mock("@/lib/trpc-client", () => ({
 import { STRINGS } from "@/constants/strings";
 import { LocaleProvider } from "@/features/i18n/LocaleProvider";
 import type { SearchResults } from "@/types/search";
-import { CommandPalette, SearchResultsList } from "./CommandPalette";
+import { CommandPalette } from "./CommandPalette";
 import { OPEN_SEARCH_EVENT } from "./events";
+import { SearchResultsList } from "./SearchResultsList";
 
 const EMPTY_RESULTS: SearchResults = { deals: [], people: [], organizations: [], leads: [] };
 

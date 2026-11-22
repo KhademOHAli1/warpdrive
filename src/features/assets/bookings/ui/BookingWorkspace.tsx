@@ -312,6 +312,7 @@ function applyHandoverBooking(workspace: BookingsWorkspace, next: Booking): Book
 
 export function BookingWorkspace({
   initial,
+  initialBookingId,
   submit,
   checkAvailability,
   fixture,
@@ -321,6 +322,7 @@ export function BookingWorkspace({
   handover,
 }: {
   initial: BookingsWorkspace;
+  initialBookingId?: string;
   submit: SubmitBooking;
   checkAvailability?: CheckBookingAvailability;
   fixture: boolean;
@@ -331,12 +333,19 @@ export function BookingWorkspace({
 }) {
   const preferences = useLocalePreferences();
   const t = bookingMessages[preferences.locale];
+  const initialBooking =
+    initialBookingId === undefined
+      ? undefined
+      : initial.bookings.find(({ id }) => id === initialBookingId);
   const [source, setSource] = useState(initial);
   const [workspace, setWorkspace] = useState(initial);
-  const [siteId, setSite] = useState(initial.sites[0]?.id ?? "");
+  const [siteId, setSite] = useState(initialBooking?.siteId ?? initial.sites[0]?.id ?? "");
   const [tab, setTab] = useState<Tab>("bookings");
-  const [filters, setFilters] = useState(clearFilters);
-  const [selectionId, setSelection] = useState<string | null>(null);
+  const [filters, setFilters] = useState(() =>
+    initialBooking?.archived === true ? { ...clearFilters, status: "archived" } : clearFilters,
+  );
+  const [selectionId, setSelection] = useState(initialBooking?.id ?? null);
+  const linkedTitleId = useRef(initialBooking?.id);
   const searchInput = useRef<HTMLInputElement | null>(null);
 
   if (source !== initial) {
@@ -378,6 +387,17 @@ export function BookingWorkspace({
   const atSite = workspace.bookings.filter(({ siteId }) => siteId === site.id);
   const rows = filterBookings(atSite, filters, workspace.viewer.id, preferences.locale);
   const selected = rows.find(({ id }) => id === selectionId) ?? rows[0];
+
+  function focusLinkedTitle(title: HTMLHeadingElement | null) {
+    if (
+      title === null ||
+      linkedTitleId.current === undefined ||
+      selected?.id !== linkedTitleId.current
+    )
+      return;
+    linkedTitleId.current = undefined;
+    title.focus();
+  }
 
   function openFromCalendar(id: string) {
     setFilters(clearFilters);
@@ -472,6 +492,7 @@ export function BookingWorkspace({
                 {...{ site, workspace }}
                 key={selected.id}
                 booking={selected}
+                titleRef={focusLinkedTitle}
                 pending={action.pending}
                 open={action.open}
                 words={t}

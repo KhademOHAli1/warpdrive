@@ -2,7 +2,7 @@
 
 import { Archive, Building2, MapPin, Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { useWorkspaceShell } from "@/components/shell/WorkspaceShellProvider";
 import { Badge } from "@/components/ui/Badge";
@@ -21,21 +21,98 @@ import type {
   LocationsResult,
   LocationsWorkspace,
 } from "./contracts";
-import { type LocationChange, locationPath } from "./directory";
+import { type LocationChange, type LocationDirectory, locationPath } from "./directory";
 import { LocationAccessDialog } from "./LocationAccessDialog";
 import { LocationEditor, type LocationEditorTarget } from "./LocationEditor";
 import { locationsMessages } from "./locationsMessages";
 
 export type LocationWriteError = LocationsError | "transport";
 
+function useLocationSelection(
+  initial: LocationsWorkspace,
+  source: LocationsWorkspace,
+  current: LocationsWorkspace,
+  initialLocationId?: string,
+) {
+  const { directory } = source === initial ? current : initial;
+  const requested = directory.locations.find(({ id }) => id === initialLocationId);
+  const requestedSite = directory.sites.find(({ id }) => id === requested?.siteId);
+  const requestedArchived = requested?.archived === true || requestedSite?.archived === true;
+  const [visited, setVisited] = useState(initialLocationId);
+  const [siteId, setSiteId] = useState(requestedSite?.id ?? directory.sites[0]?.id ?? "");
+  const [locationId, setLocationId] = useState<string | null>(requested?.id ?? null);
+  const [showArchived, setShowArchived] = useState(requestedArchived);
+  const [search, setSearch] = useState("");
+  if (visited !== initialLocationId) {
+    setVisited(initialLocationId);
+    if (requested !== undefined && requestedSite !== undefined) {
+      setSiteId(requestedSite.id);
+      setLocationId(requested.id);
+      setShowArchived(requestedArchived);
+      setSearch("");
+    }
+  }
+  return {
+    siteId,
+    setSiteId,
+    locationId,
+    setLocationId,
+    showArchived,
+    setShowArchived,
+    search,
+    setSearch,
+  };
+}
+
+function useLocationDetailFocus(requested: string | undefined, selected: string | undefined) {
+  const heading = useRef<HTMLHeadingElement>(null);
+  const focused = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (requested === undefined) {
+      focused.current = undefined;
+      return;
+    }
+    const target = heading.current;
+    if (target === null || requested !== selected || focused.current === requested) return;
+    focused.current = requested;
+    target.focus();
+  }, [requested, selected]);
+  return heading;
+}
+
+function matchingLocationPaths(
+  directory: LocationDirectory,
+  siteId: string | undefined,
+  showArchived: boolean,
+  search: string,
+  locale: string,
+) {
+  const query = search.trim().toLocaleLowerCase(locale);
+  return directory.locations
+    .filter((location) => location.siteId === siteId && (showArchived || !location.archived))
+    .map((location) => {
+      const names = locationPath(directory.locations, location).map(({ name }) => name);
+      return { location, path: names.join(" / "), parentPath: names.slice(0, -1).join(" / ") };
+    })
+    .filter(({ location, path }) =>
+      `${path} ${location.code}`.toLocaleLowerCase(locale).includes(query),
+    )
+    .sort(
+      (a, b) =>
+        a.path.localeCompare(b.path, locale) || a.location.code.localeCompare(b.location.code),
+    );
+}
+
 export function LocationsDirectory({
   initial,
+  initialLocationId,
   submit,
   fixture = false,
   refresh,
   refreshing = false,
 }: {
   initial: LocationsWorkspace;
+  initialLocationId?: string;
   submit: (command: LocationsCommand) => Promise<LocationsResult>;
 } & (
   | { fixture: true; refresh?: undefined; refreshing?: false }
@@ -47,10 +124,16 @@ export function LocationsDirectory({
   const [workspace, setWorkspace] = useState(initial);
   const [source, setSource] = useState(initial);
   const [context, setContext] = useState("inventory");
-  const [siteId, setSiteId] = useState(initial.directory.sites[0]?.id ?? "");
-  const [locationId, setLocationId] = useState<string | null>(null);
-  const [showArchived, setShowArchived] = useState(false);
-  const [search, setSearch] = useState("");
+  const {
+    siteId,
+    setSiteId,
+    locationId,
+    setLocationId,
+    showArchived,
+    setShowArchived,
+    search,
+    setSearch,
+  } = useLocationSelection(initial, source, workspace, initialLocationId);
   const [editor, setEditor] = useState<LocationEditorTarget | null>(null);
   const [accessSiteId, setAccessSiteId] = useState<string | null>(null);
   const [error, setError] = useState<LocationWriteError | null>(null);
@@ -78,28 +161,9 @@ export function LocationsDirectory({
     ? directory.sites.find(({ id }) => id === accessSiteId)
     : undefined;
   const busy = pending || refreshing;
-  const query = search.trim().toLocaleLowerCase(locale);
-  const locations = directory.locations
-    .filter((location) => location.siteId === site?.id && (showArchived || !location.archived))
-    .map((location) => {
-      const path = locationPath(directory.locations, location);
-      return {
-        location,
-        path: path.map(({ name }) => name).join(" / "),
-        parentPath: path
-          .slice(0, -1)
-          .map(({ name }) => name)
-          .join(" / "),
-      };
-    })
-    .filter(({ location, path }) =>
-      `${path} ${location.code}`.toLocaleLowerCase(locale).includes(query),
-    )
-    .sort(
-      (a, b) =>
-        a.path.localeCompare(b.path, locale) || a.location.code.localeCompare(b.location.code),
-    );
+  const locations = matchingLocationPaths(directory, site?.id, showArchived, search, locale);
   const selected = locations.find(({ location }) => location.id === locationId) ?? locations[0];
+  const detailHeading = useLocationDetailFocus(initialLocationId, selected?.location.id);
 
   function openEditor(button: HTMLButtonElement, target: LocationEditorTarget) {
     trigger.current = button;
@@ -376,9 +440,18 @@ export function LocationsDirectory({
               {selected !== undefined && (
                 <section
                   aria-label={t.locationDetails}
+                  data-location-detail={selected.location.id}
                   className="min-w-0 space-y-3 rounded-lg border bg-card p-4"
                 >
-                  <h2 className="text-sm font-semibold">{t.locationDetails}</h2>
+                  <h2
+                    ref={detailHeading}
+                    tabIndex={-1}
+                    aria-label={`${t.locationDetails} · ${selected.location.name}`}
+                    data-location-detail-heading
+                    className="text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  >
+                    {t.locationDetails}
+                  </h2>
                   <p className="text-sm text-muted-foreground [overflow-wrap:anywhere]">
                     <bdi>{site.name}</bdi>
                     {" / "}

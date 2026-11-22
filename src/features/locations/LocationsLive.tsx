@@ -11,7 +11,15 @@ import type { LocationsResult } from "./contracts";
 import { LocationsDirectory } from "./LocationsDirectory";
 import { locationsMessages } from "./locationsMessages";
 
-export function LocationsLive({ actorId, result }: { actorId: string; result: LocationsResult }) {
+export function LocationsLive({
+  actorId,
+  result,
+  initialLocationId,
+}: {
+  actorId: string;
+  result: LocationsResult;
+  initialLocationId?: string;
+}) {
   const router = useRouter();
   const locale = useLocale();
   const t = locationsMessages[locale];
@@ -36,6 +44,7 @@ export function LocationsLive({ actorId, result }: { actorId: string; result: Lo
     <LocationsDirectory
       key={actorId}
       initial={result.value}
+      initialLocationId={initialLocationId}
       submit={(command) => executeLocationsAction(actorId, command, readCsrfToken())}
       refresh={refresh}
       refreshing={refreshing}
