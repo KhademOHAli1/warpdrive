@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AssetCommand, AssetResult, AssetsWorkspace } from "../contracts";
 import {
   type CustodyCommand,
@@ -11,6 +11,7 @@ import { applyCustodyCommand } from "../custody/transitions";
 import { assetsFixture } from "../fixtures";
 import { emptyKitWorkspace, type KitCommand, type KitResult } from "../kits/contracts";
 import { applyKitCommand } from "../kits/transitions";
+import { createAssetMediaFixture } from "../media/fixture";
 import { applyAssetWorkspaceCommand } from "../registerCommands";
 import { AssetsRegister } from "./AssetsWorkspace";
 
@@ -35,6 +36,8 @@ export function AssetsFixture({
     },
   }));
   const current = useRef(initial);
+  const [media] = useState(() => createAssetMediaFixture(initial));
+  useEffect(() => () => media.dispose(), [media]);
   const kitReceipts = useRef(new Map<string, { signature: string; kitId: string }>());
   const receipts = useRef(
     new Map<
@@ -45,7 +48,10 @@ export function AssetsFixture({
 
   function submit(command: AssetCommand): Promise<AssetResult> {
     const result = applyAssetWorkspaceCommand(current.current, command, "Demo operator");
-    if (result.ok) current.current = result.value;
+    if (result.ok) {
+      current.current = result.value;
+      media.updateRegister(result.value);
+    }
     return Promise.resolve(result);
   }
 
@@ -97,6 +103,7 @@ export function AssetsFixture({
       submit={submit}
       submitCustody={submitCustody}
       submitKit={submitKit}
+      mediaAccess={media.access}
       fixture
     />
   );

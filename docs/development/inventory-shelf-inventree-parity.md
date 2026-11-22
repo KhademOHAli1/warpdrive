@@ -143,6 +143,12 @@ Integrated Chrome followed the shared Locations link, created a category and mod
 
 Web rollback reopened the original Locations and Warehouse screens at `f568bdbc` against the retained Core and PostgreSQL. The earlier Web transport still read all four Asset records. The PostgreSQL process and its stored rows stayed the same. The [operations backlog](warpdrive-operations-backlog.tsv) links the two Web receipts and the database results.
 
+### Equipment photos and supporting files (SHELF-02-MEDIA)
+
+Assets owns each equipment photo, model cover and supporting PDF. A serialized unit inherits its current model’s cover when it has no photo selected. Operators can give one unit its own cover, choose an earlier photo, or return to the model cover. Prior photos and PDFs retain their original bytes and upload history. The existing equipment timeline continues to record notes, edits and lifecycle events. [Shelf asset pages](https://www.shelf.nu/features/asset-pages) · [Shelf model cover schema](https://github.com/Shelf-nu/shelf.nu/blob/66dea8d079a1e8e6a65563a3632c55725bde3c76/packages/database/prisma/schema.prisma#L463-L475)
+
+Media inherits the equipment register’s site scope. Site managers can change media for active equipment. An authorized reader can still open its existing photos and files after the asset is archived, and reinstatement retains their original IDs. The Web fixture holds files in browser memory and resets on reload. Core will use private storage for production records. [Shelf archive and reinstatement](https://www.shelf.nu/knowledge-base/archive-and-reinstate-assets)
+
 ### Commissioning stock as equipment (PLAT-01)
 
 The Warehouse Positions view lets an operator with both Warehouse and Asset management at the same site commission one available, unreserved, company-owned serial into the Asset register. The dialog shows the part revision, original serial, lot and bin, and requires a handoff reason. Core verifies the exact stock position and its custody before posting one Inventory debit, one individual Asset and a handoff linked to both ledgers. A draft or in-transit transfer, an active assembly relation and other custody holds prevent commissioning.

@@ -38,6 +38,8 @@ import { type SubmitCustody, useCustodyWorkspace } from "../custody/ui/useCustod
 import { KitsTab, KitsTabTrigger } from "../kits/ui/KitsRegister";
 import { type SubmitKit, useKitWorkspace } from "../kits/ui/useKitWorkspace";
 import { kitUsesAsset } from "../kits/usage";
+import type { AssetMediaAccess } from "../media/contracts";
+import { ModelMediaButton } from "../media/ui/ModelMedia";
 import { AssetDetail } from "./AssetDetail";
 import { type AssetEditor, AssetEditorDialog } from "./AssetEditors";
 import { AssetTable } from "./AssetTable";
@@ -436,6 +438,7 @@ function RegisterResults({
   onEdit,
   words: t,
   custodyWords,
+  mediaAccess,
 }: {
   workspace: AssetsWorkspace;
   filters: Filters;
@@ -453,6 +456,7 @@ function RegisterResults({
   onEdit: EditHandler;
   words: AssetWords;
   custodyWords: CustodyWords;
+  mediaAccess?: AssetMediaAccess;
 }) {
   const selectedCustody = canSelect
     ? records.filter((record) => custody.selected.has(record.id) && isLooseAsset(workspace, record))
@@ -509,6 +513,7 @@ function RegisterResults({
             }
           />
           <AssetDetail
+            key={chosen.id}
             record={chosen}
             workspace={workspace}
             locationLabels={locationLabels}
@@ -518,6 +523,7 @@ function RegisterResults({
             words={t}
             custodyWords={custodyWords}
             openCustody={canManage ? custody.open : undefined}
+            mediaAccess={mediaAccess}
           />
         </div>
       ) : (
@@ -543,6 +549,7 @@ export function AssetsRegister({
   physicalLabelsAvailable = fixture,
   assetTagsAvailable = fixture,
   auditsAvailable = fixture,
+  mediaAccess,
 }: {
   initial: AssetsWorkspace;
   submit: (command: AssetCommand) => Promise<AssetResult>;
@@ -555,6 +562,7 @@ export function AssetsRegister({
   physicalLabelsAvailable?: boolean;
   assetTagsAvailable?: boolean;
   auditsAvailable?: boolean;
+  mediaAccess?: AssetMediaAccess;
 }) {
   const locale = useLocale();
   const t = assetMessages[locale];
@@ -815,6 +823,7 @@ export function AssetsRegister({
               onEdit={showEditor}
               words={t}
               custodyWords={custodyWords}
+              mediaAccess={mediaAccess}
             />
           </TabsContent>
 
@@ -967,18 +976,28 @@ export function AssetsRegister({
                             </bdi>
                           </td>
                           <td className="px-3 py-2 text-end">
-                            {site?.canManage === true && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={busy}
-                                onClick={(event) =>
-                                  showEditor(event, { type: "saveModel", siteId: site.id, model })
-                                }
-                              >
-                                {t.edit}
-                              </Button>
-                            )}
+                            <div className="flex flex-wrap justify-end gap-1.5">
+                              {mediaAccess !== undefined && (
+                                <ModelMediaButton
+                                  model={model}
+                                  access={mediaAccess}
+                                  canManage={site?.canManage === true}
+                                  busy={busy}
+                                />
+                              )}
+                              {site?.canManage === true && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={busy}
+                                  onClick={(event) =>
+                                    showEditor(event, { type: "saveModel", siteId: site.id, model })
+                                  }
+                                >
+                                  {t.edit}
+                                </Button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );

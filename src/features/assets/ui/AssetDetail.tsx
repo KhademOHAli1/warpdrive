@@ -4,13 +4,16 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useHydrated } from "@/lib/useHydrated";
-import type { AssetField, AssetRecord, AssetsWorkspace, AssetValue } from "../contracts";
+import type { AssetField, AssetRecord, AssetSite, AssetsWorkspace, AssetValue } from "../contracts";
 import type { CustodyOpener } from "../custody/ui/CustodyDialogs";
 import { AssetCustodyPanel } from "../custody/ui/CustodyPanels";
 import type { CustodyWords } from "../custody/ui/messages";
 import { KitAssociations } from "../kits/ui/KitsRegister";
 import { type KitWords, kitMessages } from "../kits/ui/messages";
 import { kitAssetUsage, kitUsesAsset } from "../kits/usage";
+import type { AssetMediaAccess } from "../media/contracts";
+import { AssetMediaCover, AssetMediaPanel } from "../media/ui/AssetMedia";
+import { useAssetMedia } from "../media/ui/useAssetMedia";
 import type { AssetEditor } from "./AssetEditors";
 import type { AssetWords } from "./assetMessages";
 
@@ -54,16 +57,21 @@ function custodyWordsForKit(words: CustodyWords, kitWords: KitWords, held: boole
     : words;
 }
 
+function canEditActiveAsset(site: AssetSite | undefined, record: AssetRecord) {
+  return site?.canManage === true && record.archivedAt === null;
+}
+
 export function AssetDetail({
   record,
   workspace,
   locationLabels,
-  busy,
+  busy: registerBusy,
   onEdit,
   locale,
   words: t,
   custodyWords,
   openCustody,
+  mediaAccess,
 }: {
   record: AssetRecord;
   workspace: AssetsWorkspace;
@@ -74,6 +82,7 @@ export function AssetDetail({
   words: AssetWords;
   custodyWords: CustodyWords;
   openCustody?: CustodyOpener;
+  mediaAccess?: AssetMediaAccess;
 }) {
   const kitWords = kitMessages[useLocale()];
   const hydrated = useHydrated();
@@ -94,8 +103,15 @@ export function AssetDetail({
   const kitHeld = kitAssetUsage(workspace.kits, record.id).held > 0;
   const canMoveLoose = !individual || (!held && !inKit);
   const canArchive = !held && !inKit;
-  const ordinaryCustody = site?.canManage === true && !archived && (!individual || !inKit);
+  const canManageMedia = canEditActiveAsset(site, record);
+  const ordinaryCustody = canManageMedia && (!individual || !inKit);
   const model = individual ? workspace.models.find(({ id }) => id === record.modelId) : undefined;
+  const media = useAssetMedia(
+    mediaAccess,
+    { type: "asset", id: record.id },
+    `${record.version}:${archived}:${canManageMedia}:${model?.id ?? ""}:${model?.version ?? ""}`,
+  );
+  const busy = registerBusy || media.pending;
   const balances = individual ? [] : record.balances.filter(({ quantity }) => quantity > 0);
   const total = balances.reduce((sum, bin) => sum + bin.quantity, 0);
   const events = [...record.events].reverse().sort((a, b) => b.at.localeCompare(a.at));
@@ -131,6 +147,7 @@ export function AssetDetail({
             <Badge variant="outline">{archived ? t.archived : t.active}</Badge>
           </div>
         </div>
+        <AssetMediaCover state={media} />
         {record.description !== null && (
           <p className="whitespace-pre-wrap text-muted-foreground [overflow-wrap:anywhere]">
             <bdi dir="auto">{record.description}</bdi>
@@ -284,6 +301,13 @@ export function AssetDetail({
           words={custodyWordsForKit(custodyWords, kitWords, kitHeld)}
         />
       )}
+
+      <AssetMediaPanel
+        state={media}
+        busy={registerBusy}
+        canManage={canManageMedia}
+        className="p-4"
+      />
 
       <div className="p-4">
         <h3 className="mb-2 font-semibold">{t.history}</h3>
