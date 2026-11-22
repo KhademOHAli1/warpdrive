@@ -199,6 +199,12 @@ Live Chrome exercised all seven target kinds against Core and PostgreSQL, checke
 
 Physical printer and scanner acceptance, installed-image qualification, preprinted tag claim and swap, and vendor-specific scan-to-receipt workflows remain open in their respective gates and backlog tasks.
 
+### Equipment tag lifecycle (SHELF-04)
+
+The equipment tag register issues batches of up to 100 distinct print-ready QR codes. An authorized site manager can assign a code to an asset or kit, replace the code while keeping its assignment history, and import legacy Shelf identifiers from validated CSV. The standalone landing page shows the exact active record to an authorized signed-in user. An opted-in assignment can receive a generic finder message in the private site inbox. Explicit consent to share location can enrich a scan receipt. The scan history collapses repeated scans within 30 seconds and restricts coordinates and inbox content to managers.
+
+Chrome verified the frontend fixture at `f43d1340`. It issued 100 distinct tags, printed five measured A4 pages, decoded the edge samples, and exercised claim, unlink, swap and reassignment. A real password and TOTP flow preserved the printed destination. Opt-in location and cancellation, the public inbox and its reader denial, the approved legacy origin check, and the existing PLAT-07 scanner passed. The fixture sent zero Core commands and preserved all 104 checked business tables. Native Core, the populated upgrade and independent Web rollback are tracked separately in the [operations backlog](warpdrive-operations-backlog.tsv).
+
 ## InvenTree coverage
 
 | Capability family | Warpdrive coverage today | Target and acceptance |
