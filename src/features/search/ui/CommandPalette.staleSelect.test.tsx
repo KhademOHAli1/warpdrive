@@ -9,7 +9,7 @@ const { pushMock, useQueryMock } = vi.hoisted(() => ({
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 vi.mock("@/lib/trpc-client", () => ({
-  trpc: { search: { query: { useQuery: useQueryMock } } },
+  trpc: { search: { query: { useQuery: useQueryMock }, equipment: { useQuery: () => ({}) } } },
 }));
 
 import { CommandPalette } from "./CommandPalette";

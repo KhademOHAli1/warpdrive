@@ -1,8 +1,18 @@
 "use client";
 import { useMemo, useState } from "react";
 import type { SearchResult, SearchResults } from "@/types/search";
+import type { EquipmentSearchResult } from "../equipmentContracts";
 
-export type ResultKind = "deal" | "person" | "organization" | "lead" | "equipment";
+export type ResultKind =
+  | "deal"
+  | "person"
+  | "organization"
+  | "lead"
+  | EquipmentSearchResult["kind"];
+
+export function resultKey(kind: ResultKind, id: string) {
+  return `${kind}:${id}`;
+}
 
 export interface FlatResult {
   kind: ResultKind;
@@ -18,7 +28,7 @@ export interface FlatResult {
 // a stale highlighted position pointing at the wrong row on Enter.
 export function useActiveIndex(
   results: SearchResults,
-  equipment: SearchResult[],
+  equipment: EquipmentSearchResult[],
 ): {
   flat: FlatResult[];
   active: number;
@@ -31,7 +41,7 @@ export function useActiveIndex(
       ...results.people.map((r) => ({ kind: "person" as const, r })),
       ...results.organizations.map((r) => ({ kind: "organization" as const, r })),
       ...results.leads.map((r) => ({ kind: "lead" as const, r })),
-      ...equipment.map((r) => ({ kind: "equipment" as const, r })),
+      ...equipment.map((r) => ({ kind: r.kind, r })),
     ],
     [results, equipment],
   );
@@ -41,7 +51,7 @@ export function useActiveIndex(
   // into one string. Plain strings compare by value, so the effect below
   // only re-runs when the actual ids change, not merely the array/object
   // reference.
-  const flatIds = flat.map(({ kind, r }) => `${kind}:${r.id}`).join("|");
+  const flatIds = flat.map(({ kind, r }) => resultKey(kind, r.id)).join("|");
 
   // Reset the highlight whenever the result set changes. Adjusting during render (rather than in
   // an effect) means the stale index never reaches the DOM and no extra commit happens.
@@ -52,7 +62,7 @@ export function useActiveIndex(
   }
 
   function moveDown() {
-    setActive((i) => Math.min(i + 1, flat.length - 1));
+    setActive((i) => Math.min(i + 1, Math.max(0, flat.length - 1)));
   }
   function moveUp() {
     setActive((i) => Math.max(i - 1, 0));

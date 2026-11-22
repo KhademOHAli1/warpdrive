@@ -11,9 +11,10 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const { pushMock, useQueryMock } = vi.hoisted(() => ({
+const { pushMock, useQueryMock, useEquipmentMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
   useQueryMock: vi.fn(),
+  useEquipmentMock: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 vi.mock("@/lib/trpc-client", () => ({
@@ -22,6 +23,7 @@ vi.mock("@/lib/trpc-client", () => ({
       query: {
         useQuery: useQueryMock,
       },
+      equipment: { useQuery: useEquipmentMock },
     },
   },
 }));
@@ -43,13 +45,20 @@ function setResults(results: SearchResults) {
 beforeEach(() => {
   pushMock.mockClear();
   setResults(EMPTY_RESULTS);
+  useEquipmentMock.mockReset().mockReturnValue({});
   vi.useFakeTimers();
 });
 
 // Opens the palette, types a query, and advances past the debounce so the
 // results list (rather than the idle placeholder) is rendered.
-function openAndSearch(query: string, fixtureEquipment?: readonly EquipmentSearchEntry[]) {
-  render(<CommandPalette fixtureEquipment={fixtureEquipment} />);
+function openAndSearch(
+  query: string,
+  fixtureEquipment?: readonly EquipmentSearchEntry[],
+  equipmentAvailable?: boolean,
+) {
+  render(
+    <CommandPalette fixtureEquipment={fixtureEquipment} equipmentAvailable={equipmentAvailable} />,
+  );
   fireEvent(window, new Event(OPEN_SEARCH_EVENT));
   const input = screen.getByRole("searchbox", { name: "Search" });
   fireEvent.change(input, { target: { value: query } });
@@ -66,6 +75,38 @@ describe("CommandPalette keyboard navigation", () => {
     organizations: [],
     leads: [{ id: "l1", primary: "Lead B", secondary: null }],
   };
+
+  it("queries native equipment only when available and opens an exact kit", () => {
+    setResults(MIXED_RESULTS);
+    useEquipmentMock.mockReturnValue({
+      data: [{ id: "kit", kind: "kit", primary: "Bench kit", secondary: "BENCH-1" }],
+    });
+    const input = openAndSearch("Bench", undefined, true);
+    expect(useEquipmentMock).toHaveBeenLastCalledWith(
+      { q: "Bench" },
+      expect.objectContaining({ enabled: true, staleTime: 0 }),
+    );
+    expect(screen.getByRole("group", { name: "Equipment" })).toHaveTextContent("Bench kit");
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(pushMock).toHaveBeenCalledWith("/assets?kitId=kit");
+  });
+
+  it.each([{ isFetching: true }, { error: new Error("Current grants could not be loaded") }])(
+    "withholds prior equipment results during revalidation or an error",
+    (state) => {
+      setResults(MIXED_RESULTS);
+      useEquipmentMock.mockReturnValue({
+        data: [{ id: "kit", kind: "kit", primary: "Private kit", secondary: "BENCH-1" }],
+        ...state,
+      });
+      openAndSearch("Bench", undefined, true);
+      expect(screen.queryByRole("group", { name: "Equipment" })).not.toBeInTheDocument();
+      screen.getByText("Deal A").click();
+      expect(pushMock).toHaveBeenCalledWith("/deals/d1");
+    },
+  );
 
   it("moves the active row with arrow keys and selects it with Enter", () => {
     setResults(MIXED_RESULTS);

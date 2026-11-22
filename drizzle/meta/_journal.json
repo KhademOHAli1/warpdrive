@@ -1072,6 +1072,13 @@
       "when": 1795322553167,
       "tag": "0152_asset_media",
       "breakpoints": true
+    },
+    {
+      "idx": 153,
+      "version": "7",
+      "when": 1795324878017,
+      "tag": "0153_asset_register_discovery",
+      "breakpoints": true
     }
   ]
 }

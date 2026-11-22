@@ -165,6 +165,7 @@ export type AssetsWorkspace = {
   custody?: CustodyWorkspace;
   kits?: KitWorkspace;
   mediaAvailable?: true;
+  discoveryAvailable?: true;
 };
 export type AssetError = "unavailable" | "invalid" | "stale" | "conflict" | "stock" | "state";
 export type AssetResult =

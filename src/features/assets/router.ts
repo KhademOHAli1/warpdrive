@@ -11,7 +11,14 @@ export const assetsRouter = router({
   workspace: protectedProcedure.query(async ({ ctx }) => {
     const result = await readAssetsWorkspace(ctx.db, ctx.session, AbortSignal.timeout(15_000));
     return result.ok && result.value.sites.length > 0
-      ? { ...result, value: { ...result.value, mediaAvailable: true as const } }
+      ? {
+          ...result,
+          value: {
+            ...result.value,
+            mediaAvailable: true as const,
+            discoveryAvailable: true as const,
+          },
+        }
       : result;
   }),
 });

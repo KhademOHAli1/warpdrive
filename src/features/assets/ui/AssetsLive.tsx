@@ -4,6 +4,13 @@ import { useMemo } from "react";
 import { readCsrfToken } from "@/utils/csrfCookie";
 import type { AssetsWorkspace } from "../contracts";
 import { executeCustodyAction } from "../custody/webActions";
+import type { AssetRegisterDiscoveryAccess } from "../discovery/contracts";
+import {
+  readAssetRegisterViewsAction,
+  removeAssetRegisterViewAction,
+  runAssetRegisterBatchAction,
+  saveAssetRegisterViewAction,
+} from "../discovery/webActions";
 import { executeKitAction } from "../kits/webActions";
 import type { AssetMediaAccess } from "../media/contracts";
 import { readAssetMediaAction, selectAssetMediaCoverAction } from "../media/webActions";
@@ -38,6 +45,15 @@ export function AssetsLive({
     }),
     [actorId],
   );
+  const discoveryAccess = useMemo<AssetRegisterDiscoveryAccess>(
+    () => ({
+      readViews: () => readAssetRegisterViewsAction(actorId, readCsrfToken()),
+      saveView: (input) => saveAssetRegisterViewAction(actorId, input, readCsrfToken()),
+      removeView: (input) => removeAssetRegisterViewAction(actorId, input, readCsrfToken()),
+      batch: (input) => runAssetRegisterBatchAction(actorId, input, readCsrfToken()),
+    }),
+    [actorId],
+  );
   return (
     <AssetsRegister
       initial={initial}
@@ -48,6 +64,7 @@ export function AssetsLive({
       assetTagsAvailable={assetTagsAvailable}
       auditsAvailable={auditsAvailable}
       mediaAccess={initial.mediaAvailable === true ? mediaAccess : undefined}
+      discoveryAccess={initial.discoveryAvailable === true ? discoveryAccess : undefined}
       submit={(command) => executeAssetAction(actorId, command, readCsrfToken())}
       submitCustody={
         initial.custody === undefined

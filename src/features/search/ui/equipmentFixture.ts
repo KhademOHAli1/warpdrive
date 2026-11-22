@@ -1,6 +1,6 @@
 import type { AssetsWorkspace } from "@/features/assets/contracts";
 import type { Locale } from "@/features/i18n/registry";
-import type { SearchResult } from "@/types/search";
+import type { EquipmentSearchResult } from "../equipmentContracts";
 
 export type EquipmentSearchEntry = {
   id: string;
@@ -37,13 +37,13 @@ export function projectFixtureEquipment(workspace: AssetsWorkspace): EquipmentSe
   );
 }
 
-const EMPTY_EQUIPMENT_RESULTS: SearchResult[] = [];
+export const EMPTY_EQUIPMENT_RESULTS: EquipmentSearchResult[] = [];
 const normalize = (text: string) => text.normalize("NFKC").toLowerCase();
 
 export function searchFixtureEquipment(
   entries: readonly EquipmentSearchEntry[] | undefined,
   query: string,
-): SearchResult[] {
+): EquipmentSearchResult[] {
   const term = normalize(query.trim());
   if (entries === undefined || term === "") return EMPTY_EQUIPMENT_RESULTS;
   const words = term.split(/\s+/u);
@@ -58,6 +58,7 @@ export function searchFixtureEquipment(
     .slice(0, 8)
     .map(({ id, name, code, serial }) => ({
       id,
+      kind: "asset",
       primary: name,
       secondary: serial === null ? code : `${code} · ${serial}`,
     }));

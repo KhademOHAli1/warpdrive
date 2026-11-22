@@ -113,7 +113,7 @@ function affectsBookingCapacity(command: AssetCommand, records: AssetRecord[]) {
   return (prior?.quantity ?? 0) > command.quantity;
 }
 
-async function preservesBookings(
+export async function preservesAssetBookings(
   tx: Db,
   site: AssetSite,
   before: AssetsWorkspace,
@@ -125,7 +125,7 @@ async function preservesBookings(
   return allow?.({ ...proposed, custody, kits }) !== false;
 }
 
-async function permitsIdentityUpdate(
+export async function permitsAssetIdentityUpdate(
   tx: Db,
   command: Extract<AssetCommand, { type: "update" }>,
   records: AssetRecord[],
@@ -173,13 +173,13 @@ async function applyCommand(
     ((await hasAssetCustody(tx, command.assetId)) || (await isKitAsset(tx, command.assetId)))
   )
     return { ok: false, error: "state" };
-  if (command.type === "update" && !(await permitsIdentityUpdate(tx, command, before.records)))
+  if (command.type === "update" && !(await permitsAssetIdentityUpdate(tx, command, before.records)))
     return { ok: false, error: "state" };
   const transformed = applyAssetWorkspaceCommand(before, command, actor.name);
   if (!transformed.ok) return transformed;
   if (
     affectsBookingCapacity(command, before.records) &&
-    !(await preservesBookings(tx, site, before, transformed.value))
+    !(await preservesAssetBookings(tx, site, before, transformed.value))
   )
     return { ok: false, error: "state" };
   await persistAssetChanges(tx, before, transformed.value, actor.id);

@@ -132,7 +132,12 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                       </main>
                     </div>
                   </div>
-                  <CommandPalette fixtureEquipment={fixtureEquipment} />
+                  <CommandPalette
+                    fixtureEquipment={fixtureEquipment}
+                    equipmentAvailable={
+                      !inventoryFixtures && shell.equipmentSearchAvailable === true
+                    }
+                  />
                   <GlobalShortcuts />
                 </div>
               </FollowUpPromptProvider>

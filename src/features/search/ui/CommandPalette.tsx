@@ -7,14 +7,16 @@ import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { trpc } from "@/lib/trpc-client";
 import type { SearchResult, SearchResults } from "@/types/search";
+import type { EquipmentSearchResult } from "../equipmentContracts";
 import {
+  EMPTY_EQUIPMENT_RESULTS,
   type EquipmentSearchEntry,
   equipmentSearchHeading,
   equipmentSearchPlaceholder,
   searchFixtureEquipment,
 } from "./equipmentFixture";
 import { OPEN_SEARCH_EVENT } from "./events";
-import { type ResultKind, useActiveIndex } from "./useActiveIndex";
+import { type ResultKind, resultKey, useActiveIndex } from "./useActiveIndex";
 import { useSearchHotkey } from "./useSearchHotkey";
 
 // Route map for each entity kind. Verified against real app routes (Task 15).
@@ -23,7 +25,8 @@ const ROUTES: Record<ResultKind, (id: string) => string> = {
   person: (id) => `/contacts/people/${id}`,
   organization: (id) => `/contacts/orgs/${id}`,
   lead: (id) => `/leads/${id}`,
-  equipment: (id) => `/assets?assetId=${encodeURIComponent(id)}`,
+  asset: (id) => `/assets?assetId=${encodeURIComponent(id)}`,
+  kit: (id) => `/assets?kitId=${encodeURIComponent(id)}`,
 };
 
 // Stable empty-results fallback, module-level so its reference never changes
@@ -36,12 +39,12 @@ const EMPTY_RESULTS: SearchResults = { deals: [], people: [], organizations: [],
 export function SearchResultsList({
   results,
   equipment,
-  activeId,
+  activeKey,
   onSelect,
 }: {
   results: SearchResults;
-  equipment?: SearchResult[];
-  activeId?: string;
+  equipment?: EquipmentSearchResult[];
+  activeKey?: string;
   onSelect: (kind: ResultKind, result: SearchResult) => void;
 }) {
   const t = useAppTranslations("shell.search");
@@ -52,54 +55,61 @@ export function SearchResultsList({
         heading={t("headingDeals")}
         items={results.deals}
         empty={t("emptyDeals")}
-        activeId={activeId}
-        onSelect={(r) => onSelect("deal", r)}
+        activeKey={activeKey}
+        kind={() => "deal"}
+        onSelect={onSelect}
       />
       <Section
         heading={t("headingPeople")}
         items={results.people}
         empty={t("emptyPeople")}
-        activeId={activeId}
-        onSelect={(r) => onSelect("person", r)}
+        activeKey={activeKey}
+        kind={() => "person"}
+        onSelect={onSelect}
       />
       <Section
         heading={t("headingOrganizations")}
         items={results.organizations}
         empty={t("emptyOrganizations")}
-        activeId={activeId}
-        onSelect={(r) => onSelect("organization", r)}
+        activeKey={activeKey}
+        kind={() => "organization"}
+        onSelect={onSelect}
       />
       <Section
         heading={t("headingLeads")}
         items={results.leads}
         empty={t("emptyLeads")}
-        activeId={activeId}
-        onSelect={(r) => onSelect("lead", r)}
+        activeKey={activeKey}
+        kind={() => "lead"}
+        onSelect={onSelect}
       />
       {equipment !== undefined && equipment.length > 0 && (
         <Section
           heading={equipmentSearchHeading[locale]}
           items={equipment}
-          activeId={activeId}
-          onSelect={(r) => onSelect("equipment", r)}
+          activeKey={activeKey}
+          kind={(r) => r.kind}
+          onSelect={onSelect}
         />
       )}
     </div>
   );
 }
 
-function Section({
+function Section<T extends SearchResult>({
   heading,
   items,
   empty,
-  activeId,
+  activeKey,
+  kind,
   onSelect,
 }: {
   heading: string;
-  items: SearchResult[];
+  items: T[];
   empty?: string;
-  activeId?: string;
-  onSelect: (r: SearchResult) => void;
+  activeKey?: string;
+  kind: (r: T) => ResultKind;
+  onSelect: (kind: ResultKind, r: T) => void;
 }) {
   return (
     <fieldset aria-label={heading} className="min-w-0">
@@ -110,10 +120,12 @@ function Section({
         <p className="px-3 py-1.5 text-sm text-muted-foreground">{empty}</p>
       ) : (
         items.map((r) => {
-          const isActive = r.id === activeId;
+          const target = kind(r);
+          const key = resultKey(target, r.id);
+          const isActive = key === activeKey;
           return (
             <button
-              key={r.id}
+              key={key}
               type="button"
               role="option"
               aria-selected={isActive}
@@ -125,7 +137,7 @@ function Section({
               className={`flex w-full items-center gap-2 px-3 py-2 text-start text-sm hover:bg-accent ${
                 isActive ? "bg-accent" : ""
               }`}
-              onClick={() => onSelect(r)}
+              onClick={() => onSelect(target, r)}
             >
               <span className="flex-1 truncate">
                 <bdi dir="auto">{r.primary}</bdi>
@@ -148,16 +160,19 @@ function Section({
 // Mount once in the app layout so it is always available.
 export function CommandPalette({
   fixtureEquipment,
+  equipmentAvailable = false,
 }: {
   fixtureEquipment?: readonly EquipmentSearchEntry[];
+  equipmentAvailable?: boolean;
 }) {
   const t = useAppTranslations("shell.search");
   const shell = useAppTranslations("shell");
   const locale = useLocale();
+  const liveEquipment = fixtureEquipment === undefined && equipmentAvailable;
   const placeholder =
-    fixtureEquipment === undefined
-      ? shell("searchPlaceholder")
-      : equipmentSearchPlaceholder[locale];
+    liveEquipment || fixtureEquipment !== undefined
+      ? equipmentSearchPlaceholder[locale]
+      : shell("searchPlaceholder");
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -190,19 +205,36 @@ export function CommandPalette({
   const typed = q.trim().length > 0;
   const searched = debounced.trim().length > 0;
   const { data, error } = trpc.search.query.useQuery({ q: debounced }, { enabled: searched });
+  const equipmentRead = trpc.search.equipment.useQuery(
+    { q: debounced },
+    {
+      enabled: open && searched && liveEquipment,
+      staleTime: 0,
+      gcTime: 0,
+      refetchOnWindowFocus: true,
+      retry: false,
+    },
+  );
   // A query in flight has not yet said the customer is absent, and "No organizations" read that way
   // is how a duplicate record gets created. Nothing zero-result renders until data arrives, and a
   // debounce still pending counts as in flight.
-  const failed = error != null;
-  const pending = typed && !failed && (data === undefined || q.trim() !== debounced.trim());
+  const debouncing = q.trim() !== debounced.trim();
+  const failed = !debouncing && error != null;
+  const pending = typed && !failed && (data === undefined || debouncing);
 
   const results = data ?? EMPTY_RESULTS;
-  const equipment = useMemo(
+  const fixtureResults = useMemo(
     () => searchFixtureEquipment(fixtureEquipment, debounced),
     [fixtureEquipment, debounced],
   );
+  // Withhold cached matches while the current site grants are being checked again.
+  const equipment =
+    liveEquipment && searched && !debouncing && !equipmentRead.isFetching && !equipmentRead.error
+      ? (equipmentRead.data ?? EMPTY_EQUIPMENT_RESULTS)
+      : fixtureResults;
   const { flat, active, moveDown, moveUp } = useActiveIndex(results, equipment);
-  const activeId = flat[active]?.r.id;
+  const selection = flat[active];
+  const activeKey = selection === undefined ? undefined : resultKey(selection.kind, selection.r.id);
 
   function close() {
     setOpen(false);
@@ -248,8 +280,8 @@ export function CommandPalette({
                 e.preventDefault();
                 // `flat` still holds the last resolved query while a refinement is in flight, and
                 // those rows are behind the skeleton. Acting on one navigates somewhere unseen.
-                const sel = pending || failed ? undefined : flat[active];
-                if (sel !== undefined) handleSelect(sel.kind, sel.r);
+                if (typed && !pending && !failed && selection !== undefined)
+                  handleSelect(selection.kind, selection.r);
               }
             }}
             placeholder={placeholder}
@@ -260,7 +292,7 @@ export function CommandPalette({
           />
         </div>
         <div className="max-h-96 overflow-y-auto">
-          {!typed && !searched ? (
+          {!typed ? (
             <p className="px-3 py-4 text-sm text-muted-foreground">{t("idle")}</p>
           ) : failed ? (
             <p role="alert" className="px-3 py-4 text-sm text-destructive">
@@ -272,7 +304,7 @@ export function CommandPalette({
             <SearchResultsList
               results={results}
               equipment={equipment}
-              activeId={activeId}
+              activeKey={activeKey}
               onSelect={handleSelect}
             />
           )}

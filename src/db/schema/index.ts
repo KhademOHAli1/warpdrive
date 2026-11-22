@@ -8,6 +8,7 @@ export * from "@/features/assets/bookings/handover/schema";
 export * from "@/features/assets/bookings/schema";
 export * from "@/features/assets/commissioning/schema";
 export * from "@/features/assets/custody/schema";
+export * from "@/features/assets/discovery/schema";
 export * from "@/features/assets/kits/schema";
 export * from "@/features/assets/media/schema";
 export * from "@/features/assets/schema";

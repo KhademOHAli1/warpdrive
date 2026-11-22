@@ -16,6 +16,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     search: {
+      equipment: { useQuery: () => ({}) },
       query: {
         useQuery: useQueryMock,
       },
@@ -153,16 +154,16 @@ describe("SearchResultsList", () => {
     expect(screen.getByRole("listbox", { name: STRINGS.search.resultsLabel })).toBeInTheDocument();
   });
 
-  it("marks the row matching activeId as aria-selected and leaves others unselected", () => {
+  it("marks the row matching the active entity and leaves others unselected", () => {
     render(
       <SearchResultsList
         results={{
-          deals: [{ id: "d1", primary: "Deal A", secondary: null }],
+          deals: [{ id: "l1", primary: "Deal A", secondary: null }],
           people: [],
           organizations: [],
           leads: [{ id: "l1", primary: "Lead B", secondary: null }],
         }}
-        activeId="l1"
+        activeKey="lead:l1"
         onSelect={() => {}}
       />,
     );

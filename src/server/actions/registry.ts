@@ -27,6 +27,12 @@ import {
 import { executeBookingMembershipAction } from "@/features/assets/bookings/membershipActions.backend";
 import { executeCommissionAssetAction } from "@/features/assets/commissioning/actions.backend";
 import { executeCustodyAction } from "@/features/assets/custody/actions.backend";
+import {
+  readAssetRegisterViewsAction,
+  removeAssetRegisterViewAction,
+  runAssetRegisterBatchAction,
+  saveAssetRegisterViewAction,
+} from "@/features/assets/discovery/actions.backend";
 import { executeKitAction } from "@/features/assets/kits/actions.backend";
 import {
   readAssetMediaAction,
@@ -199,6 +205,11 @@ export const commandHandlers = {
   "features/assets/bookings/membershipWebActions.executeBookingMembershipAction":
     executeBookingMembershipAction,
   "features/assets/custody/webActions.executeCustodyAction": executeCustodyAction,
+  "features/assets/discovery/webActions.readAssetRegisterViewsAction": readAssetRegisterViewsAction,
+  "features/assets/discovery/webActions.saveAssetRegisterViewAction": saveAssetRegisterViewAction,
+  "features/assets/discovery/webActions.removeAssetRegisterViewAction":
+    removeAssetRegisterViewAction,
+  "features/assets/discovery/webActions.runAssetRegisterBatchAction": runAssetRegisterBatchAction,
   "features/assets/kits/webActions.executeKitAction": executeKitAction,
   "features/assets/media/webActions.readAssetMediaAction": readAssetMediaAction,
   "features/assets/media/webActions.selectAssetMediaCoverAction": selectAssetMediaCoverAction,
