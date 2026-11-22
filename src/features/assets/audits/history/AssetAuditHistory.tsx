@@ -20,21 +20,24 @@ const messages = {
     empty: "No accessible audit findings for this equipment.",
     unavailable: "Audit findings are unavailable.",
     withdrawn: "Withdrawn",
-    truncated: "Showing the most recent audits.",
+    truncated:
+      "Open the audit for its full findings and activity. This history shows a limited selection.",
   },
   de: {
     title: "Prüfergebnisse",
     empty: "Für dieses Gerät sind keine zugänglichen Prüfergebnisse vorhanden.",
     unavailable: "Die Prüfergebnisse sind nicht verfügbar.",
     withdrawn: "Zurückgenommen",
-    truncated: "Die neuesten Prüfungen werden angezeigt.",
+    truncated:
+      "Öffnen Sie die Prüfung für alle Ergebnisse und Aktivitäten. Der Verlauf zeigt eine begrenzte Auswahl.",
   },
   fa: {
     title: "یافته‌های بازرسی",
     empty: "یافتهٔ قابل دسترسی برای این تجهیز وجود ندارد.",
     unavailable: "یافته‌های بازرسی در دسترس نیستند.",
     withdrawn: "پس گرفته‌شده",
-    truncated: "جدیدترین بازرسی‌ها نمایش داده می‌شوند.",
+    truncated:
+      "برای دیدن همهٔ یافته‌ها و فعالیت‌ها، بازرسی را باز کنید. این تاریخچه بخشی از موارد را نشان می‌دهد.",
   },
 } as const;
 
@@ -50,6 +53,11 @@ type Display = { time: (at: string) => string; number: (value: number | null) =>
 function useAuditHistory(assetId: string, read: AssetAuditHistoryAccess) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const refresh = () => setAttempt((previous) => previous + 1);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, []);
   useEffect(() => {
     const controller = new AbortController();
     const finish = (result: QueryResult) => {

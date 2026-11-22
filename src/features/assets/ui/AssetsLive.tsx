@@ -40,10 +40,10 @@ export function AssetsLive({
   auditsAvailable?: boolean;
 }) {
   const client = trpc.useUtils().client;
-  const auditHistoryAccess = useMemo<AssetAuditHistoryAccess>(
-    () => (assetId, signal) => client.assets.audits.assetHistory.query({ assetId }, { signal }),
-    [client],
-  );
+  const auditHistoryAccess = useMemo<AssetAuditHistoryAccess | undefined>(() => {
+    if (auditsAvailable !== true || initial.auditHistoryAvailable !== true) return undefined;
+    return (assetId, signal) => client.assets.audits.assetHistory.query({ assetId }, { signal });
+  }, [auditsAvailable, client, initial]);
   const mediaAccess = useMemo<AssetMediaAccess>(
     () => ({
       read: (target) => readAssetMediaAction(actorId, target, readCsrfToken()),
@@ -70,11 +70,7 @@ export function AssetsLive({
       physicalLabelsAvailable={physicalLabelsAvailable}
       assetTagsAvailable={assetTagsAvailable}
       auditsAvailable={auditsAvailable}
-      auditHistoryAccess={
-        auditsAvailable === true && initial.auditHistoryAvailable === true
-          ? auditHistoryAccess
-          : undefined
-      }
+      auditHistoryAccess={auditHistoryAccess}
       mediaAccess={initial.mediaAvailable === true ? mediaAccess : undefined}
       discoveryAccess={initial.discoveryAvailable === true ? discoveryAccess : undefined}
       submit={(command) => executeAssetAction(actorId, command, readCsrfToken())}

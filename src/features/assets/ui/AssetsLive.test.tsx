@@ -1,18 +1,23 @@
+/** @vitest-environment jsdom */
+
+import { cleanup, render } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { AssetAuditHistoryAccess } from "../audits/history/contracts";
 import type { AssetsWorkspace } from "../contracts";
 import { AssetsLive } from "./AssetsLive";
 
-const mocks = vi.hoisted(() => ({
-  read: vi.fn().mockResolvedValue({ ok: true, entries: [] }),
-  register: vi.fn<(props: { auditHistoryAccess?: AssetAuditHistoryAccess }) => null>(),
-}));
+const mocks = vi.hoisted(() => {
+  const read = vi.fn().mockResolvedValue({ ok: true, entries: [] });
+  return {
+    read,
+    client: { assets: { audits: { assetHistory: { query: read } } } },
+    register: vi.fn<(props: { auditHistoryAccess?: AssetAuditHistoryAccess }) => null>(),
+  };
+});
 
 vi.mock("@/lib/trpc-client", () => ({
-  trpc: {
-    useUtils: () => ({ client: { assets: { audits: { assetHistory: { query: mocks.read } } } } }),
-  },
+  trpc: { useUtils: () => ({ client: mocks.client }) },
 }));
 vi.mock("./AssetsWorkspace", () => ({ AssetsRegister: mocks.register }));
 
@@ -24,8 +29,8 @@ const originalWorkspace: AssetsWorkspace = {
   records: [],
 };
 
-function mount(initial: AssetsWorkspace, auditsAvailable: boolean) {
-  renderToStaticMarkup(
+function live(initial: AssetsWorkspace, auditsAvailable: boolean) {
+  return (
     <AssetsLive
       initial={initial}
       actorId="staff"
@@ -34,8 +39,12 @@ function mount(initial: AssetsWorkspace, auditsAvailable: boolean) {
       bookingsAvailable={false}
       physicalLabelsAvailable={false}
       auditsAvailable={auditsAvailable}
-    />,
+    />
   );
+}
+
+function mount(initial: AssetsWorkspace, auditsAvailable: boolean) {
+  renderToStaticMarkup(live(initial, auditsAvailable));
   return mocks.register.mock.lastCall?.[0].auditHistoryAccess;
 }
 
@@ -43,6 +52,7 @@ describe("live equipment audit history capability", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+  afterEach(cleanup);
 
   test("omits the panel on the previous Core and for actors without audit navigation", () => {
     expect(mount(originalWorkspace, true)).toBeUndefined();
@@ -57,5 +67,16 @@ describe("live equipment audit history capability", () => {
     const signal = new AbortController().signal;
     await expect(read?.(assetId, signal)).resolves.toEqual({ ok: true, entries: [] });
     expect(mocks.read).toHaveBeenCalledExactlyOnceWith({ assetId }, { signal });
+  });
+
+  test("refreshes the lazy read on a new server snapshot for the same actor", () => {
+    const supported = { ...originalWorkspace, auditHistoryAvailable: true as const };
+    const view = render(live(supported, true));
+    const first = mocks.register.mock.lastCall?.[0].auditHistoryAccess;
+    expect(first).toBeTypeOf("function");
+    view.rerender(live(supported, true));
+    expect(mocks.register.mock.lastCall?.[0].auditHistoryAccess).toBe(first);
+    view.rerender(live({ ...supported }, true));
+    expect(mocks.register.mock.lastCall?.[0].auditHistoryAccess).not.toBe(first);
   });
 });
