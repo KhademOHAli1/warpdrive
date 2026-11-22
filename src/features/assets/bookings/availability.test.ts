@@ -102,6 +102,20 @@ describe("booking capacity", () => {
     expect(plan(existing)).toEqual({ ok: true, witness: [] });
   });
 
+  it("keeps already picked serials outside the residual model reservation", () => {
+    const ready = { ...inventory, assets: [a, b] };
+    const residual = {
+      ...reservation(9, 11, [demand("model", modelId)]),
+      excludeModelAssetIds: [a.id],
+    };
+    const competing = request(9, 10, [demand("asset", b.id)]);
+    expect(plan([residual], competing, ready)).toEqual(unavailable);
+    expect(plan([residual], request(9, 10, [demand("asset", a.id)]), ready)).toEqual({
+      ok: true,
+      witness: [{ kind: "asset", resourceId: a.id, assetIds: [a.id] }],
+    });
+  });
+
   it("rejects a fleet request when no eligible serial stays free across the entire window", () => {
     const eligible = { ...inventory, assets: [a, b, { ...c, locationId: "another-bin" }, remote] };
     const claims = [

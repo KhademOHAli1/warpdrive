@@ -32,6 +32,8 @@ export type BookingCapacityRequest = {
   state?: CommitmentState;
   /** Pinned kit definitions apply to held commitments and a request being amended. */
   kitVersions?: Readonly<Record<string, number>>;
+  /** A staggered booking cannot count a serial that it has already issued. */
+  excludeModelAssetIds?: readonly string[];
 };
 
 export type BookingCapacityCommitment = BookingCapacityRequest & {
@@ -53,6 +55,7 @@ type Claim = {
   window: Window;
   demand: BookingDemand;
   kitVersion: number | undefined;
+  excludedModelUnits: ReadonlySet<string>;
   maintenance: boolean;
 };
 type Unit = BookingCapacityInventory["assets"][number] & { reserved: Window[] };
@@ -126,6 +129,7 @@ function claimsFor(input: BookingCapacityRequest, asOf: number) {
   if (range.end <= asOf) return [];
   const window = { start: Math.max(range.start, asOf), end: range.end };
   const { siteId, demands, kitVersions, state } = input;
+  const excludedModelUnits = new Set(input.excludeModelAssetIds);
   if (!demands.every(validDemand)) return null;
   return demands.map(
     (demand): Claim => ({
@@ -133,6 +137,7 @@ function claimsFor(input: BookingCapacityRequest, asOf: number) {
       window,
       demand,
       kitVersion: demand.kind === "kit" ? kitVersions?.[demand.resourceId] : undefined,
+      excludedModelUnits,
       maintenance: state === "maintenance",
     }),
   );
@@ -363,7 +368,12 @@ function reserveModels(
       (claim): ModelClaim => ({
         claim,
         // After exact bookings are placed, only keep units free across the entire interval.
-        candidates: units.filter((unit) => matchesPlace(unit, claim) && isFree(unit, claim.window)),
+        candidates: units.filter(
+          (unit) =>
+            !claim.excludedModelUnits.has(unit.id) &&
+            matchesPlace(unit, claim) &&
+            isFree(unit, claim.window),
+        ),
       }),
     );
     for (const component of connectedClaims(jobs)) {

@@ -23,6 +23,7 @@ import {
   bookingStatuses,
 } from "../contracts";
 import { bookingCalendarDownloadPath } from "../feedContracts";
+import type { BookingHandoverAccess } from "../handover/contracts";
 import { BookingCalendar } from "./BookingCalendar";
 import { BookingDetail } from "./BookingDetail";
 import type { BookingDialogState, BookingEditor, OpenBookingEditor } from "./BookingDialog";
@@ -296,6 +297,19 @@ function preferredTab(tab: Tab, site: BookingSite): Tab {
   return tab;
 }
 
+function applyHandoverBooking(workspace: BookingsWorkspace, next: Booking): BookingsWorkspace {
+  const current = workspace.bookings.find(({ id }) => id === next.id);
+  if (current === undefined || current.siteId !== next.siteId || current.version > next.version)
+    return workspace;
+  return {
+    ...workspace,
+    bookings: workspace.bookings.map((booking) => (booking.id === next.id ? next : booking)),
+    calendar: workspace.calendar.map((entry) =>
+      entry.bookingId === next.id ? { ...entry, window: next.window } : entry,
+    ),
+  };
+}
+
 export function BookingWorkspace({
   initial,
   submit,
@@ -304,6 +318,7 @@ export function BookingWorkspace({
   canBrowseAssets = true,
   membershipAccess,
   submitFeed,
+  handover,
 }: {
   initial: BookingsWorkspace;
   submit: SubmitBooking;
@@ -312,6 +327,7 @@ export function BookingWorkspace({
   canBrowseAssets?: boolean;
   membershipAccess?: BookingMembershipAccess;
   submitFeed?: SubmitBookingFeed;
+  handover?: BookingHandoverAccess;
 }) {
   const preferences = useLocalePreferences();
   const t = bookingMessages[preferences.locale];
@@ -454,11 +470,16 @@ export function BookingWorkspace({
               />
               <BookingDetail
                 {...{ site, workspace }}
+                key={selected.id}
                 booking={selected}
                 pending={action.pending}
                 open={action.open}
                 words={t}
                 calendarHref={fixture ? undefined : bookingCalendarDownloadPath(selected.id)}
+                handover={handover}
+                onHandoverBooking={(next) =>
+                  setWorkspace((value) => applyHandoverBooking(value, next))
+                }
               />
             </div>
           )}

@@ -6,19 +6,25 @@ import { inventoryFixturesEnabled } from "@/features/inventory/availability";
 import { createContext, getBootstrap } from "@/frontend/context";
 import { coreClient } from "@/frontend/trpc";
 
-export default async function AssetBookingsPage() {
+export default async function AssetBookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ demo?: string | string[] }>;
+}) {
   const { actor, projectGuest } = await createContext();
   if (projectGuest !== null) notFound();
   if (actor === null) redirect("/login");
   if (!actor.isActive || actor.projectsGuestOnly) notFound();
   if (inventoryFixturesEnabled()) {
+    const handoverDemo = (await searchParams).demo === "handover";
     return (
       <BookingsFixture
-        key={actor.id}
+        key={handoverDemo ? `${actor.id}:handover` : actor.id}
         actorId={actor.id}
         actorName={actor.name}
         admin={actor.type === "admin"}
         initialNow={new Date().toISOString()}
+        handoverDemo={handoverDemo}
       />
     );
   }

@@ -9,6 +9,8 @@ import { formatDateTime } from "@/lib/localeFormatting";
 import { useHydrated } from "@/lib/useHydrated";
 import { renderBookingCalendar } from "../calendar";
 import type { Booking, BookingSite, BookingsWorkspace } from "../contracts";
+import type { BookingHandoverAccess } from "../handover/contracts";
+import { BookingHandoverSection } from "../handover/ui/BookingHandoverSection";
 import type { BookingAction, OpenBookingEditor } from "./BookingDialog";
 import { BookingPullList } from "./BookingPullList";
 import { bookingKindLabel, bookingStatus, canManageBooking } from "./bookingView";
@@ -41,6 +43,7 @@ function RecordActions({
   workspace,
   pending,
   open,
+  lifecycleLocked,
   words: t,
 }: {
   booking: Booking;
@@ -48,6 +51,7 @@ function RecordActions({
   workspace: BookingsWorkspace;
   pending: boolean;
   open: OpenBookingEditor;
+  lifecycleLocked: boolean;
   words: BookingWords;
 }) {
   const hydrated = useHydrated();
@@ -57,8 +61,8 @@ function RecordActions({
     !canManageBooking(site, booking, workspace)
   )
     return null;
-  const actions = editableActions(booking, site, hydrated);
-  const canEdit = !booking.archived && booking.status !== "cancelled";
+  const actions = lifecycleLocked ? [] : editableActions(booking, site, hydrated);
+  const canEdit = !lifecycleLocked && !booking.archived && booking.status !== "cancelled";
   return (
     <div className="flex flex-wrap gap-2">
       {canEdit && (
@@ -183,6 +187,8 @@ export function BookingDetail({
   pending,
   open,
   calendarHref,
+  handover,
+  onHandoverBooking,
   words: t,
 }: {
   booking: Booking;
@@ -191,12 +197,16 @@ export function BookingDetail({
   pending: boolean;
   open: OpenBookingEditor;
   calendarHref?: string;
+  handover?: BookingHandoverAccess;
+  onHandoverBooking?: (booking: Booking) => void;
   words: BookingWords;
 }) {
   const hydrated = useHydrated();
   const preferences = { ...useLocalePreferences(), timeZone: site.policy.timeZone };
   const format = (value: string) => (hydrated ? formatDateTime(value, preferences) : value);
   const timeline = [...booking.history].sort((a, b) => b.version - a.version);
+  const hasHandover = handover !== undefined && booking.status === "confirmed";
+  const [handoverLocked, setHandoverLocked] = useState(hasHandover);
   return (
     <section
       id="booking-details"
@@ -251,9 +261,22 @@ export function BookingDetail({
             <bdi>{booking.description}</bdi>
           </p>
         )}
-        <RecordActions {...{ booking, site, workspace, pending, open, words: t }} />
+        <RecordActions
+          {...{ booking, site, workspace, pending, open, words: t }}
+          lifecycleLocked={hasHandover && handoverLocked}
+        />
         <BookingDocuments booking={booking} site={site} calendarHref={calendarHref} words={t} />
       </div>
+      {hasHandover && (
+        <BookingHandoverSection
+          booking={booking}
+          timeZone={site.policy.timeZone}
+          access={handover}
+          disabled={pending}
+          onBooking={(next) => onHandoverBooking?.(next)}
+          onLock={setHandoverLocked}
+        />
+      )}
       <div className="space-y-2 p-4">
         <h3 className="font-semibold">{t.resources}</h3>
         {booking.lines.length === 0 ? (

@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { assert, expect, it } from "vitest";
 import { wallTimeToInstant } from "@/lib/zonedDateTime";
 import type { Booking, BookingDemand, BookingIntent, BookingWindow } from "./contracts";
 import { createBookingFixture, type FixtureRole, fixtureBookingScope } from "./fixtures";
@@ -151,6 +151,7 @@ it("keeps another request private and requires renewed approval on expansion", (
     }),
   );
   expect(approved.booking.status).toBe("confirmed");
+  assert(booking.requesterId !== null);
   const modified = accepted(
     apply(approved.state, "base", {
       ...target(approved.booking),

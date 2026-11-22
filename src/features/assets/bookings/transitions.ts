@@ -33,7 +33,16 @@ type Failure = { ok: false; error: BookingError };
 type Result = Change | Failure;
 type Existing = Extract<BookingIntent, { bookingId: string }>;
 type Save = Extract<BookingIntent, { type: "saveBooking" }>;
-type Clock = { now: string; makeId: () => string };
+export type BookingCapacityContext = {
+  inventory: BookingCapacityInventory;
+  commitments: (
+    siteId: string,
+    exceptId: string,
+    demands: readonly BookingDemand[],
+  ) => BookingCapacityCommitment[];
+};
+type CapacityClock = { now: string; capacity?: BookingCapacityContext };
+type Clock = CapacityClock & { makeId: () => string };
 type Scope = { state: BookingState; site: BookingSite };
 type Context = Clock & Scope;
 
@@ -190,14 +199,17 @@ export function bookingCommitments(
 }
 
 function capacityError(
-  { state, site, now }: Scope & Pick<Clock, "now">,
+  { state, site, now, capacity }: Scope & CapacityClock,
   window: BookingWindow,
   demands: BookingDemand[],
   versions: Record<string, number>,
   id: string,
   capacityState: BookingCapacityCommitment["state"] = "held",
 ) {
-  const plan = planBookingCapacity(state.inventory, bookingCommitments(state, site.id, id), {
+  const inventory = capacity?.inventory ?? state.inventory;
+  const commitments =
+    capacity?.commitments(site.id, id, demands) ?? bookingCommitments(state, site.id, id);
+  const plan = planBookingCapacity(inventory, commitments, {
     asOf: now,
     request: { siteId: site.id, window, demands, kitVersions: versions, state: capacityState },
   });
@@ -469,6 +481,7 @@ export function previewBookingAvailability(
   state: BookingState,
   raw: BookingAvailabilityInput,
   now: string,
+  capacity?: BookingCapacityContext,
 ): BookingAvailabilityResult {
   const parsed = bookingAvailabilityInput.safeParse(raw);
   if (!parsed.success) return fail("invalid");
@@ -482,7 +495,7 @@ export function previewBookingAvailability(
     if (booking === undefined || !canRead(booking, site, state.viewer.id))
       return fail("unavailable");
   }
-  const ctx = { state, site, now };
+  const ctx = { state, site, now, capacity };
   const windowError = validateBookingWindow(site.policy, window, site.role, now);
   if (windowError !== null) return fail(windowError);
   const resolved = linesFor(ctx, lines);

@@ -1,9 +1,16 @@
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import { addCivilDays, instantCivilDate, wallTimeToInstant } from "@/lib/zonedDateTime";
 import type { AssetsWorkspace } from "../contracts";
+import { emptyCustodyWorkspace } from "../custody/contracts";
 import { assetsFixture } from "../fixtures";
 import { emptyKitWorkspace } from "../kits/contracts";
-import type { Booking, BookingParticipant, BookingPolicy, BookingWindow } from "./contracts";
+import type {
+  Booking,
+  BookingLine,
+  BookingParticipant,
+  BookingPolicy,
+  BookingWindow,
+} from "./contracts";
 import { assetBookingSources } from "./resources";
 import type { BookingState } from "./transitions";
 
@@ -139,9 +146,13 @@ function featuredBooking(state: BookingState, requester: Actor, now: string): Bo
   };
 }
 
-export function createBookingFixture(actor: Actor, admin: boolean, now: string): BookingState {
+export function createBookingFixture(
+  actor: Actor,
+  admin: boolean,
+  now: string,
+  assets = withSampleKit(assetsFixture(true)),
+): BookingState {
   const base = admin ? baseActor : actor;
-  const assets = withSampleKit(assetsFixture(true));
   const state: BookingState = {
     ...assetBookingSources(assets),
     viewer: actor,
@@ -162,6 +173,131 @@ export function createBookingFixture(actor: Actor, admin: boolean, now: string):
     maintenance: [],
   };
   return { ...state, bookings: [featuredBooking(state, base, now)] };
+}
+
+export const fixtureHandoverBookingId = "1ed0b49c-f362-4f28-b288-26db8bd1502d";
+
+function handoverAssets(): AssetsWorkspace {
+  const original = withSampleKit(assetsFixture(true));
+  const priorMeter = original.records.find(({ code }) => code === "METER-101");
+  const warehouse = original.locations.find(({ code }) => code === "WAREHOUSE");
+  if (priorMeter?.tracking !== "individual" || warehouse === undefined) {
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing handover demonstration equipment");
+  }
+
+  const comparisonMeter = {
+    ...priorMeter,
+    id: "900ca571-295c-4712-8834-19b6063e0e31",
+    name: "Clamp meter",
+    code: "CLAMP-201",
+    serial: "CLAMP-201-0001",
+    modelId: null,
+    events: [],
+  };
+
+  return {
+    ...original,
+    records: [
+      ...original.records.map((record) => {
+        if (record.code === "METER-102" && record.tracking === "individual") {
+          return { ...record, locationId: priorMeter.locationId };
+        }
+        if (record.code === "LEAD-SET" && record.tracking === "returnable_pool") {
+          return {
+            ...record,
+            balances: [...record.balances, { locationId: warehouse.id, quantity: 3 }],
+          };
+        }
+        return record;
+      }),
+      comparisonMeter,
+    ],
+    custody: {
+      ...emptyCustodyWorkspace(),
+      custodians: [
+        {
+          id: "d5c77669-b24c-4159-b357-d86aff54dd9b",
+          siteId: priorMeter.siteId,
+          name: baseActor.name,
+          kind: "non_login",
+          staffId: null,
+          active: true,
+          version: 1,
+        },
+      ],
+    },
+  };
+}
+
+function handoverLines(state: BookingState, code: string, quantity: number, bin?: string) {
+  const resource = state.resources.find(
+    (item) => item.code === code && (bin === undefined || item.bin?.endsWith(bin) === true),
+  );
+  if (resource === undefined) {
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing booking handover demonstration resource");
+  }
+  const { kind, resourceId, locationId, name, serial, contents, kitDefinitionVersion } = resource;
+  return {
+    kind,
+    resourceId,
+    locationId,
+    name,
+    code,
+    serial,
+    contents,
+    kitDefinitionVersion,
+    quantity,
+    bin: resource.bin,
+  } satisfies BookingLine;
+}
+
+function offsetMinutes(at: string, minutes: number) {
+  return new Date(Date.parse(at) + minutes * 60_000).toISOString();
+}
+
+export function createBookingHandoverDemo(actor: Actor, admin: boolean, now: string) {
+  const assets = handoverAssets();
+  const state = createBookingFixture(actor, admin, now, assets);
+  const requester = admin ? baseActor : actor;
+  const seed = featuredBooking(state, requester, now);
+  const window = demoWindow(now, 0);
+  const clock = offsetMinutes(window.startAt, 15);
+  const ready: Booking = {
+    ...seed,
+    id: fixtureHandoverBookingId,
+    title: "Controller bench handover",
+    status: "confirmed",
+    window,
+    updatedAt: window.startAt,
+    lines: [
+      handoverLines(state, "MULTI-87", 2),
+      handoverLines(state, "LEAD-SET", 4, "Bin A-01"),
+      handoverLines(state, "LEAD-SET", 2, "Receiving"),
+      handoverLines(state, "WIRE-KIT", 1),
+      handoverLines(state, "FERRULE-1", 3, "Bin A-01"),
+    ],
+    history: [
+      { version: 2, at: window.startAt, actor: "Demo manager", kind: "approved", reason: null },
+      { version: 1, at: window.startAt, actor: requester.name, kind: "submitted", reason: null },
+    ],
+  };
+  const adjacent: Booking = {
+    ...ready,
+    id: "080f523d-b577-48f2-bcd5-e32ea6e1059a",
+    title: "Final meter verification",
+    window: {
+      startAt: offsetMinutes(window.endAt, 15),
+      endAt: offsetMinutes(window.endAt, 60),
+    },
+    lines: [handoverLines(state, "METER-102", 1)],
+  };
+  const missed: Booking = {
+    ...ready,
+    id: "dceab02d-fd42-46ea-ad9d-88b8805e8667",
+    title: "Uncollected clamp meter",
+    lines: [handoverLines(state, "CLAMP-201", 1)],
+  };
+  return { state: { ...state, bookings: [ready, adjacent, missed] }, assets, clock };
 }
 
 export function fixtureBookingScope(
