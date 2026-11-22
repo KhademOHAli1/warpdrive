@@ -7,6 +7,7 @@ import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatDateOnly, formatDateTime } from "@/lib/localeFormatting";
 import type { BookingMaintenance, BookingSite } from "../contracts";
 import type { OpenBookingEditor } from "./BookingDialog";
+import { type BookingMembershipAccess, BookingMembershipPanel } from "./BookingMembershipPanel";
 import { weekdays } from "./BookingPolicyEditors";
 import type { BookingWords } from "./messages";
 
@@ -122,18 +123,21 @@ function MaintenanceSummary({
 }) {
   const preferences = { ...useLocalePreferences(), timeZone: site.policy.timeZone };
   const active = entries.filter(({ cancelled }) => !cancelled);
+  const editable = site.archived !== true;
   return (
     <section aria-label={t.maintenance} className="space-y-3 rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{t.maintenance}</h2>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={pending}
-          onClick={(event) => open(event.currentTarget, { type: "maintenance", siteId: site.id })}
-        >
-          <Plus size={15} aria-hidden="true" /> {t.maintenanceAdd}
-        </Button>
+        {editable && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={(event) => open(event.currentTarget, { type: "maintenance", siteId: site.id })}
+          >
+            <Plus size={15} aria-hidden="true" /> {t.maintenanceAdd}
+          </Button>
+        )}
       </div>
       {active.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t.noMaintenance}</p>
@@ -159,32 +163,38 @@ function MaintenanceSummary({
                   </time>
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={pending}
-                  onClick={(event) =>
-                    open(event.currentTarget, { type: "maintenance", siteId: site.id, maintenance })
-                  }
-                >
-                  <Pencil size={14} aria-hidden="true" /> {t.maintenanceEdit}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={pending}
-                  onClick={(event) =>
-                    open(event.currentTarget, {
-                      type: "removeMaintenance",
-                      siteId: site.id,
-                      maintenance,
-                    })
-                  }
-                >
-                  <X size={14} aria-hidden="true" /> {t.maintenanceRemove}
-                </Button>
-              </div>
+              {editable && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={pending}
+                    onClick={(event) =>
+                      open(event.currentTarget, {
+                        type: "maintenance",
+                        siteId: site.id,
+                        maintenance,
+                      })
+                    }
+                  >
+                    <Pencil size={14} aria-hidden="true" /> {t.maintenanceEdit}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={pending}
+                    onClick={(event) =>
+                      open(event.currentTarget, {
+                        type: "removeMaintenance",
+                        siteId: site.id,
+                        maintenance,
+                      })
+                    }
+                  >
+                    <X size={14} aria-hidden="true" /> {t.maintenanceRemove}
+                  </Button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
@@ -199,17 +209,22 @@ export function BookingSettings({
   pending,
   open,
   words,
+  membershipAccess,
 }: {
   site: BookingSite;
   maintenance: BookingMaintenance[];
   pending: boolean;
   open: OpenBookingEditor;
   words: BookingWords;
+  membershipAccess?: BookingMembershipAccess;
 }) {
   return (
     <div className="space-y-3">
       <PolicySummary {...{ site, pending, open, words }} />
       <MaintenanceSummary {...{ site, pending, open, words }} entries={maintenance} />
+      {membershipAccess !== undefined && (
+        <BookingMembershipPanel key={site.id} site={site} {...membershipAccess} />
+      )}
     </div>
   );
 }

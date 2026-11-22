@@ -14,13 +14,14 @@ export function workspaceNavItems(
   canViewCampaigns = false,
   canViewInventory = false,
   canViewAssets = false,
+  canViewAssetBookings = false,
 ) {
   const configured = modules.length > 0;
   const showSales = !configured || modules.includes("sales");
   return NAV_ITEMS.filter((item) => {
     if (item.key === "campaigns" && !canViewCampaigns) return false;
     if (item.key === "inventory" && !canViewInventory) return false;
-    if (item.key === "assets" && !canViewAssets) return false;
+    if (item.key === "assets" && !canViewAssets && !canViewAssetBookings) return false;
     if (item.key === "projects" && !canViewProjects) return false;
     if (item.key === "work" && !canViewWork) return false;
     if (!configured) return true;
@@ -29,6 +30,9 @@ export function workspaceNavItems(
   }).map((item) => {
     if (item.key === "dashboard" && !showSales) {
       return { ...item, href: "/dashboard", section: "/dashboard", additionalSections: [] };
+    }
+    if (item.key === "assets" && !canViewAssets) {
+      return { ...item, href: "/assets/bookings", section: "/assets/bookings" };
     }
     return item;
   });

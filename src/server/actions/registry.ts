@@ -9,6 +9,12 @@ import * as actions6 from "@/features/activities/reminderSettingsActions.backend
 import * as actions7 from "@/features/activities/typeActions.backend";
 import * as actions8 from "@/features/agency-projects/actions.backend";
 import { executeAssetAction } from "@/features/assets/actions.backend";
+import {
+  checkAvailabilityAction,
+  executeBookingAction,
+} from "@/features/assets/bookings/actions.backend";
+import { executeBookingFeedAction } from "@/features/assets/bookings/feedActions.backend";
+import { executeBookingMembershipAction } from "@/features/assets/bookings/membershipActions.backend";
 import { executeCommissionAssetAction } from "@/features/assets/commissioning/actions.backend";
 import { executeCustodyAction } from "@/features/assets/custody/actions.backend";
 import { executeKitAction } from "@/features/assets/kits/actions.backend";
@@ -156,6 +162,11 @@ export const commandHandlers = {
   "features/inventory/warehouse/stocktakes/actions.executeStocktakeAction": executeStocktakeAction,
   "features/locations/actions.executeLocationsAction": executeLocationsAction,
   "features/assets/webActions.executeAssetAction": executeAssetAction,
+  "features/assets/bookings/webActions.executeBookingAction": executeBookingAction,
+  "features/assets/bookings/webActions.checkAvailabilityAction": checkAvailabilityAction,
+  "features/assets/bookings/feedWebActions.executeBookingFeedAction": executeBookingFeedAction,
+  "features/assets/bookings/membershipWebActions.executeBookingMembershipAction":
+    executeBookingMembershipAction,
   "features/assets/custody/webActions.executeCustodyAction": executeCustodyAction,
   "features/assets/kits/webActions.executeKitAction": executeKitAction,
   "features/assets/commissioning/webActions.executeCommissionAssetAction":

@@ -40,6 +40,26 @@ describe("scrubProperties", () => {
   });
 });
 
+describe("private booking calendars", () => {
+  it("redacts calendar URLs, nested referrers and copied subscription credentials", () => {
+    const token = `wd_booking_${"a".repeat(43)}`;
+    const path = "/api/assets/bookings/feeds/11111111-1111-4111-8111-111111111111/calendar.ics";
+    const url = `${path}?token=${token}`;
+    expect(
+      scrubProperties({
+        $current_url: url,
+        $set_once: { $initial_referrer: encodeURIComponent(path) },
+        message: `Calendar error ${token}`,
+      }),
+    ).toEqual({
+      $current_url: "[redacted]",
+      $set_once: { $initial_referrer: "[redacted]" },
+      message: "[redacted]",
+    });
+    expect(sanitizeErrorEmails(`Copy failed for ${url}`)).toBe("[redacted]");
+  });
+});
+
 describe("sanitizeErrorEmails", () => {
   it("redacts emails from an Error message and stack", () => {
     const out = sanitizeErrorEmails(new Error("failed for jane@acme.com"));

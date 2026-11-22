@@ -12,7 +12,7 @@ export const observabilityIds1: string[] = [
   "log:src/features/observability/server.ts#warn",
   "sourceReview:src/features/observability/capture.ts#2a97f931b0fede359a5ba0873b1f48631002354c5de0a412cc548d37972eac1f",
   "sourceReview:src/features/observability/consoleForwarding.ts#dd9bf1cc497656fecc1d83895aec341bcfe09d935198c22e356a813e9cdb7163",
-  "sourceReview:src/features/observability/scrub.ts#a1893856e96b163461f20b59d89286cc722a5e9c1150ba69e410a63388d2f258",
+  "sourceReview:src/features/observability/scrub.ts#a3907027cec568dad50b2c777df8f1fe11064d0418b985068544ae911558c92e",
   "sourceReview:src/features/observability/server.ts#3637d2a29895c8e7501aaf8d531cb56eda1eace26602ddf5b19928d0f208f04d",
   "sourceReview:src/features/observability/telemetryConfig.ts#fd667dc2faa1456e583e66381a78cadf944ca709dbac71121fe5ec9d0585b718",
   "sourceReview:src/features/observability/TelemetryProvider.tsx#7f2dec0c6221f796cbb7a4eb92e4758afaaf29e56254616a919fb414c29e106c",

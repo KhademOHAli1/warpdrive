@@ -1030,6 +1030,13 @@
       "when": 1795304405531,
       "tag": "0146_asset_kits",
       "breakpoints": true
+    },
+    {
+      "idx": 147,
+      "version": "7",
+      "when": 1795306671941,
+      "tag": "0147_asset_bookings",
+      "breakpoints": true
     }
   ]
 }

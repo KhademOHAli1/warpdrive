@@ -67,6 +67,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
           ctx.actor.isActive && (inventoryFixtures || shell.inventoryAvailable === true)
         }
         canViewAssets={inventoryFixtures || shell.assetsAvailable === true}
+        canViewAssetBookings={ctx.actor.isActive && shell.bookingsAvailable === true}
         canViewSalesOrders={
           ctx.actor.isActive && !inventoryFixtures && shell.inventoryAvailable === true
         }

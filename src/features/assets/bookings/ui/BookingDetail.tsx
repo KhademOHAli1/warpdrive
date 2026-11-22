@@ -3,7 +3,7 @@
 import { CalendarDays, Printer } from "lucide-react";
 import { useRef, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatDateTime } from "@/lib/localeFormatting";
 import { useHydrated } from "@/lib/useHydrated";
@@ -51,7 +51,12 @@ function RecordActions({
   words: BookingWords;
 }) {
   const hydrated = useHydrated();
-  if (site.role === "viewer" || !canManageBooking(site, booking, workspace)) return null;
+  if (
+    site.archived === true ||
+    site.role === "viewer" ||
+    !canManageBooking(site, booking, workspace)
+  )
+    return null;
   const actions = editableActions(booking, site, hydrated);
   const canEdit = !booking.archived && booking.status !== "cancelled";
   return (
@@ -107,10 +112,12 @@ function editableActions(booking: Booking, site: BookingSite, hydrated: boolean)
 function BookingDocuments({
   booking,
   site,
+  calendarHref,
   words: t,
 }: {
   booking: Booking;
   site: BookingSite;
+  calendarHref?: string;
   words: BookingWords;
 }) {
   const [print, setPrint] = useState(false);
@@ -120,14 +127,25 @@ function BookingDocuments({
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          data-booking-download
-          onClick={() => downloadEvent(booking)}
-        >
-          <CalendarDays size={15} aria-hidden="true" /> {t.calendarEvent}
-        </Button>
+        {calendarHref === undefined ? (
+          <Button
+            size="sm"
+            variant="outline"
+            data-booking-download
+            onClick={() => downloadEvent(booking)}
+          >
+            <CalendarDays size={15} aria-hidden="true" /> {t.calendarEvent}
+          </Button>
+        ) : (
+          <a
+            className={buttonVariants({ size: "sm", variant: "outline" })}
+            data-booking-download
+            href={calendarHref}
+            download
+          >
+            <CalendarDays size={15} aria-hidden="true" /> {t.calendarEvent}
+          </a>
+        )}
         {allowPrint && (
           <Button
             ref={printButton}
@@ -164,6 +182,7 @@ export function BookingDetail({
   workspace,
   pending,
   open,
+  calendarHref,
   words: t,
 }: {
   booking: Booking;
@@ -171,6 +190,7 @@ export function BookingDetail({
   workspace: BookingsWorkspace;
   pending: boolean;
   open: OpenBookingEditor;
+  calendarHref?: string;
   words: BookingWords;
 }) {
   const hydrated = useHydrated();
@@ -232,7 +252,7 @@ export function BookingDetail({
           </p>
         )}
         <RecordActions {...{ booking, site, workspace, pending, open, words: t }} />
-        <BookingDocuments booking={booking} site={site} words={t} />
+        <BookingDocuments booking={booking} site={site} calendarHref={calendarHref} words={t} />
       </div>
       <div className="space-y-2 p-4">
         <h3 className="font-semibold">{t.resources}</h3>

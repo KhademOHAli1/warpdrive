@@ -4,7 +4,7 @@ import { z } from "zod";
 import { AssetsFixture } from "@/features/assets/ui/AssetsFixture";
 import { AssetsLive } from "@/features/assets/ui/AssetsLive";
 import { inventoryFixturesEnabled } from "@/features/inventory/availability";
-import { createContext } from "@/frontend/context";
+import { createContext, getBootstrap } from "@/frontend/context";
 import { coreClient } from "@/frontend/trpc";
 
 export default async function AssetsPage({
@@ -33,12 +33,14 @@ export default async function AssetsPage({
   if (!result.ok || (result.value.sites.length === 0 && actor.type !== "admin")) notFound();
   const assetId = selected.data ?? null;
   if (assetId !== null && !result.value.records.some(({ id }) => id === assetId)) notFound();
+  const { shell } = await getBootstrap();
   return (
     <AssetsLive
       key={`${actor.id}:${assetId ?? ""}`}
       actorId={actor.id}
       initial={result.value}
       initialAssetId={assetId}
+      bookingsAvailable={shell?.bookingsAvailable === true}
     />
   );
 }

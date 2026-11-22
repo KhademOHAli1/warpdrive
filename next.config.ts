@@ -67,7 +67,10 @@ const nextConfig: NextConfig = {
     return applyDevelopmentCachePolicy(config, context.dev);
   },
   // Action arguments include credentials, CSRF tokens and private email content.
-  logging: { serverFunctions: false },
+  logging: {
+    serverFunctions: false,
+    incomingRequests: { ignore: [/\/api\/assets\/bookings\/feeds\//u] },
+  },
   // HSTS is set by Caddy, not here: it terminates TLS and so is the layer that knows the
   // response actually went out over HTTPS. See Caddyfile.
   headers() {

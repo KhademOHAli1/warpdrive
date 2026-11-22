@@ -5,6 +5,7 @@ import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { lockDirectory } from "@/features/locations/service";
 import type { HydratedActor } from "@/server/hydrateActor";
+import { bookingCapacityGuard } from "../bookings/protection";
 import type { AssetSite } from "../contracts";
 import { kitWorkspace } from "../kits/repository";
 import { projectAssetsWorkspace } from "../projection";
@@ -65,7 +66,11 @@ async function applyCommand(
   const custody = await custodyWorkspace(tx, [site], false);
   const kits = await kitWorkspace(tx, [site.id], false);
   const before = { ...assets, sites: [site], custody, kits };
-  const result = applyCustodyCommand(before, command, actor.name);
+  const booking =
+    command.type === "assign" || command.type === "bulkAssign"
+      ? await bookingCapacityGuard(tx, site.id)
+      : undefined;
+  const result = applyCustodyCommand(before, command, actor.name, booking);
   if (!result.ok) return result;
   await persistCustodyChanges(tx, before, result.value, actor.id);
   await tx.insert(assetCustodyReceipts).values({

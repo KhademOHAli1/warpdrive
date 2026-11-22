@@ -22,9 +22,12 @@ import {
   type BookingsWorkspace,
   bookingStatuses,
 } from "../contracts";
+import { bookingCalendarDownloadPath } from "../feedContracts";
 import { BookingCalendar } from "./BookingCalendar";
 import { BookingDetail } from "./BookingDetail";
 import type { BookingDialogState, BookingEditor, OpenBookingEditor } from "./BookingDialog";
+import { BookingFeedSubscriptions, type SubmitBookingFeed } from "./BookingFeedSubscriptions";
+import type { BookingMembershipAccess } from "./BookingMembershipPanel";
 import {
   MaintenanceEditorDialog,
   PolicyEditorDialog,
@@ -288,8 +291,8 @@ function useBookingEditor({
 }
 
 function preferredTab(tab: Tab, site: BookingSite): Tab {
+  if (site.role === "viewer") return "calendar";
   if (tab === "settings" && site.role !== "manager") return "bookings";
-  if (tab === "bookings" && site.role === "viewer") return "calendar";
   return tab;
 }
 
@@ -298,11 +301,17 @@ export function BookingWorkspace({
   submit,
   checkAvailability,
   fixture,
+  canBrowseAssets = true,
+  membershipAccess,
+  submitFeed,
 }: {
   initial: BookingsWorkspace;
   submit: SubmitBooking;
   checkAvailability?: CheckBookingAvailability;
   fixture: boolean;
+  canBrowseAssets?: boolean;
+  membershipAccess?: BookingMembershipAccess;
+  submitFeed?: SubmitBookingFeed;
 }) {
   const preferences = useLocalePreferences();
   const t = bookingMessages[preferences.locale];
@@ -330,7 +339,14 @@ export function BookingWorkspace({
 
   const action = useBookingEditor({ submit, onSaved, fallbackFocus: searchInput });
   const site = workspace.sites.find(({ id }) => id === siteId) ?? workspace.sites[0];
-  const title = <PageHeading title={t.bookings} crumbs={[{ label: t.assets, href: "/assets" }]} />;
+  const title = (
+    <PageHeading
+      title={t.bookings}
+      crumbs={
+        canBrowseAssets ? [{ label: t.assets, href: "/assets" }, { label: t.bookings }] : undefined
+      }
+    />
+  );
   if (site === undefined) {
     return (
       <section className={`${BLOCK_CLASS} ph-no-capture min-w-0`}>
@@ -370,7 +386,13 @@ export function BookingWorkspace({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {fixture && <Badge variant="outline">{t.demo}</Badge>}
-          {canRequestBooking(site) && activeTab !== "settings" && (
+          {activeTab === "calendar" &&
+            site.archived !== true &&
+            site.role !== "viewer" &&
+            submitFeed !== undefined && (
+              <BookingFeedSubscriptions key={site.id} site={site} submit={submitFeed} />
+            )}
+          {site.archived !== true && canRequestBooking(site) && activeTab !== "settings" && (
             <Button
               disabled={action.pending}
               onClick={(event) =>
@@ -435,6 +457,7 @@ export function BookingWorkspace({
                 pending={action.pending}
                 open={action.open}
                 words={t}
+                calendarHref={fixture ? undefined : bookingCalendarDownloadPath(selected.id)}
               />
             </div>
           )}
@@ -452,6 +475,7 @@ export function BookingWorkspace({
           <TabsContent value="settings">
             <BookingSettings
               site={site}
+              membershipAccess={membershipAccess}
               maintenance={workspace.maintenance.filter(({ siteId }) => siteId === site.id)}
               pending={action.pending}
               open={action.open}

@@ -201,7 +201,7 @@ function requesterOptions(
 ) {
   const options = new Map(site.participants.map(({ id, name }) => [id, name]));
   if (!options.has(viewer.id)) options.set(viewer.id, viewer.name);
-  if (booking !== undefined && !options.has(booking.requesterId))
+  if (booking !== undefined && booking.requesterId !== null && !options.has(booking.requesterId))
     options.set(booking.requesterId, booking.requesterName);
   return [...options].map(([value, label]) => ({ value, label }));
 }

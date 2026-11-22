@@ -64,8 +64,9 @@ export function projectBookings(state: BookingState): BookingsWorkspace {
   });
   const visible = new Set(bookings.map(({ id }) => id));
   const calendar = state.bookings.flatMap(
-    ({ id, siteId, title, status, window }, index): BookingCalendarEntry[] => {
-      if (!readable.has(siteId) || (status !== "confirmed" && status !== "pending")) return [];
+    ({ id, siteId, title, status, window, archived }, index): BookingCalendarEntry[] => {
+      if (archived || !readable.has(siteId) || (status !== "confirmed" && status !== "pending"))
+        return [];
       return [
         {
           id: visible.has(id) ? id : `occupied-${siteId}-${index}`,
@@ -121,7 +122,7 @@ function linesFor({ state, site }: Scope, demands: BookingDemand[]): BookingLine
   return lines;
 }
 
-function participant(ctx: Context, id: string): BookingParticipant | undefined {
+function participant(ctx: Context, id: string | null): BookingParticipant | undefined {
   const { state, site } = ctx;
   if (id === state.viewer.id && site.role !== "viewer") return { ...state.viewer, role: site.role };
   return site.role === "manager" ? site.participants.find((person) => person.id === id) : undefined;
@@ -158,7 +159,11 @@ function kitVersions(lines: BookingLine[]) {
   );
 }
 
-export function bookingCommitments(state: BookingState, siteId: string, exceptId?: string) {
+export function bookingCommitments(
+  state: Pick<BookingState, "bookings" | "maintenance">,
+  siteId: string,
+  exceptId?: string,
+) {
   const booked = state.bookings.flatMap((booking): BookingCapacityCommitment[] => {
     if (
       booking.siteId !== siteId ||
@@ -297,7 +302,7 @@ function archiveBooking(ctx: Context, row: Booking, archived: boolean): Result {
 }
 
 function duplicateBooking(ctx: Context, row: Booking, window: BookingWindow): Result {
-  const requester = participant(ctx, row.requesterId);
+  const requester = participant(ctx, row.requesterId ?? ctx.state.viewer.id);
   const lines = linesFor(ctx, row.lines);
   if (requester === undefined || lines === null) return fail("unavailable");
   const { title, description } = row;
@@ -440,7 +445,8 @@ export function applyBookingCommand(
   if (!parsed.success) return fail("invalid");
   const command = parsed.data;
   const site = state.sites.find(({ id }) => id === command.siteId);
-  if (site === undefined || site.role === "viewer") return fail("unavailable");
+  if (site === undefined || site.archived === true || site.role === "viewer")
+    return fail("unavailable");
   const ctx = { state, site, ...clock };
   switch (command.type) {
     case "saveBooking":

@@ -5,6 +5,7 @@ import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { lockDirectory } from "@/features/locations/service";
 import type { HydratedActor } from "@/server/hydrateActor";
+import { bookingCapacityGuard } from "../bookings/protection";
 import type { AssetSite } from "../contracts";
 import { custodyWorkspace } from "../custody/repository";
 import { projectAssetsWorkspace } from "../projection";
@@ -51,6 +52,10 @@ async function applyCommand(tx: Db, actor: HydratedActor, command: KitCommand): 
   };
   const result = applyKitCommand(before, command, actor.name);
   if (!result.ok) return result;
+  if (command.type !== "returnKit") {
+    const allow = await bookingCapacityGuard(tx, site.id);
+    if (allow?.(result.value) === false) return { ok: false, error: "held" };
+  }
   await persistKitChanges(tx, before, result.value, result.kitId, actor.id);
   await tx.insert(assetKitReceipts).values({
     actorId: actor.id,

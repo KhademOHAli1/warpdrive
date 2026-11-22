@@ -4,6 +4,7 @@ import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { users } from "@/db/schema/identity";
 import { assetRoleSiteIds } from "@/features/assets/access";
+import { hasActiveBookingPlacement } from "@/features/assets/bookings/protection";
 import { hasActiveAssetPlacement } from "@/features/assets/protection";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { currentNativeActor, type NativeSessionRef } from "@/features/auth/currentNativeActor";
@@ -198,6 +199,7 @@ async function saveLocation(tx: Db, { id, siteId, ...values }: Location, create:
 async function archiveBlock(tx: Db, siteId: string, locationId: string | null) {
   if (await hasWarehouseStock(tx, siteId, locationId)) return fail("warehouseStock");
   if (await hasActiveAssetPlacement(tx, siteId, locationId)) return fail("activeAssets");
+  if (await hasActiveBookingPlacement(tx, siteId, locationId)) return fail("activeAssets");
   return null;
 }
 

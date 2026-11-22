@@ -12,6 +12,8 @@ export const sessionRecordingOptions = {
   blockSelector: `.${BLOCK_CLASS}`,
   maskCapturedNetworkRequestFn: (request) =>
     containsProjectPublicationLink(request.name) ||
+    containsPrivateBookingCalendar(request.name) ||
+    request.name.includes("/assets/bookings") ||
     request.name.includes("internalProjects.publication") ||
     request.name.includes("internalProjects.integrator")
       ? null
@@ -19,4 +21,4 @@ export const sessionRecordingOptions = {
 } satisfies NonNullable<PostHogConfig["session_recording"]>;
 
 import type { PostHogConfig } from "posthog-js";
-import { containsProjectPublicationLink } from "./scrub";
+import { containsPrivateBookingCalendar, containsProjectPublicationLink } from "./scrub";

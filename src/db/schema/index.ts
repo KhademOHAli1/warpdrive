@@ -3,6 +3,7 @@
 export * from "@/features/agency-projects/schema/agencyProjectAudit";
 export * from "@/features/agency-projects/schema/agencyProjectSettings";
 export * from "@/features/agency-projects/schema/agencyProjects";
+export * from "@/features/assets/bookings/schema";
 export * from "@/features/assets/commissioning/schema";
 export * from "@/features/assets/custody/schema";
 export * from "@/features/assets/kits/schema";

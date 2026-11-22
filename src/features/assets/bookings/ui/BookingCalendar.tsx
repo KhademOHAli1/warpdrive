@@ -14,6 +14,7 @@ import {
 } from "@/features/activities/calendarView";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatDateTime } from "@/lib/localeFormatting";
+import { useHydrated } from "@/lib/useHydrated";
 import { addCivilDays, civilDateRange, instantCivilDate } from "@/lib/zonedDateTime";
 import type { BookingCalendarEntry, BookingSite } from "../contracts";
 import type { BookingWords } from "./messages";
@@ -87,10 +88,13 @@ export function BookingCalendar({
   words: BookingWords;
 }) {
   const preferences = useLocalePreferences();
+  const hydrated = useHydrated();
   const zone = site.policy.timeZone;
   const options = { ...preferences, timeZone: zone };
   const [selected, setSelected] = useState(() => instantCivilDate(new Date(), zone));
   const [anchor, setAnchor] = useState(selected);
+  if (!hydrated) return null;
+
   const { days } = selectWindow("month", anchor, options);
   const current = dayEntries(entries, selected, zone);
   const hours = calendarHours(site, selected);

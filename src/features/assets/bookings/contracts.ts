@@ -156,6 +156,7 @@ export type BookingSite = {
   name: string;
   role: BookingRole;
   canConfigure: boolean;
+  archived?: boolean;
   policyVersion: number;
   policy: BookingPolicy;
   participants: BookingParticipant[];
@@ -214,7 +215,7 @@ export type Booking = {
   version: number;
   title: string;
   description: string | null;
-  requesterId: string;
+  requesterId: string | null;
   requesterName: string;
   requesterRole: Exclude<BookingRole, "viewer">;
   window: BookingWindow;

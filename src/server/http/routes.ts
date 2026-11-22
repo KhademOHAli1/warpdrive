@@ -6,6 +6,8 @@ import * as route21 from "@/app/(app)/dashboard/export/route.backend";
 import * as qualityEvidence from "@/app/(app)/inventory/quality/evidence/route.backend";
 import * as route23 from "@/app/(app)/leads/export/route.backend";
 import * as route6 from "@/app/(app)/settings/import/[batchId]/errors.csv/route.backend";
+import * as privateBookingCalendar from "@/app/api/assets/bookings/[bookingId]/calendar.ics/route.backend";
+import * as subscriptionBookingCalendar from "@/app/api/assets/bookings/feeds/[feedId]/calendar.ics/route.backend";
 import * as route25 from "@/app/api/auth/[...all]/route.backend";
 import * as route22 from "@/app/api/auth-management/route.backend";
 import * as route10 from "@/app/api/auth-management/user/route.backend";
@@ -47,6 +49,16 @@ export const httpRoutes = [
     pattern: /^\/api\/inventory\/releases\/([^/]+)\/files\/([^/]+)\/?$/,
     params: [{ name: "releaseId" }, { name: "artifactId" }],
     handlers: manufacturingReleaseFile,
+  },
+  {
+    pattern: /^\/api\/assets\/bookings\/([^/]+)\/calendar\.ics\/?$/,
+    params: [{ name: "bookingId" }],
+    handlers: privateBookingCalendar,
+  },
+  {
+    pattern: /^\/api\/assets\/bookings\/feeds\/([^/]+)\/calendar\.ics\/?$/,
+    params: [{ name: "feedId" }],
+    handlers: subscriptionBookingCalendar,
   },
   { pattern: /^\/api\/calendar\/google\/oauth\/callback\/?$/, params: [], handlers: route0 },
   { pattern: /^\/api\/calendar\/google\/oauth\/start\/?$/, params: [], handlers: route1 },

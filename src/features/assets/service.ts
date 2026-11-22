@@ -12,10 +12,18 @@ import {
 } from "@/features/operations-access/scope";
 import type { HydratedActor } from "@/server/hydrateActor";
 import { assetRoleSiteIds } from "./access";
+import { bookingCapacityGuard } from "./bookings/protection";
 import { commissionedAssetSerial } from "./commissioning/protection";
-import { type AssetCommand, type AssetResult, type AssetSite, assetCommand } from "./contracts";
-import { hasAssetCustody } from "./custody/repository";
-import { isKitAsset } from "./kits/repository";
+import {
+  type AssetCommand,
+  type AssetRecord,
+  type AssetResult,
+  type AssetSite,
+  type AssetsWorkspace,
+  assetCommand,
+} from "./contracts";
+import { custodyWorkspace, hasAssetCustody } from "./custody/repository";
+import { isKitAsset, kitWorkspace } from "./kits/repository";
 import { projectAssetsWorkspace } from "./projection";
 import { applyAssetWorkspaceCommand } from "./registerCommands";
 import { assetRegisterData, persistAssetChanges } from "./repository";
@@ -90,6 +98,45 @@ async function commandSite(tx: Db, command: AssetCommand) {
   return row?.siteId;
 }
 
+function affectsBookingCapacity(command: AssetCommand, records: AssetRecord[]) {
+  if (command.type === "move") return true;
+  if (command.type === "setArchive") return command.archived;
+  if (command.type === "update") {
+    const asset = records.find(({ id }) => id === command.assetId);
+    return asset?.tracking === "individual" && asset.modelId !== command.modelId;
+  }
+  if (command.type !== "changePool" || command.operation === "restock") return false;
+  if (command.operation !== "adjust") return true;
+  const pool = records.find(({ id }) => id === command.assetId);
+  if (pool === undefined || pool.tracking === "individual") return false;
+  const prior = pool.balances.find(({ locationId }) => locationId === command.locationId);
+  return (prior?.quantity ?? 0) > command.quantity;
+}
+
+async function preservesBookings(tx: Db, site: AssetSite, proposed: AssetsWorkspace) {
+  const allow = await bookingCapacityGuard(tx, site.id);
+  if (allow === undefined) return true;
+  const custody = await custodyWorkspace(tx, [site], false);
+  const kits = await kitWorkspace(tx, [site.id], false);
+  return allow({ ...proposed, custody, kits });
+}
+
+async function permitsIdentityUpdate(
+  tx: Db,
+  command: Extract<AssetCommand, { type: "update" }>,
+  records: AssetRecord[],
+) {
+  const asset = records.find(({ id }) => id === command.assetId);
+  if (
+    asset?.tracking === "individual" &&
+    (command.modelId !== asset.modelId || command.serial !== asset.serial) &&
+    (await isKitAsset(tx, command.assetId))
+  )
+    return false;
+  const recorded = await commissionedAssetSerial(tx, command.assetId);
+  return recorded === null || command.serial === recorded;
+}
+
 async function applyCommand(
   tx: Db,
   actor: HydratedActor,
@@ -121,19 +168,15 @@ async function applyCommand(
     ((await hasAssetCustody(tx, command.assetId)) || (await isKitAsset(tx, command.assetId)))
   )
     return { ok: false, error: "state" };
-  if (command.type === "update") {
-    const asset = before.records.find(({ id }) => id === command.assetId);
-    if (
-      asset?.tracking === "individual" &&
-      (command.modelId !== asset.modelId || command.serial !== asset.serial) &&
-      (await isKitAsset(tx, command.assetId))
-    )
-      return { ok: false, error: "state" };
-    const recorded = await commissionedAssetSerial(tx, command.assetId);
-    if (recorded !== null && command.serial !== recorded) return { ok: false, error: "state" };
-  }
+  if (command.type === "update" && !(await permitsIdentityUpdate(tx, command, before.records)))
+    return { ok: false, error: "state" };
   const transformed = applyAssetWorkspaceCommand(before, command, actor.name);
   if (!transformed.ok) return transformed;
+  if (
+    affectsBookingCapacity(command, before.records) &&
+    !(await preservesBookings(tx, site, transformed.value))
+  )
+    return { ok: false, error: "state" };
   await persistAssetChanges(tx, before, transformed.value, actor.id);
   await tx.insert(assetCommandReceipts).values({
     actorId: actor.id,

@@ -68,11 +68,3 @@ export function resourceLabel(resource: BookingResource): string {
   const identity = resource.serial ?? resource.code;
   return `${resource.name} · ${identity}`;
 }
-
-export function resourceKey({
-  kind,
-  resourceId,
-  locationId,
-}: Pick<BookingResource, "kind" | "resourceId" | "locationId">) {
-  return `${kind}:${resourceId}:${locationId ?? ""}`;
-}

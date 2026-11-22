@@ -1,3 +1,4 @@
+import type { BookingCapacityGuard } from "../bookings/protection";
 import type { AssetBalance, AssetEvent, AssetRecord, AssetsWorkspace } from "../contracts";
 import { kitUsesAsset } from "../kits/usage";
 import {
@@ -353,14 +354,23 @@ function bulkRow(
   return applySingle(workspace, asset, { ...common, type: "return", holdingId: holding.id }, audit);
 }
 
-function applyBulk(workspace: Workspace, command: Bulk, audit: Audit): CustodyResult {
+function applyBulk(
+  workspace: Workspace,
+  command: Bulk,
+  audit: Audit,
+  booking?: BookingCapacityGuard,
+): CustodyResult {
   let value = workspace;
   const outcomes: CustodyOutcome[] = [];
   for (const selected of command.assets) {
     const result = bulkRow(value, command, selected, audit);
     if (result.ok) {
-      value = result.value;
-      outcomes.push({ assetId: selected.assetId, ok: true });
+      if (booking?.(result.value) === false) {
+        outcomes.push({ assetId: selected.assetId, ok: false, error: "held" });
+      } else {
+        value = result.value;
+        outcomes.push({ assetId: selected.assetId, ok: true });
+      }
     } else {
       outcomes.push({ assetId: selected.assetId, ok: false, error: result.error });
     }
@@ -372,6 +382,7 @@ export function applyCustodyCommand(
   workspace: AssetsWorkspace,
   input: CustodyCommand,
   actor: string,
+  booking?: BookingCapacityGuard,
 ): CustodyResult {
   const parsed = custodyCommand.safeParse(input);
   if (!parsed.success) return failure("invalid");
@@ -383,7 +394,10 @@ export function applyCustodyCommand(
   if (command.type === "saveCustodian") return saveCustodian(current, command);
   if (command.type === "noteCustodian") return noteCustodian(current, command, actor);
   const audit = { actor, at: new Date().toISOString() };
-  if ("assets" in command) return applyBulk(current, command, audit);
+  if ("assets" in command) return applyBulk(current, command, audit, booking);
   const asset = siteAsset(current, command.siteId, command.assetId);
-  return asset === undefined ? failure("unavailable") : applySingle(current, asset, command, audit);
+  if (asset === undefined) return failure("unavailable");
+  const result = applySingle(current, asset, command, audit);
+  if (result.ok && booking?.(result.value) === false) return failure("held");
+  return result;
 }

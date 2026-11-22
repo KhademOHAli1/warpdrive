@@ -2,6 +2,14 @@ const REDACTED = "[redacted]";
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 const PUBLICATION_PATH =
   /(?:\/|%2f|%252f)published(?:\/|%2f|%252f)project(?:\/|%2f|%252f)[a-f0-9-]{36}/iu;
+const BOOKING_CALENDAR_PATH =
+  /(?:\/|%2f|%252f)api(?:\/|%2f|%252f)assets(?:\/|%2f|%252f)bookings(?:\/|%2f|%252f)/iu;
+const BOOKING_FEED_SECRET = /wd_booking_/iu;
+
+export function containsPrivateBookingCalendar(value: string): boolean {
+  return BOOKING_CALENDAR_PATH.test(value) || BOOKING_FEED_SECRET.test(value);
+}
+
 // Keys whose VALUES may carry third-party contact PII. Redacted unless explicitly safe.
 const PII_KEY_RE = /email|name|subject|body|content|phone|address/i;
 // Custom-event keys we control and know are shape-only, never raw record data.
@@ -32,11 +40,15 @@ export function containsProjectPublicationLink(value: string): boolean {
   return PUBLICATION_PATH.test(value);
 }
 
+function containsPrivateLink(value: string) {
+  return containsProjectPublicationLink(value) || containsPrivateBookingCalendar(value);
+}
+
 function scrubUrlFields(props: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(props).map(([key, value]) => [
       key,
-      typeof value === "string" && containsProjectPublicationLink(value) ? REDACTED : value,
+      typeof value === "string" && containsPrivateLink(value) ? REDACTED : value,
     ]),
   );
 }
@@ -49,17 +61,14 @@ function scrubUrlFields(props: Record<string, unknown>): Record<string, unknown>
 export function sanitizeErrorEmails(error: unknown): unknown {
   if (error instanceof Error) {
     const sanitized = new Error(
-      containsProjectPublicationLink(error.message) ? REDACTED : redactEmails(error.message),
+      containsPrivateLink(error.message) ? REDACTED : redactEmails(error.message),
     );
     sanitized.name = error.name;
     if (typeof error.stack === "string")
-      sanitized.stack = containsProjectPublicationLink(error.stack)
-        ? REDACTED
-        : redactEmails(error.stack);
+      sanitized.stack = containsPrivateLink(error.stack) ? REDACTED : redactEmails(error.stack);
     return sanitized;
   }
-  if (typeof error === "string")
-    return containsProjectPublicationLink(error) ? REDACTED : redactEmails(error);
+  if (typeof error === "string") return containsPrivateLink(error) ? REDACTED : redactEmails(error);
   return error;
 }
 
