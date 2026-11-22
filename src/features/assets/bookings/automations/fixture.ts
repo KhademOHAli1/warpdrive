@@ -189,9 +189,12 @@ export function automationBookingScope(
 }
 
 function managerSite(state: BookingState, siteId: string) {
-  return state.sites.find(
-    ({ id, role, archived }) => id === siteId && role === "manager" && archived !== true,
-  );
+  return state.sites.find(({ id, role }) => id === siteId && role === "manager");
+}
+
+function activeManagerSite(state: BookingState, siteId: string) {
+  const site = managerSite(state, siteId);
+  return site?.archived === true ? undefined : site;
 }
 
 function publicRun(run: FixtureRun): BookingAutomationRun {
@@ -375,7 +378,7 @@ export function createBookingAutomationFixture(
       if (!parsed.success) return invalid;
       const current = scoped();
       const { siteId, requestId, triggers, version } = parsed.data;
-      if (managerSite(current, siteId) === undefined) return unavailable;
+      if (activeManagerSite(current, siteId) === undefined) return unavailable;
       const key = `${current.viewer.id}:${requestId}`;
       const signature = JSON.stringify(parsed.data);
       const prior = receipts.get(key);
@@ -400,7 +403,7 @@ export function createBookingAutomationFixture(
       if (!parsed.success) return invalid;
       const current = scoped();
       const { siteId, requestId, runId, failureId } = parsed.data;
-      const site = managerSite(current, siteId);
+      const site = activeManagerSite(current, siteId);
       const run = runs.get(runId);
       if (site === undefined || run?.siteId !== siteId) return unavailable;
       const key = `${current.viewer.id}:${requestId}`;

@@ -171,3 +171,27 @@ it("pages by stable run keys and deduplicates a new sent-back occurrence", async
   expect(delivered.value).toHaveLength(2);
   expect(delivered.value[0]).toMatchObject({ deliveredAt: now, trigger: "request_sent_back" });
 });
+
+it("retains run history on archived sites while denying profile edits and retries", async () => {
+  const { state, fixture, manager, overdue, siteId } = seed();
+  assert(overdue.failureId !== null);
+  const archived = {
+    ...state,
+    sites: state.sites.map((site) => (site.id === siteId ? { ...site, archived: true } : site)),
+  };
+  const access = fixture.access(() => automationBookingScope(archived, operator, "manager"));
+  expect(await access.readRuns({ siteId })).toEqual(await manager.readRuns({ siteId }));
+  expect(
+    await access.saveProfile({ siteId, requestId: crypto.randomUUID(), version: 0, triggers: [] }),
+  ).toEqual(unavailable);
+  expect(
+    await access.retry({
+      siteId,
+      runId: overdue.id,
+      failureId: overdue.failureId,
+      requestId: crypto.randomUUID(),
+    }),
+  ).toEqual(unavailable);
+  const otherRole = fixture.access(() => automationBookingScope(archived, operator, "viewer"));
+  expect(await otherRole.readRuns({ siteId })).toEqual(unavailable);
+});
