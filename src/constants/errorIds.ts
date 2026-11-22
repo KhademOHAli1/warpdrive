@@ -206,6 +206,7 @@ export const ERROR_IDS = {
   // FILE
   FILE_PRESIGN_INVALID: "E_FILE_001", // Presign/confirm input validation failed
   FILE_METADATA_MISMATCH: "E_FILE_002", // Object metadata mismatch on confirm (size/content-type)
+  FILE_UPLOAD_RESPONSE_INVALID: "E_FILE_003", // Upload commit outcome could not be established
   // NOTIF
   NOTIF_UNKNOWN_TYPE: "E_NOTIF_001", // unknown/unsupported notification type
   NOTIF_TARGET_NOT_FOUND: "E_NOTIF_002", // mention/notification target user not found

@@ -15,6 +15,7 @@ export function workspaceNavItems(
   canViewInventory = false,
   canViewAssets = false,
   canViewAssetBookings = false,
+  canViewAssetAudits = false,
 ) {
   const configured = modules.length > 0;
   const showSales = !configured || modules.includes("sales");
@@ -22,6 +23,7 @@ export function workspaceNavItems(
     if (item.key === "campaigns" && !canViewCampaigns) return false;
     if (item.key === "inventory" && !canViewInventory) return false;
     if (item.key === "assets" && !canViewAssets && !canViewAssetBookings) return false;
+    if (item.key === "equipmentAudits" && (canViewAssets || !canViewAssetAudits)) return false;
     if (item.key === "projects" && !canViewProjects) return false;
     if (item.key === "work" && !canViewWork) return false;
     if (!configured) return true;

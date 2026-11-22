@@ -58,6 +58,7 @@ export default async function AssetsPage({
       bookingsAvailable={shell?.bookingsAvailable === true}
       physicalLabelsAvailable={shell?.physicalLabelsAvailable === true}
       assetTagsAvailable={shell?.assetTagsAvailable === true}
+      auditsAvailable={shell?.assetAuditsAvailable === true}
     />
   );
 }

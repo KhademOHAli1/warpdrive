@@ -17,6 +17,18 @@ it("shows Inventory when its own navigation capability is enabled", () => {
   ).toBe("/inventory");
 });
 
+it("gives audit-only staff an independent destination without granting the Assets register", () => {
+  const destinations = (assets: boolean, bookings: boolean, audits?: boolean) =>
+    workspaceNavItems([], false, false, false, false, assets, bookings, audits)
+      .map(({ href }) => href)
+      .filter((href) => href.startsWith("/assets"));
+
+  expect(destinations(false, false)).toEqual([]);
+  expect(destinations(false, false, true)).toEqual(["/assets/audits"]);
+  expect(destinations(false, true, true)).toEqual(["/assets/bookings", "/assets/audits"]);
+  expect(destinations(true, true, true)).toEqual(["/assets"]);
+});
+
 it("keeps established navigation when no module choice exists and gates work", () => {
   expect(workspaceNavItems([], false).find((item) => item.key === "dashboard")?.href).toBe(
     "/pipeline",

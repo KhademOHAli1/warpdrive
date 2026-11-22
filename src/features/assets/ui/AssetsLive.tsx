@@ -15,6 +15,7 @@ export function AssetsLive({
   bookingsAvailable,
   physicalLabelsAvailable,
   assetTagsAvailable,
+  auditsAvailable,
 }: {
   initial: AssetsWorkspace;
   actorId: string;
@@ -23,6 +24,7 @@ export function AssetsLive({
   bookingsAvailable: boolean;
   physicalLabelsAvailable: boolean;
   assetTagsAvailable?: boolean;
+  auditsAvailable?: boolean;
 }) {
   return (
     <AssetsRegister
@@ -32,6 +34,7 @@ export function AssetsLive({
       bookingsAvailable={bookingsAvailable}
       physicalLabelsAvailable={physicalLabelsAvailable}
       assetTagsAvailable={assetTagsAvailable}
+      auditsAvailable={auditsAvailable}
       submit={(command) => executeAssetAction(actorId, command, readCsrfToken())}
       submitCustody={
         initial.custody === undefined

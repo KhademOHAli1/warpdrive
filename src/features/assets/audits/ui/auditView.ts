@@ -4,7 +4,10 @@ import type {
   EquipmentAuditRow,
   EquipmentAuditScope,
 } from "../contracts";
+import { auditPhotoMaxBytes, auditPhotoTypes } from "../evidenceTransport";
 import type { AuditWords } from "./messages";
+
+export { auditPhotoMaxBytes, auditPhotoTypes } from "../evidenceTransport";
 
 export type AuditScan = Pick<Extract<EquipmentAuditLookup, { ok: true }>, "targetId" | "label"> & {
   code: string;
@@ -41,9 +44,6 @@ export const emptyAuditScope: EquipmentAuditScope = {
   tag: null,
   includeCustody: false,
 };
-
-export const auditPhotoMaxBytes = 5 * 1024 * 1024;
-export const auditPhotoTypes = ["image/jpeg", "image/png"] as const;
 
 export function auditPhotoAllowed(file: File) {
   return (

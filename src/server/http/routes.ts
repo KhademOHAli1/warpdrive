@@ -6,6 +6,7 @@ import * as route21 from "@/app/(app)/dashboard/export/route.backend";
 import * as qualityEvidence from "@/app/(app)/inventory/quality/evidence/route.backend";
 import * as route23 from "@/app/(app)/leads/export/route.backend";
 import * as route6 from "@/app/(app)/settings/import/[batchId]/errors.csv/route.backend";
+import * as equipmentAuditEvidence from "@/app/api/assets/audits/[auditId]/evidence/route.backend";
 import * as privateBookingCalendar from "@/app/api/assets/bookings/[bookingId]/calendar.ics/route.backend";
 import * as subscriptionBookingCalendar from "@/app/api/assets/bookings/feeds/[feedId]/calendar.ics/route.backend";
 import * as route25 from "@/app/api/auth/[...all]/route.backend";
@@ -45,6 +46,11 @@ import * as route30 from "@/app/t/open/[token]/route.backend";
 
 export const httpRoutes = [
   { pattern: /^\/inventory\/quality\/evidence\/?$/, params: [], handlers: qualityEvidence },
+  {
+    pattern: /^\/api\/assets\/audits\/([^/]+)\/evidence\/?$/,
+    params: [{ name: "auditId" }],
+    handlers: equipmentAuditEvidence,
+  },
   {
     pattern: /^\/api\/inventory\/releases\/([^/]+)\/files\/([^/]+)\/?$/,
     params: [{ name: "releaseId" }, { name: "artifactId" }],

@@ -13,7 +13,7 @@ import {
   type AuditFixtureState,
   createAuditFixtureState,
 } from "./state";
-import { applyAuditCommand, attachAuditPhoto } from "./transitions";
+import { applyAuditCommand, applyAuditPhoto, attachAuditPhoto } from "./transitions";
 
 const managerId = "5900afd8-320d-4692-8bad-42d634b2ad59";
 const now = "2026-11-23T08:00:00.000Z";
@@ -333,6 +333,99 @@ describe("Scoped physical equipment audits", () => {
       "photo",
       "note",
     ]);
+  });
+
+  it("returns the full ordered batch for persistence and consumer-specific native evidence links", () => {
+    const active = start(initial());
+    const bench = rowFor(active.detail, "METER-101");
+    const pool = rowFor(active.detail, "LEAD-SET", "Bin A-01");
+    const input = request(active, {
+      type: "bulkCount",
+      counts: [
+        { rowId: bench.id, quantity: 1 },
+        { rowId: pool.id, quantity: 8 },
+      ],
+    });
+    const batch = accepted(
+      applyAuditCommand(active.state, active.self, input, { ...clock, resolve: active.resolve }),
+    );
+    expect(batch.change?.audit.version).toBe(active.detail.version + 1);
+    expect(batch.change?.events.map(({ rowId, after }) => ({ rowId, after }))).toEqual([
+      { rowId: pool.id, after: 8 },
+      { rowId: bench.id, after: 1 },
+    ]);
+    expect(
+      accepted(
+        applyAuditCommand(batch.state, active.self, input, { ...clock, resolve: active.resolve }),
+      ).change,
+    ).toBeNull();
+
+    const photo = accepted(
+      applyAuditPhoto(
+        batch.state,
+        active.self,
+        {
+          auditId: batch.detail.id,
+          rowId: bench.id,
+          version: batch.detail.version,
+          requestId: clock.makeId(),
+          name: "Meter.png",
+          fingerprint: "image-fingerprint",
+          source: "file",
+        },
+        clock,
+        (auditId, evidenceId) => `/api/assets/audits/${auditId}/evidence/${evidenceId}`,
+      ),
+    );
+    const evidence = photo.detail.evidence[0];
+    if (evidence === undefined) throw new Error("Missing evidence");
+    expect(evidence.href).toBe(`/api/assets/audits/${batch.detail.id}/evidence/${evidence.id}`);
+    expect(photo.change?.events.map(({ kind }) => kind)).toEqual(["photo"]);
+  });
+
+  it("uses the opaque scope key for lookup and avoids duplicate unresolved incidents in other bins", () => {
+    const active = start(initial());
+    const opaqueKeyFor = () => "a".repeat(64);
+    const input = request(active, {
+      type: "unexpected",
+      code: "FERRULE-1",
+      expectedTargetId: null,
+      locationId: null,
+      quantity: 2,
+    });
+    const flow = { ...clock, resolve: active.resolve, opaqueKeyFor };
+    const first = accepted(applyAuditCommand(active.state, active.self, input, flow));
+    const record = first.change?.audit;
+    const hidden = record?.rows.find(({ expected }) => expected === null);
+    if (hidden === undefined) throw new Error("Missing unresolved observation");
+    expect(hidden.opaqueKey).toBe(opaqueKeyFor());
+    expect(
+      lookupAuditEquipment(
+        first.state,
+        active.self,
+        active.detail.id,
+        "FERRULE-1",
+        active.resolve,
+        opaqueKeyFor,
+      ),
+    ).toEqual({ ok: true, targetId: null, label: null, rows: [hidden.id] });
+
+    const pool = rowFor(first.detail, "LEAD-SET", "Bin A-01");
+    expect(pool.placement.locationId).not.toBeNull();
+    const repeated = request(
+      { ...active, ...first },
+      {
+        type: "unexpected",
+        code: "FERRULE-1",
+        expectedTargetId: null,
+        locationId: pool.placement.locationId,
+        quantity: 3,
+      },
+    );
+    const duplicate = accepted(applyAuditCommand(first.state, active.self, repeated, flow));
+    expect(duplicate.change?.events).toEqual([]);
+    expect(duplicate.detail.progress.unexpectedRows).toBe(1);
+    expect(duplicate.detail.progress.unexpectedUnits).toBe(2);
   });
 
   it("freezes missing results on completion and duplicates a clean unassigned draft", () => {

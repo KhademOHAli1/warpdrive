@@ -8,7 +8,6 @@ import {
   equipmentAuditCommand,
 } from "./contracts";
 import {
-  auditOpaqueKey,
   auditProjectionScope,
   projectAuditDetail,
   projectAuditWorkspace,
@@ -16,32 +15,38 @@ import {
 } from "./projection";
 import { siteAuditLocations, snapshotAuditRows, validAuditScope } from "./snapshot";
 import {
+  type AuditActor,
   type AuditClock,
   type AuditEquipmentResolver,
+  type AuditEvidenceHref,
   type AuditFinding,
-  type AuditFixtureActor,
-  type AuditFixtureState,
   type AuditRecord,
+  type AuditState,
   canManageAudit,
 } from "./state";
 
 type Failure = { ok: false; error: EquipmentAuditError };
 type Write =
-  | (Extract<EquipmentAuditWrite, { ok: true }> & { state: AuditFixtureState; applied: boolean })
+  | (Extract<EquipmentAuditWrite, { ok: true }> & {
+      state: AuditState;
+      applied: boolean;
+      change: AuditChange | null;
+    })
   | Failure;
 type Draft = Extract<EquipmentAuditCommand, { type: "create" | "edit" }>;
 type PriorCommand = Exclude<EquipmentAuditCommand, { type: "create" }>;
 type Count = Extract<EquipmentAuditCommand, { type: "setCount" | "bulkCount" }>;
 type Context = {
-  state: AuditFixtureState;
-  actor: AuditFixtureActor;
+  state: AuditState;
+  actor: AuditActor;
   audit: AuditRecord;
   canManage: boolean;
   clock: AuditClock;
   resolve: AuditEquipmentResolver;
 };
 type EventFields = Pick<EquipmentAuditEvent, "rowId" | "rowName" | "before" | "after" | "note">;
-type Change = { audit: AuditRecord; events: EquipmentAuditEvent[] };
+export type AuditChange = { audit: AuditRecord; events: EquipmentAuditEvent[] };
+type Change = AuditChange;
 
 const unsupported = { ok: false, error: "unavailable" } as const;
 const fail = (error: EquipmentAuditError): Failure => ({ ok: false, error });
@@ -49,7 +54,7 @@ const maxQuantity = 1_000_000;
 const maxRows = 2000;
 
 function logEvent(
-  actor: AuditFixtureActor,
+  actor: AuditActor,
   clock: AuditClock,
   kind: EquipmentAuditEvent["kind"],
   fields: Partial<EventFields> = {},
@@ -68,7 +73,7 @@ function logEvent(
   };
 }
 
-function editAssignments(state: AuditFixtureState, siteId: string, assigneeIds: readonly string[]) {
+function editAssignments(state: AuditState, siteId: string, assigneeIds: readonly string[]) {
   const roster = new Map((state.participants[siteId] ?? []).map((person) => [person.id, person]));
   const assignees = [];
   for (const id of assigneeIds) {
@@ -105,31 +110,32 @@ function newDraft(
   };
 }
 
-function suppliedDraft(state: AuditFixtureState, siteId: string, command: Draft) {
+function suppliedDraft(state: AuditState, siteId: string, command: Draft) {
   if (!validAuditScope(state.assets, siteId, command.scope)) return null;
   return editAssignments(state, siteId, command.assigneeIds);
 }
 
 function projected(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
+  state: AuditState,
+  actor: AuditActor,
   auditId: string,
-  applied: boolean,
+  change: AuditChange | null,
 ): Write {
   const detail = projectAuditDetail(state, actor, auditId);
   if (!detail.ok) return detail;
   return {
     ok: true,
     state,
-    applied,
+    applied: change !== null,
+    change,
     detail: detail.value,
     workspace: projectAuditWorkspace(state, actor),
   };
 }
 
 function saveChanges(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
+  state: AuditState,
+  actor: AuditActor,
   request: string,
   fingerprint: string,
   { audit, events }: Change,
@@ -154,7 +160,7 @@ function saveChanges(
     },
     actor,
     audit.id,
-    true,
+    { audit: next, events },
   );
 }
 
@@ -208,6 +214,7 @@ function countedValue(
       ctx.canManage,
       code,
       ctx.resolve,
+      ctx.clock.opaqueKeyFor,
     );
     if (
       (target?.id ?? null) !== expectedTargetId ||
@@ -267,14 +274,24 @@ function unexpectedCount(ctx: Context, command: Unexpected): Change | Failure {
   const { audit, state, canManage, resolve } = ctx;
   if (audit.status !== "active") return fail("state");
   const { code, expectedTargetId, locationId, quantity } = command;
-  const { target, rows } = resolveVisibleAuditEquipment(state, audit, canManage, code, resolve);
+  const { target, rows, opaqueKey } = resolveVisibleAuditEquipment(
+    state,
+    audit,
+    canManage,
+    code,
+    resolve,
+    ctx.clock.opaqueKeyFor,
+  );
   if ((target?.id ?? null) !== expectedTargetId) return fail("conflict");
   const bin = unexpectedLocation(ctx, locationId);
   if (bin === null) return unsupported;
   const identity = observedIdentity(ctx, target);
   if (identity.quantityType === "single" && quantity !== 1) return fail("quantity");
   const matching = rows.find(
-    (row) => identity.quantityType === "single" || row.placement.locationId === locationId,
+    (row) =>
+      target === null ||
+      identity.quantityType === "single" ||
+      row.placement.locationId === locationId,
   );
   if (matching?.expected != null) return fail("conflict");
   if (matching?.counted != null) return { audit, events: [] };
@@ -291,7 +308,7 @@ function unexpectedCount(ctx: Context, command: Unexpected): Change | Failure {
     },
     expected: null,
     counted: null,
-    opaqueKey: target === null ? auditOpaqueKey(code) : null,
+    opaqueKey: target === null ? opaqueKey : null,
   };
   const updated = { ...row, counted: quantity };
   const nextRows =
@@ -374,7 +391,14 @@ function editDraft(ctx: Context, command: Extract<Management, { type: "edit" }>)
   if (assignees === null) return unsupported;
   const { title, dueAt, scope } = command;
   return {
-    audit: { ...audit, title, dueAt, scope, assignees },
+    audit: {
+      ...audit,
+      title,
+      dueAt,
+      scope,
+      assignees,
+      assignedUserIds: assignees.map(({ id }) => id),
+    },
     events: [logEvent(actor, clock, "edited")],
   };
 }
@@ -387,7 +411,10 @@ function assignAudit(
   if (audit.status !== "draft" && audit.status !== "active") return fail("state");
   const assignees = editAssignments(state, audit.siteId, command.assigneeIds);
   if (assignees === null) return unsupported;
-  return { audit: { ...audit, assignees }, events: [logEvent(actor, clock, "assigned")] };
+  return {
+    audit: { ...audit, assignees, assignedUserIds: assignees.map(({ id }) => id) },
+    events: [logEvent(actor, clock, "assigned")],
+  };
 }
 
 function manageAudit(ctx: Context, command: Management): Change | Failure {
@@ -454,8 +481,8 @@ function operateAudit(ctx: Context, command: Operation): Change | Failure {
 }
 
 function existingWrite(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
+  state: AuditState,
+  actor: AuditActor,
   command: PriorCommand,
   request: string,
   fingerprint: string,
@@ -467,7 +494,7 @@ function existingWrite(
   const prior = state.requests[request];
   if (prior !== undefined) {
     return prior.fingerprint === fingerprint
-      ? projected(state, actor, prior.auditId, false)
+      ? projected(state, actor, prior.auditId, null)
       : fail("conflict");
   }
   const { audit, canManage } = scope;
@@ -478,8 +505,8 @@ function existingWrite(
 }
 
 export function applyAuditCommand(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
+  state: AuditState,
+  actor: AuditActor,
   raw: unknown,
   clock: AuditClock & { resolve: AuditEquipmentResolver },
 ): Write {
@@ -494,7 +521,7 @@ export function applyAuditCommand(
   const prior = state.requests[request];
   if (prior !== undefined) {
     return prior.fingerprint === fingerprint
-      ? projected(state, actor, prior.auditId, false)
+      ? projected(state, actor, prior.auditId, null)
       : fail("conflict");
   }
   const assignees = suppliedDraft(state, command.siteId, command);
@@ -513,28 +540,19 @@ const photo = z.strictObject({
   requestId: z.uuid(),
   source: z.enum(["camera", "file"]),
   name: z.string().trim().min(1).max(180),
-  href: z.string().startsWith("blob:").max(4_096),
   fingerprint: z.string().min(1).max(200),
 });
 
-export function attachAuditPhoto(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
+export function applyAuditPhoto(
+  state: AuditState,
+  actor: AuditActor,
   raw: unknown,
   clock: AuditClock,
+  hrefFor: AuditEvidenceHref,
 ): Write {
   const parsed = photo.safeParse(raw);
   if (!parsed.success || !Number.isFinite(Date.parse(clock.now))) return fail("invalid");
-  const {
-    auditId,
-    rowId,
-    version,
-    requestId,
-    source,
-    name,
-    href,
-    fingerprint: digest,
-  } = parsed.data;
+  const { auditId, rowId, version, requestId, source, name, fingerprint: digest } = parsed.data;
   const scope = auditProjectionScope(state, actor, auditId);
   if (scope === null) return unsupported;
   const request = `${actor.id}:${requestId}`;
@@ -550,7 +568,7 @@ export function attachAuditPhoto(
   const prior = state.requests[request];
   if (prior !== undefined) {
     return prior.fingerprint === fingerprint
-      ? projected(state, actor, prior.auditId, false)
+      ? projected(state, actor, prior.auditId, null)
       : fail("conflict");
   }
   const { audit } = scope;
@@ -558,11 +576,12 @@ export function attachAuditPhoto(
   if (audit.status !== "active" || audit.archived) return fail("state");
   const row = rowId === null ? undefined : audit.rows.find(({ id }) => id === rowId);
   if (rowId !== null && row === undefined) return unsupported;
+  const id = clock.makeId();
   const evidence: EquipmentAuditEvidence = {
-    id: clock.makeId(),
+    id,
     rowId,
     name,
-    href,
+    href: hrefFor(auditId, id),
     source,
     at: clock.now,
     actor: actor.name,
@@ -576,4 +595,17 @@ export function attachAuditPhoto(
     audit: { ...audit, evidence: [evidence, ...audit.evidence] },
     events: [event],
   });
+}
+
+// The fixture provides a temporary object URL. Core supplies its own private route.
+export function attachAuditPhoto(
+  state: AuditState,
+  actor: AuditActor,
+  raw: unknown,
+  clock: AuditClock,
+): Write {
+  const parsed = photo.extend({ href: z.string().startsWith("blob:").max(4096) }).safeParse(raw);
+  if (!parsed.success) return fail("invalid");
+  const { href, ...metadata } = parsed.data;
+  return applyAuditPhoto(state, actor, metadata, clock, () => href);
 }

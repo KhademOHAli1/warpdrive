@@ -3,6 +3,7 @@
 import {
   Boxes,
   BriefcaseBusiness,
+  ClipboardCheck,
   Folders,
   GitBranch,
   LayoutDashboard,
@@ -12,6 +13,7 @@ import {
 import { usePathname } from "next/navigation";
 import { DOCS_SITE_URL } from "@/constants/docs";
 import type { NavKey } from "@/constants/nav";
+import { auditMessages } from "@/features/assets/audits/ui/messages";
 import { useAppTranslations, useLocale, useMessages } from "@/features/i18n/LocaleProvider";
 import { campaignNavigation } from "@/features/newsletter/ui/navigation";
 import { cn } from "@/lib/utils";
@@ -36,6 +38,7 @@ const ICONS: Record<NavKey, typeof ActivitiesIcon> = {
   projects: Folders,
   inventory: Boxes,
   assets: Toolbox,
+  equipmentAudits: ClipboardCheck,
   leads: LeadsIcon,
   contacts: ContactsIcon,
   activities: ActivitiesIcon,
@@ -66,7 +69,8 @@ export function SidebarMenu({
   const t = useAppTranslations("shell.sidebar");
   const activities = useAppTranslations("activities");
   const { campaignCapabilities } = useWorkspaceShell();
-  const campaignNav = campaignNavigation(useLocale(), campaignCapabilities);
+  const locale = useLocale();
+  const campaignNav = campaignNavigation(locale, campaignCapabilities);
   const campaign = navItems.find((item) => item.key === "campaigns");
   function children(key: NavKey): SidebarChild[] | undefined {
     if (key === "contacts")
@@ -89,7 +93,8 @@ export function SidebarMenu({
         key={item.key}
         item={{
           ...item,
-          label: messages.nav[item.key],
+          label:
+            item.key === "equipmentAudits" ? auditMessages[locale].title : messages.nav[item.key],
           Icon: ICONS[item.key],
           children: children(item.key),
         }}

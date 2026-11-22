@@ -29,6 +29,7 @@ import { AuditAssignDialog, AuditDraftDialog } from "./AuditDraftDialog";
 import { AuditPhotoDialog, AuditTaskDialog } from "./AuditTaskDialog";
 import { type AuditEditor, auditErrorText, type OpenAuditEditor } from "./auditView";
 import { type AuditWords, auditMessages } from "./messages";
+import { latestAuditWorkspace } from "./workspaceSnapshot";
 
 type ReadResult = EquipmentAuditRead | { ok: false; error: "transport" };
 type Selection = {
@@ -36,12 +37,15 @@ type Selection = {
   version: number;
   reload: number;
   read: EquipmentAuditAccess["read"];
+  readAt: number | undefined;
   result: ReadResult;
 };
 
 function useReadAudit(
   audit: EquipmentAuditSummary | undefined,
   read: EquipmentAuditAccess["read"],
+  readAt: number | undefined,
+  saved: EquipmentAuditDetail | null,
 ) {
   const id = audit?.id;
   const version = audit?.version;
@@ -56,39 +60,36 @@ function useReadAudit(
         if (
           current?.id === id &&
           current.read === read &&
+          current.readAt === readAt &&
           current.result.ok &&
           result.ok &&
           current.result.value.version > result.value.version
         )
           return current;
-        return { id, version, reload, read, result };
+        return { id, version, reload, read, readAt, result };
       });
     };
     void read(id).then(accept, () => accept({ ok: false, error: "transport" }));
     return () => {
       relevant = false;
     };
-  }, [id, version, read, reload]);
+  }, [id, version, read, readAt, reload]);
   const result =
     selected !== null &&
     selected.id === id &&
     selected.version === version &&
     selected.reload === reload &&
-    selected.read === read
+    selected.read === read &&
+    selected.readAt === readAt
       ? selected.result
       : null;
   return {
-    result,
+    result:
+      result ??
+      (saved !== null && saved.id === id && saved.version === version
+        ? ({ ok: true, value: saved } as const)
+        : null),
     refresh: () => setReload((value) => value + 1),
-    accept: (detail: EquipmentAuditDetail) => {
-      setSelected({
-        id: detail.id,
-        version: detail.version,
-        reload,
-        read,
-        result: { ok: true, value: detail },
-      });
-    },
   };
 }
 
@@ -367,6 +368,55 @@ function firstFilters(initial: EquipmentAuditWorkspace, id: string | undefined):
     : { ...defaultFilters, site: selected.siteId, archived: selected.archived };
 }
 
+function initialAuditView(source: EquipmentAuditWorkspace, id: string | undefined) {
+  return {
+    source,
+    workspace: source,
+    filters: firstFilters(source, id),
+    selected: id,
+    saved: null as EquipmentAuditDetail | null,
+  };
+}
+
+type AuditView = ReturnType<typeof initialAuditView>;
+
+function withServerWorkspace(
+  view: AuditView,
+  incoming: EquipmentAuditWorkspace,
+  id: string | undefined,
+) {
+  if (incoming.viewerId !== view.source.viewerId) return initialAuditView(incoming, id);
+  if (incoming.readAt === undefined && JSON.stringify(incoming) === JSON.stringify(view.source))
+    return { ...view, source: incoming };
+  const workspace = latestAuditWorkspace(view.workspace, incoming);
+  return {
+    ...view,
+    source: incoming,
+    workspace,
+    saved: workspace === view.workspace || workspace.readAt === undefined ? view.saved : null,
+  };
+}
+
+function withSavedAudit(view: AuditView, outcome: Extract<EquipmentAuditWrite, { ok: true }>) {
+  if (outcome.workspace.viewerId !== view.workspace.viewerId) return view;
+  const workspace = latestAuditWorkspace(view.workspace, outcome.workspace);
+  const current = workspace.audits.find(({ id }) => id === outcome.detail.id);
+  if (current === undefined)
+    return workspace === view.workspace ? view : { ...view, workspace, saved: null };
+  const accepted = workspace !== view.workspace || workspace === outcome.workspace;
+  const site = workspace.sites.find(({ id }) => id === current.siteId);
+  const sameAuthority =
+    workspace.readAt === undefined || site?.canManage === outcome.detail.canManage;
+  const saved = current.version === outcome.detail.version && sameAuthority ? outcome.detail : null;
+  return {
+    ...view,
+    workspace,
+    selected: current.id,
+    filters: { search: "", archived: current.archived, site: current.siteId },
+    saved: accepted ? saved : view.saved,
+  };
+}
+
 export function EquipmentAuditsWorkspace({
   initial,
   access,
@@ -383,17 +433,12 @@ export function EquipmentAuditsWorkspace({
   const { locale } = useLocalePreferences();
   const t = auditMessages[locale];
   const searchInput = useRef<HTMLInputElement | null>(null);
-  const [source, setSource] = useState(initial);
-  const [workspace, setWorkspace] = useState(initial);
-  const [filters, setFilters] = useState(() => firstFilters(initial, initialAuditId));
-  const [selected, setSelected] = useState(initialAuditId);
-  if (source !== initial) {
-    setSource(initial);
-    if (JSON.stringify(initial) !== JSON.stringify(source)) setWorkspace(initial);
-  }
+  const [view, setView] = useState(() => initialAuditView(initial, initialAuditId));
+  if (view.source !== initial) setView(withServerWorkspace(view, initial, initialAuditId));
+  const { workspace, filters, selected, saved } = view;
   const visible = matchesAudits(workspace, filters, locale);
   const active = visible.find(({ id }) => id === selected) ?? visible[0];
-  const reading = useReadAudit(active, access.read);
+  const reading = useReadAudit(active, access.read, workspace.readAt, saved);
   const detail = reading.result?.ok === true ? reading.result.value : null;
   const managing = workspace.sites.find(
     ({ id, canManage }) => canManage && (filters.site === "" || id === filters.site),
@@ -402,11 +447,7 @@ export function EquipmentAuditsWorkspace({
     access,
     fallbackFocus: searchInput,
     onSaved(outcome) {
-      const next = outcome.detail;
-      setWorkspace(outcome.workspace);
-      setSelected(next.id);
-      setFilters({ search: "", archived: next.archived, site: next.siteId });
-      reading.accept(next);
+      setView((current) => withSavedAudit(current, outcome));
     },
   });
   const dialog = editor.editor;
@@ -449,7 +490,7 @@ export function EquipmentAuditsWorkspace({
       />
       <AuditFilters
         filters={filters}
-        change={setFilters}
+        change={(filters) => setView((current) => ({ ...current, filters }))}
         sites={workspace.sites}
         searchInput={searchInput}
         words={t}
@@ -467,7 +508,7 @@ export function EquipmentAuditsWorkspace({
             audits={visible}
             sites={workspace.sites}
             activeId={active?.id}
-            select={setSelected}
+            select={(selected) => setView((current) => ({ ...current, selected }))}
             words={t}
           />
           {detail !== null ? (

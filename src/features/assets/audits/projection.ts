@@ -11,12 +11,13 @@ import type {
 } from "./contracts";
 import { siteAuditLocations, siteAuditTags, siteAuditTargets } from "./snapshot";
 import {
+  type AuditActor,
   type AuditEquipmentIdentity,
   type AuditEquipmentResolver,
   type AuditFinding,
-  type AuditFixtureActor,
-  type AuditFixtureState,
+  type AuditOpaqueKey,
   type AuditRecord,
+  type AuditState,
   auditAuthority,
   canManageAudit,
 } from "./state";
@@ -100,7 +101,7 @@ function summary(audit: AuditRecord): EquipmentAuditSummary {
 }
 
 function auditSite(
-  state: AuditFixtureState,
+  state: AuditState,
   site: { id: string; name: string },
   canManage: boolean,
 ): EquipmentAuditSite {
@@ -136,8 +137,8 @@ function auditSite(
 }
 
 export function projectAuditWorkspace(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
+  state: AuditState,
+  actor: AuditActor,
 ): EquipmentAuditWorkspace {
   const visible = state.audits.filter((audit) => auditAuthority(state, actor, audit) !== null);
   const visibleSites = new Set(visible.map(({ siteId }) => siteId));
@@ -167,11 +168,7 @@ function present(row: AuditFinding, audit: AuditRecord, canCount: boolean): Equi
   };
 }
 
-export function auditProjectionScope(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
-  auditId: string,
-) {
+export function auditProjectionScope(state: AuditState, actor: AuditActor, auditId: string) {
   const audit = state.audits.find(({ id }) => id === auditId);
   if (audit === undefined) return null;
   const site = state.assets.sites.find(({ id }) => id === audit.siteId);
@@ -180,8 +177,8 @@ export function auditProjectionScope(
 }
 
 export function projectAuditDetail(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
+  state: AuditState,
+  actor: AuditActor,
   auditId: string,
 ): EquipmentAuditRead {
   const scope = auditProjectionScope(state, actor, auditId);
@@ -206,8 +203,12 @@ export function auditOpaqueKey(code: string) {
   return code.trim();
 }
 
-function rowsMatching(audit: AuditRecord, target: AuditEquipmentIdentity | null, code: string) {
-  if (target === null) return audit.rows.filter((row) => row.opaqueKey === auditOpaqueKey(code));
+function rowsMatching(
+  audit: AuditRecord,
+  target: AuditEquipmentIdentity | null,
+  opaqueKey: string,
+) {
+  if (target === null) return audit.rows.filter((row) => row.opaqueKey === opaqueKey);
   return audit.rows.filter((row) =>
     target.kind === "asset"
       ? row.target?.id === target.id
@@ -216,37 +217,41 @@ function rowsMatching(audit: AuditRecord, target: AuditEquipmentIdentity | null,
 }
 
 export function resolveVisibleAuditEquipment(
-  state: AuditFixtureState,
+  state: AuditState,
   audit: AuditRecord,
   canManage: boolean,
   code: string,
   resolve: AuditEquipmentResolver,
+  opaqueKeyFor?: AuditOpaqueKey,
 ) {
   const identity = resolve(audit.siteId, code);
+  const opaqueKey = opaqueKeyFor?.(audit.siteId, code) ?? auditOpaqueKey(code);
   const targets = siteAuditTargets(state.assets, audit.siteId);
   const current =
     identity === null
       ? undefined
       : targets.find(({ id, kind }) => id === identity.id && kind === identity.kind);
   const known = current === undefined ? null : identity;
-  const matched = rowsMatching(audit, known, code);
+  const matched = rowsMatching(audit, known, opaqueKey);
   const announced =
     matched.some((row) => row.expected !== null || (row.target !== null && row.counted !== null)) ||
     canManage;
   const label = known?.kind === "kit" ? current?.name : (matched[0]?.target?.name ?? current?.name);
   return {
+    opaqueKey,
     target: announced ? known : null,
     label: announced ? (label ?? null) : null,
-    rows: announced ? matched : rowsMatching(audit, null, code),
+    rows: announced ? matched : rowsMatching(audit, null, opaqueKey),
   };
 }
 
 export function lookupAuditEquipment(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
+  state: AuditState,
+  actor: AuditActor,
   auditId: string,
   code: string,
   resolve: AuditEquipmentResolver,
+  opaqueKeyFor?: AuditOpaqueKey,
 ): EquipmentAuditLookup {
   const scope = auditProjectionScope(state, actor, auditId);
   if (scope === null || !scope.canCount) return { ok: false, error: "unavailable" };
@@ -260,6 +265,7 @@ export function lookupAuditEquipment(
     scope.canManage,
     input,
     resolve,
+    opaqueKeyFor,
   );
   return {
     ok: true,

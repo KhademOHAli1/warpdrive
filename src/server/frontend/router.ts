@@ -8,6 +8,7 @@ import { goals } from "@/db/schema/goals";
 import { listTypes } from "@/features/activities/typesRepo";
 import { projectLanding } from "@/features/agency-projects/nativeViews";
 import { canBrowseAssets } from "@/features/assets/access";
+import { canBrowseEquipmentAudits } from "@/features/assets/audits/scope";
 import { canBrowseBookings } from "@/features/assets/bookings/scope";
 import { resolveWorkflowSession } from "@/features/auth/better/sessionPolicy";
 import { CSRF_COOKIE } from "@/features/auth/csrf";
@@ -111,6 +112,7 @@ export const frontendRouter = router({
               projects,
               assetsAvailable,
               bookingsAvailable,
+              assetAuditsAvailable,
             ] = await Promise.all([
               getPreferencesForActor(ctx.db, actor.id),
               readBaseCurrency(ctx.db, AbortSignal.timeout(5_000)),
@@ -121,6 +123,7 @@ export const frontendRouter = router({
                 : projectLanding(ctx.db, ctx.session, AbortSignal.timeout(5_000)),
               canBrowseAssets(ctx.db, actor),
               canBrowseBookings(ctx.db, actor),
+              canBrowseEquipmentAudits(ctx.db, actor),
             ]);
             return {
               prefs,
@@ -132,6 +135,7 @@ export const frontendRouter = router({
               inventoryAvailable: actor.isActive,
               assetsAvailable,
               assetTagsAvailable: assetsAvailable,
+              assetAuditsAvailable,
               bookingsAvailable,
               physicalLabelsAvailable: actor.isActive && !actor.projectsGuestOnly,
             };

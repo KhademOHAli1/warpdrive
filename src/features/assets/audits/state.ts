@@ -8,9 +8,9 @@ import type {
 } from "./contracts";
 
 export type AuditParticipant = { id: string; name: string };
-export type AuditFixtureRole = "manager" | "base" | "self_service" | "viewer";
-export type AuditFixtureActor = AuditParticipant & {
-  roles: Readonly<Record<string, AuditFixtureRole>>;
+export type AuditRole = "manager" | "base" | "self_service" | "viewer";
+export type AuditActor = AuditParticipant & {
+  roles: Readonly<Record<string, AuditRole>>;
   active?: boolean;
 };
 
@@ -32,12 +32,13 @@ export type AuditRecord = {
   reviewedAt: string | null;
   scope: EquipmentAuditScope;
   assignees: AuditParticipant[];
+  assignedUserIds?: readonly string[];
   rows: AuditFinding[];
   activity: EquipmentAuditEvent[];
   evidence: EquipmentAuditEvidence[];
 };
 
-export type AuditFixtureState = {
+export type AuditState = {
   assets: AssetsWorkspace;
   participants: Readonly<Record<string, readonly AuditParticipant[]>>;
   audits: readonly AuditRecord[];
@@ -50,16 +51,19 @@ export type AuditEquipmentResolver = (
   code: string,
 ) => AuditEquipmentIdentity | null;
 
-export type AuditClock = { now: string; makeId: () => string };
+export type AuditOpaqueKey = (siteId: string, code: string) => string;
+export type AuditEvidenceHref = (auditId: string, evidenceId: string) => string;
 
-export function createAuditFixtureState(
+export type AuditClock = { now: string; makeId: () => string; opaqueKeyFor?: AuditOpaqueKey };
+
+export function createAuditState(
   assets: AssetsWorkspace,
-  participants: AuditFixtureState["participants"] = {},
-): AuditFixtureState {
+  participants: AuditState["participants"] = {},
+): AuditState {
   return { assets, participants, audits: [], requests: {} };
 }
 
-export function canManageAudit(state: AuditFixtureState, actor: AuditFixtureActor, siteId: string) {
+export function canManageAudit(state: AuditState, actor: AuditActor, siteId: string) {
   return (
     actor.active !== false &&
     actor.roles[siteId] === "manager" &&
@@ -67,19 +71,23 @@ export function canManageAudit(state: AuditFixtureState, actor: AuditFixtureActo
   );
 }
 
-export function auditAuthority(
-  state: AuditFixtureState,
-  actor: AuditFixtureActor,
-  audit: AuditRecord,
-) {
+export function auditAuthority(state: AuditState, actor: AuditActor, audit: AuditRecord) {
   const { siteId, status, archived } = audit;
   if (actor.active === false || !state.assets.sites.some(({ id }) => id === siteId)) return null;
   const role = actor.roles[siteId];
   const manager = role === "manager";
   const assigned =
     (role === "base" || role === "self_service") &&
-    audit.assignees.some(({ id }) => id === actor.id) &&
+    (audit.assignedUserIds?.includes(actor.id) ??
+      audit.assignees.some(({ id }) => id === actor.id)) &&
     state.participants[siteId]?.some(({ id }) => id === actor.id) === true;
   if (!manager && !assigned) return null;
   return { canManage: manager, canCount: !archived && (status === "draft" || status === "active") };
 }
+
+export type {
+  AuditActor as AuditFixtureActor,
+  AuditRole as AuditFixtureRole,
+  AuditState as AuditFixtureState,
+};
+export { createAuditState as createAuditFixtureState };

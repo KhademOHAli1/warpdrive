@@ -210,6 +210,7 @@ export type EquipmentAuditDetail = EquipmentAuditSummary & {
 };
 
 export type EquipmentAuditWorkspace = {
+  readAt?: number;
   viewerId: string;
   sites: EquipmentAuditSite[];
   audits: EquipmentAuditSummary[];

@@ -13,6 +13,7 @@ export const WORKSPACE_NAV_ITEMS = [
   { href: "/contacts/people", key: "contacts", section: "/contacts" },
   { href: "/inventory", key: "inventory", section: "/inventory" },
   { href: "/assets", key: "assets", section: "/assets" },
+  { href: "/assets/audits", key: "equipmentAudits", section: "/assets/audits" },
 ] as const;
 
 export const ACTION_NAV_ITEMS = [

@@ -24,6 +24,7 @@ type WorkspaceShell = {
   canViewInventory: boolean;
   canViewAssets: boolean;
   canViewAssetBookings: boolean;
+  canViewAssetAudits: boolean;
   canViewSalesOrders: boolean;
   campaignCapabilities: CampaignCapabilities;
 };
@@ -36,6 +37,7 @@ const defaults: WorkspaceShell = {
   canViewInventory: false,
   canViewAssets: false,
   canViewAssetBookings: false,
+  canViewAssetAudits: false,
   canViewSalesOrders: false,
   campaignCapabilities: noCampaignCapabilities,
 };
@@ -49,6 +51,7 @@ export function WorkspaceShellProvider({
   canViewInventory = false,
   canViewAssets = false,
   canViewAssetBookings = false,
+  canViewAssetAudits = false,
   canViewSalesOrders = false,
   campaignCapabilities = noCampaignCapabilities,
   children,
@@ -61,6 +64,7 @@ export function WorkspaceShellProvider({
   canViewInventory?: boolean;
   canViewAssets?: boolean;
   canViewAssetBookings?: boolean;
+  canViewAssetAudits?: boolean;
   canViewSalesOrders?: boolean;
   campaignCapabilities?: CampaignCapabilities;
   children: ReactNode;
@@ -76,6 +80,7 @@ export function WorkspaceShellProvider({
         canViewInventory,
         canViewAssets,
         canViewAssetBookings,
+        canViewAssetAudits,
         canViewSalesOrders,
         campaignCapabilities,
       }}
@@ -96,6 +101,7 @@ export function useWorkspaceNavigation() {
     canViewInventory,
     canViewAssets,
     canViewAssetBookings,
+    canViewAssetAudits,
   } = useWorkspaceShell();
   return workspaceNavItems(
     modules,
@@ -105,5 +111,6 @@ export function useWorkspaceNavigation() {
     canViewInventory,
     canViewAssets,
     canViewAssetBookings,
+    canViewAssetAudits,
   );
 }

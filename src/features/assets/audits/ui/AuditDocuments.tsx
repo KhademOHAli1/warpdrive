@@ -26,6 +26,7 @@ import type {
   EquipmentAuditEvidence,
   EquipmentAuditProgress,
 } from "../contracts";
+import { equipmentAuditEvidencePath } from "../evidenceTransport";
 import styles from "./auditReport.module.css";
 import { equipmentLabel, placementLabel } from "./auditView";
 import type { AuditWords } from "./messages";
@@ -136,8 +137,9 @@ export function AuditActivity({
   );
 }
 
-function evidenceUrl(raw: string) {
-  if (raw.startsWith("/") && !raw.startsWith("//") && !raw.includes("\\")) return raw;
+function evidenceUrl(auditId: string, item: EquipmentAuditEvidence) {
+  const raw = item.href;
+  if (raw === equipmentAuditEvidencePath(auditId, item.id)) return raw;
   if (typeof window === "undefined" || !raw.startsWith("blob:")) return null;
   try {
     return new URL(raw).origin === window.location.origin ? raw : null;
@@ -146,8 +148,16 @@ function evidenceUrl(raw: string) {
   }
 }
 
-function EvidencePhoto({ item, words: t }: { item: EquipmentAuditEvidence; words: AuditWords }) {
-  const href = evidenceUrl(item.href);
+function EvidencePhoto({
+  auditId,
+  item,
+  words: t,
+}: {
+  auditId: string;
+  item: EquipmentAuditEvidence;
+  words: AuditWords;
+}) {
+  const href = evidenceUrl(auditId, item);
   return (
     <figure
       data-audit-photo={item.id}
@@ -205,7 +215,7 @@ export function AuditEvidence({
                   </bdi>
                 </p>
               )}
-              <EvidencePhoto item={item} words={t} />
+              <EvidencePhoto auditId={detail.id} item={item} words={t} />
             </div>
           ))}
         </div>

@@ -10,6 +10,11 @@ import * as actions7 from "@/features/activities/typeActions.backend";
 import * as actions8 from "@/features/agency-projects/actions.backend";
 import { executeAssetAction } from "@/features/assets/actions.backend";
 import {
+  executeEquipmentAuditAction,
+  lookupEquipmentAuditAction,
+  readEquipmentAuditAction,
+} from "@/features/assets/audits/actions.backend";
+import {
   checkAvailabilityAction,
   executeBookingAction,
 } from "@/features/assets/bookings/actions.backend";
@@ -176,6 +181,9 @@ export const commandHandlers = {
   "features/inventory/warehouse/stocktakes/actions.executeStocktakeAction": executeStocktakeAction,
   "features/locations/actions.executeLocationsAction": executeLocationsAction,
   "features/assets/webActions.executeAssetAction": executeAssetAction,
+  "features/assets/audits/webActions.readEquipmentAuditAction": readEquipmentAuditAction,
+  "features/assets/audits/webActions.executeEquipmentAuditAction": executeEquipmentAuditAction,
+  "features/assets/audits/webActions.lookupEquipmentAuditAction": lookupEquipmentAuditAction,
   "features/physical-labels/webActions.executePhysicalLabelAction": executePhysicalLabelAction,
   "features/physical-labels/webActions.resolvePhysicalLabelAction": resolvePhysicalLabelAction,
   "features/assets/bookings/webActions.executeBookingAction": executeBookingAction,
