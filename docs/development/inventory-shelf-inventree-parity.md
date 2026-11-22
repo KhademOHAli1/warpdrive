@@ -221,6 +221,12 @@ Core at `0aaf3ba3` pins custody to the approved booking version and records exac
 
 Native Chrome verified the in-progress handover on a populated 0149 to 0150 upgrade and migration replay. Web rolled back independently to `672a780f` while overdue custody remained in Core. CRM, prior bookings, labels, and reserved and serialized stock remained readable, and the earlier Web could not reassign the held equipment or cancel the booking. Restored Web completed the final return and reopened the original partial receipt. PostgreSQL retained seven allocations and six receipts and reconciled all three pool bins, three standalone consumables, and one kit consumable. The [operations backlog](warpdrive-operations-backlog.tsv) links the evidence. External notifications, Companion, physical devices and installed-image verification remain separately tracked.
 
+### Physical equipment audits (SHELF-08)
+
+The audit fixture freezes the selected equipment and placement quantities when a count starts. Assigned auditors can act on the scoped list. Managers can schedule, assign, review, archive and duplicate the audit. Counts, corrections and evidence remain in the audit history. Completion records missing equipment and leaves stock and custody in their original ledgers. The approach follows the staged count and retained findings in the [Shelf audit guide](https://www.shelf.nu/knowledge-base/run-your-first-audit).
+
+Chrome at `c42bd8fc` verified manager and assigned-auditor controls, opaque out-of-scope scan results, exact tag lookup, separate bin quantities, bulk counts, zero and undo, a photo preview, review and duplication. The expected counts stayed fixed after fixture equipment moved and the live balance changed. Chrome rendered the A4 report and exported 14 activity events to CSV. The fixture sent zero business commands and preserved all 126 checked tables and the migration ledger. The [operations backlog](warpdrive-operations-backlog.tsv) links the fixture evidence. Core permission, storage, upgrade and rollback qualification remain pending.
+
 ## InvenTree coverage
 
 | Capability family | Warpdrive coverage today | Target and acceptance |
