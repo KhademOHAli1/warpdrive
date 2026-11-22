@@ -166,6 +166,7 @@ export type AssetsWorkspace = {
   kits?: KitWorkspace;
   mediaAvailable?: true;
   discoveryAvailable?: true;
+  auditHistoryAvailable?: true;
 };
 export type AssetError = "unavailable" | "invalid" | "stale" | "conflict" | "stock" | "state";
 export type AssetResult =

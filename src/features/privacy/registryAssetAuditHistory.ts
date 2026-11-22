@@ -6,6 +6,10 @@ export const assetAuditHistoryEntry = classifyInventory(
     "sourceReview:src/features/assets/audits/history/contracts.ts#ee5bdfb11dcc4f0f1bb686995fc036b5900271ed40d28f27a6ca1db97cd17404",
     "sourceReview:src/features/assets/audits/history/fixture.ts#dbba50e9148a364ebb2616f91ce5f51175ffe014d6dd89e1cb8e59abd92c94e2",
     "sourceReview:src/features/assets/audits/history/projection.ts#bada5fdc6416983d687513068e2dc5d787a1ed05fb220c497be0a890a595b500",
+    "sourceReview:src/features/assets/audits/history/repository.ts#23a7788a724dd49d0dd241c91016c7c8ef138393f4e784ed52e37839947bafe5",
+    "sourceReview:src/features/assets/audits/history/service.ts#299b8c14caacb5c5903496f8a75052b4a709eaefab02504c2654ae5d2ea1c92a",
+    "writer:src/features/assets/audits/history/repository.ts#execute:sql",
+    "writer:src/features/assets/ui/AssetsLive.tsx#query:dynamic",
   ],
   {
     owner: "equipment audit history",
@@ -19,8 +23,9 @@ export const assetAuditHistoryEntry = classifyInventory(
     disclosure:
       "The same actor must currently be authorized to read the equipment and that audit. The history omits general audit notes, private files and unattributed scans.",
     retention:
-      "The explicit Web fixture uses synthetic completed equipment counts. It applies no durable write.",
-    externalEffects: "Results can focus an exact completed demo audit using its stable link.",
+      "Core reads frozen equipment rows and their correction events from the existing audit ledger. It adds no new stored personal data.",
+    externalEffects:
+      "Core reads exact equipment findings through the intersection of current equipment and audit permissions.",
     erasureTask: "DPL-15 / DPL-18 / DPL-21",
   },
 );

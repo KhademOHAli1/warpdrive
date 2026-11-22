@@ -1,0 +1,3 @@
+CREATE INDEX "asset_audit_events_row_history_idx" ON "asset_audit_events" USING btree ("site_id","audit_id","row_id","version","ordinal") WHERE "asset_audit_events"."row_id" IS NOT NULL
+        AND "asset_audit_events"."snapshot" ->> 'kind' IN ('counted', 'unexpected', 'undone');--> statement-breakpoint
+CREATE INDEX "asset_audit_rows_target_history_idx" ON "asset_audit_rows" USING btree ("site_id",("identity" #>> '{target,kind}'),("identity" #>> '{target,id}'),"audit_id") WHERE "asset_audit_rows"."opaque_key" IS NULL;

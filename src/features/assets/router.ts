@@ -17,6 +17,7 @@ export const assetsRouter = router({
             ...result.value,
             mediaAvailable: true as const,
             discoveryAvailable: true as const,
+            auditHistoryAvailable: true as const,
           },
         }
       : result;

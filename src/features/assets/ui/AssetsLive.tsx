@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
+import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import type { AssetAuditHistoryAccess } from "../audits/history/contracts";
 import type { AssetsWorkspace } from "../contracts";
 import { executeCustodyAction } from "../custody/webActions";
 import type { AssetRegisterDiscoveryAccess } from "../discovery/contracts";
@@ -37,6 +39,11 @@ export function AssetsLive({
   assetTagsAvailable?: boolean;
   auditsAvailable?: boolean;
 }) {
+  const client = trpc.useUtils().client;
+  const auditHistoryAccess = useMemo<AssetAuditHistoryAccess>(
+    () => (assetId, signal) => client.assets.audits.assetHistory.query({ assetId }, { signal }),
+    [client],
+  );
   const mediaAccess = useMemo<AssetMediaAccess>(
     () => ({
       read: (target) => readAssetMediaAction(actorId, target, readCsrfToken()),
@@ -63,6 +70,11 @@ export function AssetsLive({
       physicalLabelsAvailable={physicalLabelsAvailable}
       assetTagsAvailable={assetTagsAvailable}
       auditsAvailable={auditsAvailable}
+      auditHistoryAccess={
+        auditsAvailable === true && initial.auditHistoryAvailable === true
+          ? auditHistoryAccess
+          : undefined
+      }
       mediaAccess={initial.mediaAvailable === true ? mediaAccess : undefined}
       discoveryAccess={initial.discoveryAvailable === true ? discoveryAccess : undefined}
       submit={(command) => executeAssetAction(actorId, command, readCsrfToken())}

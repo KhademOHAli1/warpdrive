@@ -111,6 +111,14 @@ export const assetAuditRows = pgTable(
     uniqueIndex("asset_audit_rows_opaque_key")
       .on(row.auditId, row.opaqueKey)
       .where(sql`${row.opaqueKey} IS NOT NULL`),
+    index("asset_audit_rows_target_history_idx")
+      .on(
+        row.siteId,
+        sql`(${row.identity} #>> '{target,kind}')`,
+        sql`(${row.identity} #>> '{target,id}')`,
+        row.auditId,
+      )
+      .where(sql`${row.opaqueKey} IS NULL`),
     foreignKey({
       name: "asset_audit_rows_audit_fk",
       columns: [row.siteId, row.auditId],
@@ -143,6 +151,10 @@ export const assetAuditEvents = pgTable(
   },
   (row) => [
     unique("asset_audit_events_batch_key").on(row.auditId, row.version, row.ordinal),
+    index("asset_audit_events_row_history_idx")
+      .on(row.siteId, row.auditId, row.rowId, row.version, row.ordinal)
+      .where(sql`${row.rowId} IS NOT NULL
+        AND ${row.snapshot} ->> 'kind' IN ('counted', 'unexpected', 'undone')`),
     foreignKey({
       name: "asset_audit_events_audit_fk",
       columns: [row.siteId, row.auditId],
