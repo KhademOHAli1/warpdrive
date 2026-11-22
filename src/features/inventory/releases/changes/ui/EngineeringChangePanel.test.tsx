@@ -63,7 +63,16 @@ const review: ChangeReview = {
       key: "material",
       sku: "PCB-24",
       before: null,
-      after: { quantity: "2", unit: "ea", childRelease: null, alternatives: ["PCB-ALT"] },
+      after: {
+        quantity: "2",
+        unit: "ea",
+        childRelease: null,
+        alternatives: ["PCB-ALT"],
+        optional: false,
+        consumable: false,
+        inherited: false,
+        pieces: null,
+      },
     },
   ],
   whereUsed: [{ key: "related", parentSku: "PARENT-24", revision: "A", componentSku: "PCB-24" }],
@@ -122,6 +131,46 @@ async function choose(id: string = candidate.id) {
 }
 
 afterEach(cleanup);
+
+it("shows exact before and after values when material flags and piece counts are the only changes", async () => {
+  const { access, preview } = setup();
+  const sameMaterial = { quantity: "2", unit: "ea", childRelease: null, alternatives: [] };
+  preview.mockResolvedValue(
+    allow({
+      ...review,
+      materials: [
+        {
+          key: "material-flags",
+          sku: "PCB-24",
+          before: {
+            ...sameMaterial,
+            optional: true,
+            consumable: false,
+            inherited: false,
+            pieces: null,
+          },
+          after: { ...sameMaterial, optional: false, consumable: true, inherited: true, pieces: 4 },
+        },
+      ],
+    }),
+  );
+  render(<EngineeringChangePanel itemId={workspace.itemId} access={access} />);
+  await choose();
+  const materials = await screen.findByRole("region", { name: "Manufacturing BOM" });
+  const row = within(materials).getByText("PCB-24");
+  const values = row.parentElement?.querySelectorAll("dd");
+  expect(values).toHaveLength(2);
+  const before = values?.[0];
+  const after = values?.[1];
+  expect(before).toHaveTextContent("Optional Yes");
+  expect(before).toHaveTextContent("Consumable No");
+  expect(before).toHaveTextContent("Inherited No");
+  expect(before?.querySelector("[data-engineering-material-pieces]")).toHaveTextContent("—");
+  expect(after).toHaveTextContent("Optional No");
+  expect(after).toHaveTextContent("Consumable Yes");
+  expect(after).toHaveTextContent("Inherited Yes");
+  expect(after?.querySelector("[data-engineering-material-pieces]")).toHaveTextContent("4");
+});
 
 it("submits the reviewed candidate, binds UTC and reuses the exact request after an uncertain response", async () => {
   const { access, execute, read } = setup();

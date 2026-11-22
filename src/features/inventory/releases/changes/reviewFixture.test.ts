@@ -132,8 +132,21 @@ it("compares canonical BOM selectors, quantities, units, subassembly pins and al
       unit: "each",
       childRelease: null,
       alternatives: ["BACKUP-A", "BACKUP-B"],
+      optional: false,
+      consumable: false,
+      inherited: false,
+      pieces: null,
     },
-    after: { quantity: "2", unit: "each", childRelease: null, alternatives: ["BACKUP-C"] },
+    after: {
+      quantity: "2",
+      unit: "each",
+      childRelease: null,
+      alternatives: ["BACKUP-C"],
+      optional: false,
+      consumable: false,
+      inherited: false,
+      pieces: null,
+    },
   });
   expect(snapshot.materials[1]?.before?.childRelease).toBe("A");
   expect(snapshot.materials[1]?.after?.childRelease).toBe("B");
@@ -149,6 +162,35 @@ it("compares canonical BOM selectors, quantities, units, subassembly pins and al
     })),
   );
   expect(snapshot.design.every(({ kind }) => kind !== "manufacturingBom")).toBe(true);
+});
+
+it("reports a change to pieces or material flags when the quantity and pins match", async () => {
+  const header = "sku,quantity,unit,child_release,optional,consumable,inherited,pieces\n";
+  const before = artifact(
+    "bom-A",
+    "manufacturingBom",
+    "bom-A.csv",
+    `${header}SUB-1,1,each,A,false,false,false,\nWIRE-1,2,m,,false,false,false,1\n`,
+  );
+  const after = artifact(
+    "bom-B",
+    "manufacturingBom",
+    "bom-B.csv",
+    `${header}SUB-1,1,each,A,false,false,true,\nWIRE-1,2,m,,true,true,false,3\n`,
+  );
+  const snapshot = await review(
+    packageFor("A", "released", [fabrication("A"), before]),
+    packageFor("B", "draft", [fabrication("B"), after]),
+  );
+  expect(snapshot.ready).toBe(true);
+  expect(snapshot.materials).toMatchObject([
+    { sku: "SUB-1", before: { inherited: false }, after: { inherited: true } },
+    {
+      sku: "WIRE-1",
+      before: { optional: false, consumable: false, pieces: 1 },
+      after: { optional: true, consumable: true, pieces: 3 },
+    },
+  ]);
 });
 
 it("preserves an unchanged filename when another file previously had identical bytes", async () => {

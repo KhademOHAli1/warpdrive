@@ -109,6 +109,10 @@ function materialDetails({ quantity, details }: ReleaseBomEntry): ChangeMaterial
     unit: details?.unit ?? null,
     childRelease: details?.childRelease ?? null,
     alternatives: [...(details?.alternateSkus ?? [])].sort(lexical),
+    optional: details?.optional ?? false,
+    consumable: details?.consumable ?? false,
+    inherited: details?.inherited ?? false,
+    pieces: details?.pieces ?? null,
   };
 }
 

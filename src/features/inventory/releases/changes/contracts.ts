@@ -7,6 +7,10 @@ export type ChangeMaterial = {
   unit: string | null;
   childRelease: string | null;
   alternatives: string[];
+  optional: boolean;
+  consumable: boolean;
+  inherited: boolean;
+  pieces: number | null;
 };
 
 export type ChangeReview = {
