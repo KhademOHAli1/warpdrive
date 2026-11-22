@@ -1,7 +1,15 @@
 "use client";
 
 import { Download, FilePlus, PackageCheck, Trash2 } from "lucide-react";
-import { createContext, type ReactNode, useContext, useId, useMemo, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -19,6 +27,9 @@ import type {
   ReleaseFixtureState,
 } from "../contracts";
 import { applyReleaseFixture, createReleaseFixture, missingReleaseArtifacts } from "../fixtures";
+import type { ExportIntakeAccess, ExportIntakeResult } from "../intake/contracts";
+import { createExportIntakeFixture } from "../intake/fixture";
+import { ExportIntakePanel } from "../intake/ui/ExportIntakePanel";
 import { manufacturingReleaseMessages } from "./manufacturingReleaseMessages";
 
 type Labels = (typeof manufacturingReleaseMessages)["en"];
@@ -26,18 +37,71 @@ type ProductReleaseState = Record<string, ReleaseFixtureState>;
 type FixtureContext = {
   products: ProductReleaseState;
   save: (itemId: string, state: ReleaseFixtureState) => void;
+  register: (item: Pick<InventoryItem, "id" | "sku">, state: ReleaseFixtureState) => void;
+  intakeAccess?: ExportIntakeAccess;
+  canEditIntake: boolean;
 };
 
 const FixtureContext = createContext<FixtureContext | null>(null);
 
-export function ManufacturingReleaseFixtureProvider({ children }: { children: ReactNode }) {
+const releaseFixtureId = (itemId: string, revision: string) => `${itemId}:${revision}`;
+
+function createReleaseIntakeStore() {
+  const registry = new Map<string, { sku: string; state: ReleaseFixtureState }>();
+  const intake = createExportIntakeFixture({
+    failFirstReady: true,
+    getTargetState(target) {
+      const product = registry.get(target.itemId);
+      if (
+        product?.sku !== target.sku ||
+        target.releaseId !== releaseFixtureId(target.itemId, target.revision)
+      )
+        return null;
+      const release = product.state.releases.find(({ revision }) => revision === target.revision);
+      return release?.status === "released" ? "approved" : (release?.status ?? null);
+    },
+  });
+  const unavailable = (): Promise<ExportIntakeResult<never>> =>
+    Promise.resolve({ ok: false, issues: [{ code: "unavailable" }] });
+  return {
+    intake,
+    readOnly: {
+      list: intake.list,
+      submit: unavailable,
+      retry: unavailable,
+    } satisfies ExportIntakeAccess,
+    register: (item: Pick<InventoryItem, "id" | "sku">, state: ReleaseFixtureState) => {
+      if (!registry.has(item.id)) registry.set(item.id, { sku: item.sku, state });
+    },
+    change(itemId: string, state: ReleaseFixtureState) {
+      const product = registry.get(itemId);
+      if (product !== undefined) registry.set(itemId, { ...product, state });
+    },
+  };
+}
+
+export function ManufacturingReleaseFixtureProvider({
+  children,
+  canEditIntake,
+}: {
+  children: ReactNode;
+  canEditIntake?: boolean;
+}) {
   const [products, setProducts] = useState<ProductReleaseState>({});
+  const [intake] = useState(createReleaseIntakeStore);
   const context = useMemo<FixtureContext>(
     () => ({
       products,
-      save: (itemId, state) => setProducts((current) => ({ ...current, [itemId]: state })),
+      save: (itemId, state) => {
+        intake.change(itemId, state);
+        setProducts((current) => ({ ...current, [itemId]: state }));
+      },
+      register: intake.register,
+      intakeAccess:
+        canEditIntake === undefined ? undefined : canEditIntake ? intake.intake : intake.readOnly,
+      canEditIntake: canEditIntake === true,
     }),
-    [products],
+    [products, intake, canEditIntake],
   );
   return <FixtureContext.Provider value={context}>{children}</FixtureContext.Provider>;
 }
@@ -58,6 +122,10 @@ function ProductReleaseFixture({ item, store }: { item: InventoryItem; store: Fi
   const t = manufacturingReleaseMessages[useLocale()];
   const headingId = useId();
   const [initial] = useState(() => createReleaseFixture(item));
+  const { register } = store;
+  useLayoutEffect(() => {
+    register(item, initial);
+  }, [initial, item, register]);
   const state = store.products[item.id] ?? initial;
   const [requestedRevision, setRequestedRevision] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -136,7 +204,15 @@ function ProductReleaseFixture({ item, store }: { item: InventoryItem; store: Fi
         }}
       />
       {selected !== undefined && (
-        <ReleasePackage key={selected.revision} release={selected} run={run} t={t} />
+        <ReleasePackage
+          key={selected.revision}
+          release={selected}
+          item={item}
+          run={run}
+          t={t}
+          intakeAccess={store.intakeAccess}
+          canEditIntake={store.canEditIntake}
+        />
       )}
       <BuildPins builds={state.builds} selectRevision={selectRevision} t={t} />
     </section>
@@ -217,12 +293,18 @@ function CreateDraftForm({ t, create }: { t: Labels; create: (revision: string) 
 
 function ReleasePackage({
   release,
+  item,
   run,
   t,
+  intakeAccess,
+  canEditIntake,
 }: {
   release: ManufacturingRelease;
+  item: Pick<InventoryItem, "id" | "sku">;
   run: RunRelease;
   t: Labels;
+  intakeAccess?: ExportIntakeAccess;
+  canEditIntake: boolean;
 }) {
   const headingId = useId();
   const missingId = useId();
@@ -250,9 +332,19 @@ function ReleasePackage({
             : undefined
         }
       />
+      {isDraft && <DraftArtifactForm revision={release.revision} run={run} t={t} />}
+      <ExportIntakePanel
+        access={intakeAccess}
+        canEdit={isDraft && canEditIntake}
+        target={{
+          itemId: item.id,
+          releaseId: releaseFixtureId(item.id, release.revision),
+          sku: item.sku,
+          revision: release.revision,
+        }}
+      />
       {isDraft && (
         <>
-          <DraftArtifactForm revision={release.revision} run={run} t={t} />
           {missing.length > 0 && (
             <p id={missingId} className="text-sm text-muted-foreground">
               {t.missingFiles} · {missing.map((kind) => t.kinds[kind]).join(", ")}

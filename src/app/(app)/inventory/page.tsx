@@ -32,10 +32,11 @@ export default async function InventoryPage({
       notFound();
     return (
       <InventoryFixture
-        key={`${openReleases ? "catalog-releases" : view}:${selected.data ?? ""}`}
+        key={`${actor.id}:${openReleases ? "catalog-releases" : view}:${selected.data ?? ""}`}
         initial={initial}
         openReleases={openReleases}
         initialItemId={selected.data}
+        canEditIntake={actor.isActive && actor.type === "admin" && !actor.projectsGuestOnly}
       />
     );
   }

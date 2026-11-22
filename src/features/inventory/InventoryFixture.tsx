@@ -14,10 +14,12 @@ export function InventoryFixture({
   initial,
   openReleases,
   initialItemId,
+  canEditIntake,
 }: {
   initial: InventoryWorkspace;
   openReleases: boolean;
   initialItemId?: string;
+  canEditIntake?: boolean;
 }) {
   const workspace = useRef(initial);
   function submit(command: InventoryCommand) {
@@ -27,7 +29,7 @@ export function InventoryFixture({
   }
 
   return (
-    <ManufacturingReleaseFixtureProvider>
+    <ManufacturingReleaseFixtureProvider canEditIntake={canEditIntake}>
       <InventoryClient
         initial={initial}
         submit={submit}

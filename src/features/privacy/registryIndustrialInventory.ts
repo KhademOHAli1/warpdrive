@@ -2,9 +2,9 @@ import { classifyInventory } from "./registryClassification";
 
 export const industrialInventoryEntry = classifyInventory(
   [
-    "sourceReview:src/features/inventory/releases/ui/ManufacturingReleasesFixture.tsx#ef148385d4a8f4185d5e4b43ffe56bcc10baa667244d2d4749f8dc8aa9c1d088",
+    "sourceReview:src/features/inventory/releases/ui/ManufacturingReleasesFixture.tsx#8419e9c7c6d0bf8c4ec22f61f69319b48f30eab3de504b66213b85c6a692a450",
     "sourceReview:src/features/inventory/releases/fixtures.ts#d31a68530b9339a96294b2d38d44fc6d8b4c58b5295f1bed1c10c92cd792a8a6",
-    "sourceReview:src/features/inventory/InventoryFixture.tsx#fbf85f946fb9091606ed9f954af3cf0ceeae276a5c9000702f730ecd6c4a57bf",
+    "sourceReview:src/features/inventory/InventoryFixture.tsx#a5426fa247f4a33f81a9052b8d85bf9c7cb42bb95bef76b8abb333aef9d853fb",
     "derived:src/features/inventory/fixtures.ts",
     "derived:src/features/inventory/projectBridge.ts",
     "derived:src/features/inventory/reads.ts",
@@ -12,7 +12,7 @@ export const industrialInventoryEntry = classifyInventory(
     "derived:src/features/inventory/stock.ts",
     "derived:src/features/inventory/ui/InventoryClient.tsx",
     "sourceReview:drizzle/0127_industrial_inventory.sql#8b41d0580b5b5ef1beeaf0026cfa81b843191bea78b8d7225d0a1d50c7247e7f",
-    "sourceReview:src/app/(app)/inventory/page.tsx#e1aeafc47bfe073bb3a1b0573b3c49d8ec8906b89802bcb05b6802d46d57f101",
+    "sourceReview:src/app/(app)/inventory/page.tsx#6ac2f9c60a43b7b3c1eef0de39982c9b0e4efef4ef281cb8279e95874b0b3073",
     "sourceReview:src/features/inventory/fixtures.ts#9f155cf2aa027899855e9e36a7c84dc597ef0c6326af2cb134b523a061e14794",
     "sourceReview:src/features/inventory/projectBridge.ts#b3720f001dc806d3a82a26064950530e4e69f03524c3439978c6992bea4b2dfc",
     "sourceReview:src/features/inventory/reads.ts#5932f4af3104e7e434038dafa7a00874ade25670dbe258e523633286c63017fc",

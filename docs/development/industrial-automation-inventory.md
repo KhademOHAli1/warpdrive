@@ -56,3 +56,11 @@ Inventory owns reservation, physical quantity and append-only movement effects i
 | **Commercial and finance** | Quotes and contract prices, segmented availability promises, multi-line orders/partial shipments, invoicing and credit, landed costs, valuation, accounting reconciliation, warranty and service. Pilot with selected roles and verified posting before broad rollout. |
 
 The MVP uses a single legal entity and warehouse, whole quantities, a private internal production project, and one product per order. Narrow roles and manual production release are intentional for the first local qualification. The information model keeps site, unit, revision, lifecycle and evidence references available for the subsequent increments.
+
+### Managed CAD and EDA intake (ERP-01)
+
+The Releases tab accepts a versioned exporter manifest and its named files for the selected product and draft revision. The manifest identifies the exporter version, source revision, file role, size, and SHA-256. The first workflow covers a Gerber and drill ZIP, PCB source, placement, a STEP enclosure component, manufacturing BOM, firmware, label artwork, and test instructions. The BOM uses Warpdrive’s manufacturing SKU and quantity mapping. The original local proof bundle uses KiCad 10.0.5 for the fabrication archive, placement export, and STEP spacer. [KiCad board file format](https://dev-docs.kicad.org/en/file-formats/sexpr-pcb/index.html) · [KiCad CLI](https://docs.kicad.org/10.0/en/cli/cli.html)
+
+An intake job owns the manifest, upload references, and retry history. The existing release owns its artifacts, BOM, approval, and build pins. The Web fixture proves exact draft selection, validation, duplicate submissions, and retry with disposable files. Core will stage private bytes, verify them through the existing artifact rules, and publish all verified files to the same draft under the product lock. Before publication it will check the submitting editor and exact release again. Approval still uses the existing release action.
+
+The qualification uses a separate draft alongside incumbent Rev A and Rev B releases, compares byte hashes and build pins, and exercises upgrade and independent Web rollback. It also checks revoked access, a competing approval, and recovery after a failed attempt. [Operations backlog](warpdrive-operations-backlog.tsv)
