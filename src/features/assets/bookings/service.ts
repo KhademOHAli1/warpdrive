@@ -62,7 +62,11 @@ async function bookingSnapshot(
 }
 
 function projectWorkspace(state: BookingState) {
-  return { ...projectBookings(state), handoverAvailable: true } as const;
+  return {
+    ...projectBookings(state),
+    handoverAvailable: true,
+    automationsAvailable: true,
+  } as const;
 }
 
 export function readBookingWorkspace(

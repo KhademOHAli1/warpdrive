@@ -5,7 +5,11 @@ import { Button } from "@/components/ui/Button";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatDateTime } from "@/lib/localeFormatting";
 import { useHydrated } from "@/lib/useHydrated";
-import type { BookingAutomationAccess, BookingAutomationNotice } from "./contracts";
+import {
+  type BookingAutomationAccess,
+  type BookingAutomationNotice,
+  bookingAutomationRefreshMs,
+} from "./contracts";
 import { bookingAutomationTriggerLabels } from "./messages";
 
 const labels = {
@@ -74,7 +78,13 @@ function useBookingAutomationNotices(bookingId: string, version: number, read: N
   useEffect(() => {
     const refresh = () => setAttempt((previous) => previous + 1);
     window.addEventListener("focus", refresh);
-    return () => window.removeEventListener("focus", refresh);
+    const interval = window.setInterval(() => {
+      if (!document.hidden) refresh();
+    }, bookingAutomationRefreshMs);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refresh);
+    };
   }, []);
 
   const view =

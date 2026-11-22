@@ -14,6 +14,12 @@ import {
   type BookingAutomationTrigger,
   bookingAutomationTriggers,
 } from "./contracts";
+import {
+  bookingAutomationId as id,
+  bookingAutomationProfileInput as profileInput,
+  bookingAutomationRetryInput as retryInput,
+  bookingAutomationRunInput as runsInput,
+} from "./inputs";
 
 export const bookingAutomationDemoIds = {
   sentBack: "361eba2b-7365-4e4c-a306-000000000001",
@@ -33,23 +39,6 @@ type AutomationDemo = { state: BookingState; runs: FixtureRun[]; clock: string }
 const invalid = { ok: false, error: "invalid" } as const;
 const conflict = { ok: false, error: "conflict" } as const;
 const unavailable = { ok: false, error: "unavailable" } as const;
-const id = z.uuid().toLowerCase();
-const statuses = z.enum(["pending", "delivered", "failed", "skipped"]);
-const profileInput = z.strictObject({
-  siteId: id,
-  requestId: id,
-  version: z.number().int().nonnegative(),
-  triggers: z
-    .array(z.enum(bookingAutomationTriggers))
-    .max(bookingAutomationTriggers.length)
-    .refine((triggers) => new Set(triggers).size === triggers.length),
-});
-const retryInput = z.strictObject({ siteId: id, requestId: id, runId: id, failureId: id });
-const runsInput = z.strictObject({
-  siteId: id,
-  status: statuses.optional(),
-  cursor: z.string().max(160).optional(),
-});
 
 function clockOffset(now: string, minutes: number) {
   return new Date(Date.parse(now) + minutes * 60_000).toISOString();

@@ -19,6 +19,7 @@ import {
   type BookingAutomationRuns,
   type BookingAutomationState,
   type BookingAutomationTrigger,
+  bookingAutomationRefreshMs,
   bookingAutomationTriggers,
 } from "../contracts";
 import { bookingAutomationTriggerLabels } from "../messages";
@@ -391,8 +392,12 @@ function AutomationSettings({
       else reload();
     }
     window.addEventListener("focus", recheck);
+    const interval = window.setInterval(() => {
+      if (!document.hidden) recheck();
+    }, bookingAutomationRefreshMs);
     return () => {
       alive.current = false;
+      window.clearInterval(interval);
       window.removeEventListener("focus", recheck);
     };
   }, [reload]);

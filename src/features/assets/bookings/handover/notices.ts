@@ -6,6 +6,7 @@ import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import { directorySites } from "@/features/locations/schema";
 import { lockDirectory } from "@/features/locations/service";
 import { lockAssetRegister } from "../../service";
+import { dispatchBookingAutomations } from "../automations/dispatch";
 import { assetBookings } from "../schema";
 import type { BookingHandoverNotice } from "./contracts";
 import {
@@ -89,6 +90,7 @@ export async function registerBookingHandoverNoticeWorker(boss: PgBoss, db: Db):
   await boss.createQueue(PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE);
   await boss.work(PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE, async () => {
     await recordBookingHandoverNotices(db, AbortSignal.timeout(25_000));
+    await dispatchBookingAutomations(db, AbortSignal.timeout(25_000));
   });
   await boss.schedule(PGBOSS_QUEUE_BOOKING_HANDOVER_NOTICE, "* * * * *");
 }

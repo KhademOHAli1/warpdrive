@@ -18,6 +18,10 @@ import {
   checkAvailabilityAction,
   executeBookingAction,
 } from "@/features/assets/bookings/actions.backend";
+import {
+  retryBookingAutomationRunAction,
+  saveBookingAutomationProfileAction,
+} from "@/features/assets/bookings/automations/actions.backend";
 import { executeBookingFeedAction } from "@/features/assets/bookings/feedActions.backend";
 import {
   executeHandoverAction,
@@ -198,6 +202,10 @@ export const commandHandlers = {
   "features/physical-labels/webActions.resolvePhysicalLabelAction": resolvePhysicalLabelAction,
   "features/assets/bookings/webActions.executeBookingAction": executeBookingAction,
   "features/assets/bookings/webActions.checkAvailabilityAction": checkAvailabilityAction,
+  "features/assets/bookings/automations/webActions.saveBookingAutomationProfileAction":
+    saveBookingAutomationProfileAction,
+  "features/assets/bookings/automations/webActions.retryBookingAutomationRunAction":
+    retryBookingAutomationRunAction,
   "features/assets/bookings/feedWebActions.executeBookingFeedAction": executeBookingFeedAction,
   "features/assets/bookings/handover/webActions.readHandoverAction": readHandoverAction,
   "features/assets/bookings/handover/webActions.executeHandoverAction": executeHandoverAction,

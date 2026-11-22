@@ -1086,6 +1086,13 @@
       "when": 1795328860646,
       "tag": "0154_asset_audit_history",
       "breakpoints": true
+    },
+    {
+      "idx": 155,
+      "version": "7",
+      "when": 1795330980655,
+      "tag": "0155_asset_booking_automations",
+      "breakpoints": true
     }
   ]
 }

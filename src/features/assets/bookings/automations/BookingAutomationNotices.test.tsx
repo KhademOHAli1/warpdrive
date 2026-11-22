@@ -1,9 +1,13 @@
 /** @vitest-environment jsdom */
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { BookingAutomationNotices } from "./BookingAutomationNotices";
-import type { BookingAutomationAccess, BookingAutomationNotice } from "./contracts";
+import {
+  type BookingAutomationAccess,
+  type BookingAutomationNotice,
+  bookingAutomationRefreshMs,
+} from "./contracts";
 
 const bookingId = "361eba2b-7365-4e4c-a306-000000000001";
 const otherBooking = "361eba2b-7365-4e4c-a306-000000000002";
@@ -16,7 +20,11 @@ const notice: BookingAutomationNotice = {
   dueAt: null,
 };
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
 test("renders notices only for the exact selected booking", async () => {
   const read = vi.fn<BookingAutomationAccess["readNotices"]>().mockResolvedValue({
@@ -42,5 +50,22 @@ test("clears the old result while rechecking access after window focus", async (
   fireEvent.focus(window);
   expect(screen.queryByText("Changes requested")).toBeNull();
   await screen.findByText("Booking notices are unavailable.");
+  expect(read).toHaveBeenCalledTimes(2);
+});
+
+test("shows a worker delivery in the open detail without navigation or focus changes", async () => {
+  vi.useFakeTimers();
+  const visibility = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+  const read = vi
+    .fn<BookingAutomationAccess["readNotices"]>()
+    .mockResolvedValueOnce({ ok: true, value: [] })
+    .mockResolvedValue({ ok: true, value: [notice] });
+  render(<BookingAutomationNotices bookingId={bookingId} version={1} timeZone="UTC" read={read} />);
+  await act(async () => vi.advanceTimersByTimeAsync(bookingAutomationRefreshMs));
+  expect(screen.queryByText("Changes requested")).toBeNull();
+  expect(read).toHaveBeenCalledTimes(1);
+  visibility.mockReturnValue(false);
+  await act(async () => vi.advanceTimersByTimeAsync(bookingAutomationRefreshMs));
+  expect(screen.getAllByText("Changes requested")).toHaveLength(1);
   expect(read).toHaveBeenCalledTimes(2);
 });

@@ -4,6 +4,8 @@ export const bookingAutomationTriggers = [
   "pickup_expired",
 ] as const;
 
+export const bookingAutomationRefreshMs = 30_000;
+
 export type BookingAutomationTrigger = (typeof bookingAutomationTriggers)[number];
 export type BookingAutomationState = "pending" | "delivered" | "failed" | "skipped";
 export type BookingAutomationOutcome = Exclude<BookingAutomationState, "pending">;

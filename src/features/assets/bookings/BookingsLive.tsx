@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { trpc } from "@/lib/trpc-client";
 import { readCsrfToken } from "@/utils/csrfCookie";
+import type { BookingAutomationAccess } from "./automations/contracts";
+import {
+  retryBookingAutomationRunAction,
+  saveBookingAutomationProfileAction,
+} from "./automations/webActions";
 import type { BookingsWorkspace } from "./contracts";
 import { executeBookingFeedAction } from "./feedWebActions";
 import type { BookingHandoverAccess } from "./handover/contracts";
@@ -15,19 +21,46 @@ import { executeBookingMembershipAction } from "./membershipWebActions";
 import { BookingWorkspace } from "./ui/BookingWorkspace";
 import { checkAvailabilityAction, executeBookingAction } from "./webActions";
 
-export function BookingsLive({
-  actorId,
-  initial,
-  initialBookingId,
-  canBrowseAssets,
-  initialMemberships,
-}: {
+type BookingsLiveProps = {
   actorId: string;
   initial: BookingsWorkspace;
   initialBookingId?: string;
   canBrowseAssets: boolean;
   initialMemberships?: BookingMembershipWorkspace;
-}) {
+};
+
+export function BookingsLive(props: BookingsLiveProps) {
+  return props.initial.automationsAvailable === true ? (
+    <BookingsLiveWithAutomations {...props} />
+  ) : (
+    <BookingsLiveWorkspace {...props} />
+  );
+}
+
+function BookingsLiveWithAutomations(props: BookingsLiveProps) {
+  const { actorId } = props;
+  const client = trpc.useUtils().client;
+  const automationAccess = useMemo<BookingAutomationAccess>(
+    () => ({
+      readNotices: (bookingId, signal) =>
+        client.assets.bookings.automations.notices.query({ bookingId }, { signal }),
+      readRuns: (input, signal) => client.assets.bookings.automations.runs.query(input, { signal }),
+      saveProfile: (input) => saveBookingAutomationProfileAction(actorId, input, readCsrfToken()),
+      retry: (input) => retryBookingAutomationRunAction(actorId, input, readCsrfToken()),
+    }),
+    [actorId, client],
+  );
+  return <BookingsLiveWorkspace {...props} automationAccess={automationAccess} />;
+}
+
+function BookingsLiveWorkspace({
+  actorId,
+  initial,
+  initialBookingId,
+  canBrowseAssets,
+  initialMemberships,
+  automationAccess,
+}: BookingsLiveProps & { automationAccess?: BookingAutomationAccess }) {
   const handover = useMemo<BookingHandoverAccess>(
     () => ({
       read: (bookingId) => readHandoverAction(actorId, bookingId, readCsrfToken()),
@@ -56,6 +89,7 @@ export function BookingsLive({
       checkAvailability={(input) => checkAvailabilityAction(actorId, input, readCsrfToken())}
       submitFeed={(input) => executeBookingFeedAction(actorId, input, readCsrfToken())}
       handover={initial.handoverAvailable === true ? handover : undefined}
+      automationAccess={automationAccess}
       membershipAccess={
         initialMemberships === undefined || memberships === undefined
           ? undefined
