@@ -35,6 +35,16 @@ import {
 } from "../custody/ui/CustodyPanels";
 import { type CustodyWords, custodyMessages } from "../custody/ui/messages";
 import { type SubmitCustody, useCustodyWorkspace } from "../custody/ui/useCustodyWorkspace";
+import type {
+  AssetRegisterDiscoveryAccess,
+  AssetRegisterFilters as Filters,
+} from "../discovery/contracts";
+import type { AssetRegisterBatchState } from "../discovery/ui/AssetRegisterBatch";
+import {
+  AssetRegisterDiscoveryToolbar,
+  AssetRegisterMetadataActions,
+  useAssetRegisterDiscovery,
+} from "../discovery/ui/AssetRegisterDiscoveryToolbar";
 import { KitsTab, KitsTabTrigger } from "../kits/ui/KitsRegister";
 import { type SubmitKit, useKitWorkspace } from "../kits/ui/useKitWorkspace";
 import { kitUsesAsset } from "../kits/usage";
@@ -42,22 +52,12 @@ import type { AssetMediaAccess } from "../media/contracts";
 import { ModelMediaButton } from "../media/ui/ModelMedia";
 import { AssetDetail } from "./AssetDetail";
 import { type AssetEditor, AssetEditorDialog } from "./AssetEditors";
-import { AssetTable } from "./AssetTable";
+import { AssetTable, type AssetTablePresentation } from "./AssetTable";
 import { type AssetWords, assetMessages } from "./assetMessages";
 
 const registerTabs = ["register", "categories", "models", "custodians", "kits"] as const;
 type RegisterTab = (typeof registerTabs)[number];
 type EditHandler = (event: MouseEvent<HTMLButtonElement>, editor: AssetEditor) => void;
-
-type Filters = {
-  site: string;
-  search: string;
-  category: string;
-  tracking: string;
-  status: "active" | "archived";
-  location: string;
-  includeSublocations: boolean;
-};
 
 function defaultFilters(site: string): Filters {
   return {
@@ -182,6 +182,7 @@ function RegisterFilters({
   categories,
   locationOptions,
   setFilters,
+  maxSearchLength,
   words: t,
 }: {
   searchInput: RefObject<HTMLInputElement | null>;
@@ -190,6 +191,7 @@ function RegisterFilters({
   categories: AssetsWorkspace["categories"];
   locationOptions: SelectOption[];
   setFilters: (next: Filters) => void;
+  maxSearchLength?: number;
   words: AssetWords;
 }) {
   const searchId = useId();
@@ -212,6 +214,7 @@ function RegisterFilters({
               ref={searchInput}
               type="search"
               value={filters.search}
+              maxLength={maxSearchLength}
               placeholder={t.searchHint}
               className="h-8 ps-8"
               onChange={(event) => setFilters({ ...filters, search: event.currentTarget.value })}
@@ -439,6 +442,8 @@ function RegisterResults({
   words: t,
   custodyWords,
   mediaAccess,
+  presentation,
+  metadata,
 }: {
   workspace: AssetsWorkspace;
   filters: Filters;
@@ -457,10 +462,23 @@ function RegisterResults({
   words: AssetWords;
   custodyWords: CustodyWords;
   mediaAccess?: AssetMediaAccess;
+  presentation?: AssetTablePresentation;
+  metadata: AssetRegisterBatchState;
 }) {
-  const selectedCustody = canSelect
+  const pickCustody = canSelect && !metadata.selecting;
+  const selectedCustody = pickCustody
     ? records.filter((record) => custody.selected.has(record.id) && isLooseAsset(workspace, record))
     : [];
+  const selection = metadata.selecting
+    ? {
+        kind: "metadata" as const,
+        selected: metadata.selected,
+        onChange: metadata.selectMany,
+        busy,
+      }
+    : pickCustody
+      ? { selected: custody.selected, onChange: custody.selectMany, busy }
+      : undefined;
   return (
     <>
       <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
@@ -474,7 +492,7 @@ function RegisterResults({
           </Button>
         )}
       </div>
-      {canSelect && (
+      {pickCustody && (
         <CustodyBulkActions
           siteId={filters.site}
           records={selectedCustody}
@@ -484,7 +502,7 @@ function RegisterResults({
           words={custodyWords}
         />
       )}
-      {canSelect && (
+      {pickCustody && (
         <CustodyOutcomePanel
           outcomes={custody.outcomes}
           records={workspace.records}
@@ -502,15 +520,8 @@ function RegisterResults({
             locale={locale}
             words={t}
             custodyWords={custodyWords}
-            selection={
-              canSelect
-                ? {
-                    selected: custody.selected,
-                    onChange: custody.selectMany,
-                    busy,
-                  }
-                : undefined
-            }
+            presentation={presentation}
+            selection={selection}
           />
           <AssetDetail
             key={chosen.id}
@@ -537,6 +548,17 @@ function RegisterResults({
   );
 }
 
+function freshAssetSource(
+  local: AssetsWorkspace,
+  previous: AssetsWorkspace,
+  incoming: AssetsWorkspace,
+  access?: AssetRegisterDiscoveryAccess,
+) {
+  return access === undefined || JSON.stringify(previous) !== JSON.stringify(incoming)
+    ? incoming
+    : local;
+}
+
 export function AssetsRegister({
   initial,
   submit,
@@ -550,6 +572,7 @@ export function AssetsRegister({
   assetTagsAvailable = fixture,
   auditsAvailable = fixture,
   mediaAccess,
+  discoveryAccess,
 }: {
   initial: AssetsWorkspace;
   submit: (command: AssetCommand) => Promise<AssetResult>;
@@ -563,6 +586,7 @@ export function AssetsRegister({
   assetTagsAvailable?: boolean;
   auditsAvailable?: boolean;
   mediaAccess?: AssetMediaAccess;
+  discoveryAccess?: AssetRegisterDiscoveryAccess;
 }) {
   const locale = useLocale();
   const t = assetMessages[locale];
@@ -596,18 +620,37 @@ export function AssetsRegister({
     inFlightRef: inFlight,
     fallbackFocus: kitSearchInput,
   });
-  const busy = pending || custody.pending || kit.pending;
+  const discovery = useAssetRegisterDiscovery({
+    access: discoveryAccess,
+    workspace,
+    filters,
+    locale,
+    words: t,
+    holder: custodyWords.currentHolder,
+    inFlightRef: inFlight,
+    onWorkspace: setWorkspace,
+    onApplyFilters: (next) => {
+      setFilters(next);
+      setSelectedId(null);
+    },
+    clearCustody: custody.clearSelection,
+  });
+  const { batch } = discovery;
+  const busy = pending || custody.pending || kit.pending || batch.pending;
 
   if (source !== initial) {
     setSource(initial);
-    setWorkspace(initial);
-    if (filters.site !== "" && !initial.sites.some(({ id }) => id === filters.site)) {
+    setWorkspace((local) => freshAssetSource(local, source, initial, discoveryAccess));
+    if (
+      discovery.activeView === null &&
+      filters.site !== "" &&
+      !initial.sites.some(({ id }) => id === filters.site)
+    ) {
       setFilters(defaultFilters(initial.sites[0]?.id ?? ""));
     }
   }
 
-  const records = matchingRecords(workspace, filters, locale);
-  const chosen = records.find(({ id }) => id === selectedId) ?? records[0];
+  const matching = matchingRecords(workspace, filters, locale);
   const sites = new Map(workspace.sites.map((site) => [site.id, site]));
   const categories = workspace.categories.filter((category) => inScope(filters.site, category));
   const categoryNames = new Map(categories.map(({ id, name }) => [id, name]));
@@ -621,6 +664,8 @@ export function AssetsRegister({
         .join(" / "),
     ]),
   );
+  const records = discovery.sortRecords(matching, locationLabels);
+  const chosen = records.find(({ id }) => id === selectedId) ?? records[0];
   const locationOptions = workspace.locations
     .filter((location) => inScope(filters.site, location))
     .map(({ id, siteId, name, archived }) => {
@@ -656,11 +701,14 @@ export function AssetsRegister({
     }));
     setSelectedId(null);
     custody.clearSelection();
+    batch.clearSelection();
+    discovery.setActiveView(null);
   }
 
   function changeFilters(next: Filters) {
     setFilters(next);
     custody.clearSelection();
+    batch.clearSelection();
   }
 
   function showEditor(event: MouseEvent<HTMLButtonElement>, next: AssetEditor) {
@@ -804,6 +852,15 @@ export function AssetsRegister({
           />
 
           <TabsContent value="register" className="space-y-3">
+            <AssetRegisterDiscoveryToolbar
+              access={discoveryAccess}
+              state={discovery}
+              workspace={workspace}
+              defaults={defaultFilters(filters.site)}
+              busy={busy}
+              locale={locale}
+              assetWords={t}
+            />
             <RegisterFilters
               searchInput={searchInput}
               filters={filters}
@@ -811,7 +868,17 @@ export function AssetsRegister({
               categories={categories}
               locationOptions={locationOptions}
               setFilters={changeFilters}
+              maxSearchLength={discovery.searchLimit}
               words={t}
+            />
+            <AssetRegisterMetadataActions
+              state={discovery}
+              records={records}
+              workspace={workspace}
+              busy={busy}
+              fallbackFocus={() => searchInput.current?.focus()}
+              assetWords={t}
+              locale={locale}
             />
             <RegisterResults
               {...{ workspace, filters, records, chosen, locationLabels, custody, busy, locale }}
@@ -824,6 +891,8 @@ export function AssetsRegister({
               words={t}
               custodyWords={custodyWords}
               mediaAccess={mediaAccess}
+              metadata={batch}
+              presentation={discovery.presentation}
             />
           </TabsContent>
 

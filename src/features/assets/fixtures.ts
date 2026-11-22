@@ -173,3 +173,43 @@ export function assetsFixture(canManage: boolean): AssetsWorkspace {
     records,
   };
 }
+
+const signalGeneratorModel: AssetModel = {
+  ...meterModel,
+  id: "8e4eb928-e668-4f55-950f-4be95bf1a5a4",
+  code: "SIGNAL-300",
+  name: "Bench signal generator",
+  description: "Provides test signals for controller assemblies.",
+};
+
+const signalGenerators: AssetRecord[] = [
+  {
+    ...base,
+    ...signalGeneratorModel,
+    id: "29825baf-1ee0-4a95-be35-e32d3bc36595",
+    code: "SIGNAL-10",
+    tracking: "individual",
+    serial: "SG-10",
+    modelId: signalGeneratorModel.id,
+    locationId: storage,
+  },
+  {
+    ...base,
+    ...signalGeneratorModel,
+    id: "3407e40f-a8ca-4b79-ab5a-89c394a22c18",
+    code: "SIGNAL-02",
+    tracking: "individual",
+    serial: "SG-2",
+    modelId: signalGeneratorModel.id,
+    locationId: storage,
+  },
+];
+
+export function assetsDiscoveryFixture(canManage: boolean): AssetsWorkspace {
+  const workspace = assetsFixture(canManage);
+  return {
+    ...workspace,
+    models: [...workspace.models, signalGeneratorModel],
+    records: [...workspace.records, ...signalGenerators],
+  };
+}

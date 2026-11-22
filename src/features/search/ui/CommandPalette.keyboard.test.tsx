@@ -28,6 +28,7 @@ vi.mock("@/lib/trpc-client", () => ({
 
 import type { SearchResults } from "@/types/search";
 import { CommandPalette } from "./CommandPalette";
+import type { EquipmentSearchEntry } from "./equipmentFixture";
 import { OPEN_SEARCH_EVENT } from "./events";
 
 const EMPTY_RESULTS: SearchResults = { deals: [], people: [], organizations: [], leads: [] };
@@ -47,8 +48,8 @@ beforeEach(() => {
 
 // Opens the palette, types a query, and advances past the debounce so the
 // results list (rather than the idle placeholder) is rendered.
-function openAndSearch(query: string) {
-  render(<CommandPalette />);
+function openAndSearch(query: string, fixtureEquipment?: readonly EquipmentSearchEntry[]) {
+  render(<CommandPalette fixtureEquipment={fixtureEquipment} />);
   fireEvent(window, new Event(OPEN_SEARCH_EVENT));
   const input = screen.getByRole("searchbox", { name: "Search" });
   fireEvent.change(input, { target: { value: query } });
@@ -168,5 +169,29 @@ describe("CommandPalette keyboard navigation", () => {
     fireEvent.keyDown(input, { key: "Escape" });
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("gates equipment and lets keyboard navigation reach an exact asset after CRM results", () => {
+    setResults({
+      ...EMPTY_RESULTS,
+      leads: [{ id: "l1", primary: "Signal lead", secondary: null }],
+    });
+    const assets = [
+      { id: "asset10", name: "Signal generator", code: "SIGNAL-10", serial: "SG-10" },
+      { id: "asset2", name: "Signal generator", code: "SIGNAL-02", serial: "SG-2" },
+    ];
+    const input = openAndSearch("sg-2", assets);
+    expect(screen.getByRole("group", { name: "Equipment" })).toBeVisible();
+    expect(screen.queryByText("SIGNAL-10 · SG-10")).not.toBeInTheDocument();
+
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(pushMock).toHaveBeenCalledWith("/assets?assetId=asset2");
+  });
+
+  it("omits the equipment group unless fixture data was supplied", () => {
+    openAndSearch("signal");
+    expect(screen.queryByRole("group", { name: "Equipment" })).not.toBeInTheDocument();
   });
 });

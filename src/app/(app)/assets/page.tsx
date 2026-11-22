@@ -1,7 +1,7 @@
 import { TRPCClientError } from "@trpc/client";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
-import { assetsFixture } from "@/features/assets/fixtures";
+import { assetsDiscoveryFixture } from "@/features/assets/fixtures";
 import { AssetsFixture } from "@/features/assets/ui/AssetsFixture";
 import { AssetsLive } from "@/features/assets/ui/AssetsLive";
 import { inventoryFixturesEnabled } from "@/features/inventory/availability";
@@ -27,7 +27,10 @@ export default async function AssetsPage({
   if (inventoryFixturesEnabled()) {
     if (kitId !== null) notFound();
     const canManage = actor.type === "admin";
-    if (assetId !== null && !assetsFixture(canManage).records.some(({ id }) => id === assetId))
+    if (
+      assetId !== null &&
+      !assetsDiscoveryFixture(canManage).records.some(({ id }) => id === assetId)
+    )
       notFound();
     return (
       <AssetsFixture

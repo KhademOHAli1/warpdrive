@@ -8,7 +8,8 @@ import {
   emptyCustodyWorkspace,
 } from "../custody/contracts";
 import { applyCustodyCommand } from "../custody/transitions";
-import { assetsFixture } from "../fixtures";
+import { createAssetDiscoveryFixture } from "../discovery/fixture";
+import { assetsDiscoveryFixture } from "../fixtures";
 import { emptyKitWorkspace, type KitCommand, type KitResult } from "../kits/contracts";
 import { applyKitCommand } from "../kits/transitions";
 import { createAssetMediaFixture } from "../media/fixture";
@@ -23,7 +24,7 @@ export function AssetsFixture({
   initialAssetId?: string | null;
 }) {
   const [initial] = useState<AssetsWorkspace>(() => ({
-    ...assetsFixture(canManage),
+    ...assetsDiscoveryFixture(canManage),
     kits: emptyKitWorkspace(),
     custody: {
       ...emptyCustodyWorkspace(),
@@ -35,8 +36,24 @@ export function AssetsFixture({
         : [],
     },
   }));
-  const current = useRef(initial);
-  const [media] = useState(() => createAssetMediaFixture(initial));
+  const [{ currentRegister, media, discovery, updateRegister }] = useState(() => {
+    let current = initial;
+    const media = createAssetMediaFixture(initial);
+    function applyRegister(next: AssetsWorkspace) {
+      current = next;
+      media.updateRegister(next);
+    }
+    const discovery = createAssetDiscoveryFixture(initial, applyRegister);
+    return {
+      currentRegister: () => current,
+      media,
+      discovery,
+      updateRegister: (next: AssetsWorkspace) => {
+        applyRegister(next);
+        discovery.updateRegister(next);
+      },
+    };
+  });
   useEffect(() => () => media.dispose(), [media]);
   const kitReceipts = useRef(new Map<string, { signature: string; kitId: string }>());
   const receipts = useRef(
@@ -47,31 +64,29 @@ export function AssetsFixture({
   );
 
   function submit(command: AssetCommand): Promise<AssetResult> {
-    const result = applyAssetWorkspaceCommand(current.current, command, "Demo operator");
-    if (result.ok) {
-      current.current = result.value;
-      media.updateRegister(result.value);
-    }
+    const result = applyAssetWorkspaceCommand(currentRegister(), command, "Demo operator");
+    if (result.ok) updateRegister(result.value);
     return Promise.resolve(result);
   }
 
   function submitCustody(command: CustodyCommand): Promise<CustodyResult> {
     const signature = JSON.stringify(command);
     const saved = receipts.current.get(command.requestId);
-    if (saved !== undefined && current.current.custody !== undefined) {
+    const register = currentRegister();
+    if (saved !== undefined && register.custody !== undefined) {
       return Promise.resolve(
         saved.signature === signature
           ? {
               ok: true,
-              value: { ...current.current, custody: current.current.custody },
+              value: { ...register, custody: register.custody },
               outcomes: saved.outcomes,
             }
           : { ok: false, error: "conflict" },
       );
     }
-    const result = applyCustodyCommand(current.current, command, "Demo operator");
+    const result = applyCustodyCommand(register, command, "Demo operator");
     if (result.ok) {
-      current.current = result.value;
+      updateRegister(result.value);
       receipts.current.set(command.requestId, { signature, outcomes: result.outcomes });
     }
     return Promise.resolve(result);
@@ -80,17 +95,18 @@ export function AssetsFixture({
   function submitKit(command: KitCommand): Promise<KitResult> {
     const signature = JSON.stringify(command);
     const saved = kitReceipts.current.get(command.requestId);
-    const kits = current.current.kits;
+    const register = currentRegister();
+    const kits = register.kits;
     if (saved !== undefined && kits !== undefined) {
       return Promise.resolve(
         saved.signature === signature
-          ? { ok: true, value: { ...current.current, kits }, kitId: saved.kitId }
+          ? { ok: true, value: { ...register, kits }, kitId: saved.kitId }
           : { ok: false, error: "conflict" },
       );
     }
-    const result = applyKitCommand(current.current, command, "Demo operator");
+    const result = applyKitCommand(register, command, "Demo operator");
     if (result.ok) {
-      current.current = result.value;
+      updateRegister(result.value);
       kitReceipts.current.set(command.requestId, { signature, kitId: result.kitId });
     }
     return Promise.resolve(result);
@@ -104,6 +120,7 @@ export function AssetsFixture({
       submitCustody={submitCustody}
       submitKit={submitKit}
       mediaAccess={media.access}
+      discoveryAccess={discovery.access}
       fixture
     />
   );

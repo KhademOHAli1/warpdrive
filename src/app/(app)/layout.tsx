@@ -10,6 +10,7 @@ import { WorkspaceShellProvider } from "@/components/shell/WorkspaceShellProvide
 import { NAV_PREF_COOKIE } from "@/constants/cookies";
 import { CSRF_COOKIE } from "@/contracts/auth";
 import { FollowUpPromptProvider } from "@/features/activities/followUpAfterDone";
+import { assetsDiscoveryFixture } from "@/features/assets/fixtures";
 import { CurrencyProvider } from "@/features/currencies/CurrencyProvider";
 import { InterfacePrefsProvider } from "@/features/identity/InterfacePrefsProvider";
 import { interfacePrefsFromUi } from "@/features/identity/interfacePrefs";
@@ -22,6 +23,7 @@ import { ProjectGuestShell } from "@/features/projects/guests/ProjectGuestShell"
 import { PROJECT_GUEST_PATH_HEADER } from "@/features/projects/guests/requestPath";
 import { VersionBanner } from "@/features/release/ui/VersionBanner";
 import { CommandPalette } from "@/features/search/ui/CommandPalette";
+import { projectFixtureEquipment } from "@/features/search/ui/equipmentFixture";
 import { GlobalShortcuts } from "@/features/shortcuts/GlobalShortcuts";
 import { appearanceSeedScript, parseAppearance } from "@/features/theme/appearance";
 import { createContext, getBootstrap } from "@/frontend/context";
@@ -55,6 +57,10 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
   if (shell === null) redirect("/login");
   const { prefs, baseCurrency, brand, navigation, projects } = shell;
   const inventoryFixtures = inventoryFixturesEnabled();
+  const fixtureEquipment =
+    inventoryFixtures && ctx.actor.isActive && !ctx.actor.projectsGuestOnly
+      ? projectFixtureEquipment(assetsDiscoveryFixture(ctx.actor.type === "admin"))
+      : undefined;
   return (
     <NativeActorProvider key={ctx.actor.id} actorId={ctx.actor.id}>
       <WorkspaceShellProvider
@@ -126,7 +132,7 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                       </main>
                     </div>
                   </div>
-                  <CommandPalette />
+                  <CommandPalette fixtureEquipment={fixtureEquipment} />
                   <GlobalShortcuts />
                 </div>
               </FollowUpPromptProvider>

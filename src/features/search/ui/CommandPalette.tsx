@@ -1,21 +1,29 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SearchResultsSkeleton } from "@/components/shell/skeletons";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useAppTranslations } from "@/features/i18n/LocaleProvider";
+import { useAppTranslations, useLocale } from "@/features/i18n/LocaleProvider";
+import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { trpc } from "@/lib/trpc-client";
 import type { SearchResult, SearchResults } from "@/types/search";
+import {
+  type EquipmentSearchEntry,
+  equipmentSearchHeading,
+  equipmentSearchPlaceholder,
+  searchFixtureEquipment,
+} from "./equipmentFixture";
 import { OPEN_SEARCH_EVENT } from "./events";
-import { useActiveIndex } from "./useActiveIndex";
+import { type ResultKind, useActiveIndex } from "./useActiveIndex";
 import { useSearchHotkey } from "./useSearchHotkey";
 
 // Route map for each entity kind. Verified against real app routes (Task 15).
-const ROUTES: Record<"deal" | "person" | "organization" | "lead", (id: string) => string> = {
+const ROUTES: Record<ResultKind, (id: string) => string> = {
   deal: (id) => `/deals/${id}`,
   person: (id) => `/contacts/people/${id}`,
   organization: (id) => `/contacts/orgs/${id}`,
   lead: (id) => `/leads/${id}`,
+  equipment: (id) => `/assets?assetId=${encodeURIComponent(id)}`,
 };
 
 // Stable empty-results fallback, module-level so its reference never changes
@@ -27,14 +35,17 @@ const EMPTY_RESULTS: SearchResults = { deals: [], people: [], organizations: [],
 // Presentational results: no tRPC; copy follows the viewer locale.
 export function SearchResultsList({
   results,
+  equipment,
   activeId,
   onSelect,
 }: {
   results: SearchResults;
+  equipment?: SearchResult[];
   activeId?: string;
-  onSelect: (kind: "deal" | "person" | "organization" | "lead", result: SearchResult) => void;
+  onSelect: (kind: ResultKind, result: SearchResult) => void;
 }) {
   const t = useAppTranslations("shell.search");
+  const locale = useLocale();
   return (
     <div role="listbox" aria-label={t("resultsLabel")}>
       <Section
@@ -65,6 +76,14 @@ export function SearchResultsList({
         activeId={activeId}
         onSelect={(r) => onSelect("lead", r)}
       />
+      {equipment !== undefined && equipment.length > 0 && (
+        <Section
+          heading={equipmentSearchHeading[locale]}
+          items={equipment}
+          activeId={activeId}
+          onSelect={(r) => onSelect("equipment", r)}
+        />
+      )}
     </div>
   );
 }
@@ -78,12 +97,12 @@ function Section({
 }: {
   heading: string;
   items: SearchResult[];
-  empty: string;
+  empty?: string;
   activeId?: string;
   onSelect: (r: SearchResult) => void;
 }) {
   return (
-    <div>
+    <fieldset aria-label={heading} className="min-w-0">
       <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {heading}
       </p>
@@ -112,7 +131,7 @@ function Section({
                 <bdi dir="auto">{r.primary}</bdi>
               </span>
               {r.secondary != null ? (
-                <span className="shrink-0 text-xs text-muted-foreground">
+                <span className="max-w-[48%] truncate text-xs text-muted-foreground">
                   <bdi dir="auto">{r.secondary}</bdi>
                 </span>
               ) : null}
@@ -120,16 +139,25 @@ function Section({
           );
         })
       )}
-    </div>
+    </fieldset>
   );
 }
 
 // -- CommandPalette --
 // Overlay that owns open/close state, the hotkey, and the window event listener.
 // Mount once in the app layout so it is always available.
-export function CommandPalette() {
+export function CommandPalette({
+  fixtureEquipment,
+}: {
+  fixtureEquipment?: readonly EquipmentSearchEntry[];
+}) {
   const t = useAppTranslations("shell.search");
   const shell = useAppTranslations("shell");
+  const locale = useLocale();
+  const placeholder =
+    fixtureEquipment === undefined
+      ? shell("searchPlaceholder")
+      : equipmentSearchPlaceholder[locale];
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -169,7 +197,11 @@ export function CommandPalette() {
   const pending = typed && !failed && (data === undefined || q.trim() !== debounced.trim());
 
   const results = data ?? EMPTY_RESULTS;
-  const { flat, active, moveDown, moveUp } = useActiveIndex(results);
+  const equipment = useMemo(
+    () => searchFixtureEquipment(fixtureEquipment, debounced),
+    [fixtureEquipment, debounced],
+  );
+  const { flat, active, moveDown, moveUp } = useActiveIndex(results, equipment);
   const activeId = flat[active]?.r.id;
 
   function close() {
@@ -178,7 +210,7 @@ export function CommandPalette() {
     setDebounced("");
   }
 
-  function handleSelect(kind: "deal" | "person" | "organization" | "lead", r: SearchResult) {
+  function handleSelect(kind: ResultKind, r: SearchResult) {
     close();
     router.push(ROUTES[kind](r.id));
   }
@@ -192,9 +224,9 @@ export function CommandPalette() {
     >
       <DialogContent
         aria-describedby={undefined}
-        className="top-[12%] max-w-lg translate-y-0 gap-0 overflow-hidden p-0 data-[state=open]:animate-none data-[state=closed]:animate-none"
+        className={`${BLOCK_CLASS} ph-no-capture top-[12%] max-w-lg translate-y-0 gap-0 overflow-hidden p-0 data-[state=open]:animate-none data-[state=closed]:animate-none`}
       >
-        <DialogTitle className="sr-only">{shell("searchPlaceholder")}</DialogTitle>
+        <DialogTitle className="sr-only">{placeholder}</DialogTitle>
         <div className="border-b px-3 py-2 pe-9">
           <input
             ref={inputRef}
@@ -220,7 +252,7 @@ export function CommandPalette() {
                 if (sel !== undefined) handleSelect(sel.kind, sel.r);
               }
             }}
-            placeholder={shell("searchPlaceholder")}
+            placeholder={placeholder}
             // Suppress the native type=search clear "x": the Dialog already renders a close X, so
             // the browser's clear button made two X's cluster at the top-right (keep one).
             className="w-full bg-transparent text-sm outline-none [&::-webkit-search-cancel-button]:appearance-none"
@@ -237,7 +269,12 @@ export function CommandPalette() {
           ) : pending ? (
             <SearchResultsSkeleton />
           ) : (
-            <SearchResultsList results={results} activeId={activeId} onSelect={handleSelect} />
+            <SearchResultsList
+              results={results}
+              equipment={equipment}
+              activeId={activeId}
+              onSelect={handleSelect}
+            />
           )}
         </div>
       </DialogContent>

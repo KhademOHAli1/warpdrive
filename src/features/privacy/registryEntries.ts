@@ -19,6 +19,7 @@ import { assetAuditsEntry } from "./registryAssetAudits";
 import { assetBookingsEntry } from "./registryAssetBookings";
 import { assetCommissioningEntry } from "./registryAssetCommissioning";
 import { assetCustodyEntry } from "./registryAssetCustody";
+import { assetDiscoveryEntry } from "./registryAssetDiscovery";
 import { assetKitsEntry } from "./registryAssetKits";
 import { assetMediaEntry } from "./registryAssetMedia";
 import { assetRegisterEntry } from "./registryAssets";
@@ -145,6 +146,7 @@ export const registryEntries: RegistryEntry[] = [
   purchaseOrdersEntry,
   operationsAccessEntry,
   sharedLocationsEntry,
+  assetDiscoveryEntry,
   assetMediaEntry,
   assetRegisterEntry,
   assetCustodyEntry,
