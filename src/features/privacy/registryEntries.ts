@@ -27,6 +27,7 @@ import { assetRegisterEntry } from "./registryAssets";
 import { assetTagsEntry } from "./registryAssetTags";
 import { billingInventoryEntry } from "./registryBilling";
 import { bomPlanningEntry } from "./registryBomPlanning";
+import { bookingAutomationsEntry } from "./registryBookingAutomations";
 import { calendarInventoryEntries } from "./registryCalendar";
 import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
@@ -159,6 +160,7 @@ export const registryEntries: RegistryEntry[] = [
   assetAuditsEntry,
   assetAuditHistoryEntry,
   assetBookingsEntry,
+  bookingAutomationsEntry,
   assetCommissioningEntry,
   manufacturingReleasesEntry,
   bomPlanningEntry,

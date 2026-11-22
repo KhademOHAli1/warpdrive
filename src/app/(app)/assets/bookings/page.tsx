@@ -1,6 +1,7 @@
 import { TRPCClientError } from "@trpc/client";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
+import { createBookingAutomationDemo } from "@/features/assets/bookings/automations/fixture";
 import { BookingsFixture } from "@/features/assets/bookings/BookingsFixture";
 import { BookingsLive } from "@/features/assets/bookings/BookingsLive";
 import {
@@ -14,28 +15,43 @@ import { coreClient } from "@/frontend/trpc";
 
 const bookingFocus = z.uuid().toLowerCase().optional();
 
+function makeFixtureBookingState(
+  mode: "handover" | "automations" | undefined,
+  viewer: Parameters<typeof createBookingFixture>[0],
+  admin: boolean,
+  now: string,
+) {
+  switch (mode) {
+    case "handover":
+      return createBookingHandoverDemo(viewer, admin, now).state;
+    case "automations":
+      return createBookingAutomationDemo(viewer, admin, now).state;
+    case undefined:
+      return createBookingFixture(viewer, admin, now);
+  }
+}
+
 function renderBookingFixture(
   viewer: Parameters<typeof createBookingFixture>[0],
   admin: boolean,
-  handoverDemo: boolean,
+  mode: "handover" | "automations" | undefined,
   bookingId: string | undefined,
 ) {
   const initialNow = new Date().toISOString();
   if (bookingId !== undefined) {
-    const state = handoverDemo
-      ? createBookingHandoverDemo(viewer, admin, initialNow).state
-      : createBookingFixture(viewer, admin, initialNow);
+    const state = makeFixtureBookingState(mode, viewer, admin, initialNow);
     if (!projectBookings(state).bookings.some(({ id }) => id === bookingId)) notFound();
   }
   return (
     <BookingsFixture
-      key={`${viewer.id}:${handoverDemo ? "handover" : ""}:${bookingId ?? ""}`}
+      key={`${viewer.id}:${mode ?? ""}:${bookingId ?? ""}`}
       actorId={viewer.id}
       actorName={viewer.name}
       admin={admin}
       initialNow={initialNow}
       initialBookingId={bookingId}
-      handoverDemo={handoverDemo}
+      handoverDemo={mode === "handover"}
+      automationDemo={mode === "automations"}
     />
   );
 }
@@ -57,7 +73,7 @@ export default async function AssetBookingsPage({
     return renderBookingFixture(
       actor,
       actor.type === "admin",
-      query.demo === "handover",
+      query.demo === "handover" || query.demo === "automations" ? query.demo : undefined,
       bookingId,
     );
 

@@ -285,6 +285,14 @@ Native Chrome verified the newest four audits, the three distinct pool placement
 
 Web rolled back independently to `0b0c46cb` while Core, PostgreSQL and Silo stayed running. Earlier Web reopened the same equipment and archived audit, and retained Core kept serving the new history under current permissions. CRM, search, audit evidence, media and Warehouse continued to work. Restored Web reopened the same frozen findings and kept both denials in effect. The retained audit and business records, migration ledger and all four private objects were unchanged during both Web swaps. [Operations backlog](warpdrive-operations-backlog.tsv)
 
+### Typed operational automation (PLAT-05)
+
+InvenTree exposes registered domain events to background handlers. Shelf schedules requester notifications when a booking changes or an equipment deadline is reached. Warpdrive’s first automation uses the Booking status event for a request sent back for changes and the existing handover notices for overdue returns and missed pickups. The Booking and handover ledgers own those facts. The automation records the rule, delivery, and retry history. [InvenTree event integration](https://docs.inventree.org/en/stable/plugins/mixins/event/) · [Shelf notification timing and recipients](https://www.shelf.nu/knowledge-base/which-emails-shelf-sends-and-when)
+
+Booking settings gives each active site’s managers a versioned rule for notifying the requester. Managers can filter the runs, open the exact booking, and retry a named failed attempt. The booking detail shows delivered notices to the current requester. Calendar-only users see occupancy. The Web fixture uses a dedicated demo with local state. The regular Booking and handover demos keep their existing data.
+
+Core will register the supported triggers and an in-app action under a site-scoped service principal. The Worker will read the original event or deadline, verify the current booking and recipient, and persist a deduplicated result. Retry keeps the original attempt and rechecks the same authority. Qualification covers a delayed run, a revoked recipient, a duplicate event, a failed attempt and retry, and Web rollback over retained Core and PostgreSQL. External email, push, and additional Inventory and Assets producers have their own acceptance scenarios.
+
 ## InvenTree coverage
 
 | Capability family | Warpdrive coverage today | Target and acceptance |

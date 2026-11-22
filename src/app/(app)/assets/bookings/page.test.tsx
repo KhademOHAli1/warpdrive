@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import type * as NextNavigation from "next/navigation";
 import { afterEach, assert, beforeEach, expect, it, vi } from "vitest";
+import { bookingAutomationDemoIds } from "@/features/assets/bookings/automations/fixture";
 import type { BookingResult } from "@/features/assets/bookings/contracts";
 import {
   createBookingFixture,
@@ -79,6 +80,21 @@ it("keeps explicit handover demo links in their own fixture", async () => {
   });
   render(<LocaleProvider locale="en">{handover}</LocaleProvider>);
   expect(screen.getByRole("heading", { name: "Controller bench handover" })).toHaveFocus();
+});
+
+it("opens a recipient's exact automation booking without exposing another recipient", async () => {
+  const { sentBack, expired } = bookingAutomationDemoIds;
+  const opened = await Page({
+    searchParams: Promise.resolve({ demo: "automations", bookingId: sentBack }),
+  });
+  render(<LocaleProvider locale="en">{opened}</LocaleProvider>);
+  expect(screen.getByRole("heading", { name: "Bench calibration request" })).toHaveFocus();
+  const notices = screen.getByRole("region", { name: "Booking notices" });
+  expect(await within(notices).findByText("Changes requested")).toBeInTheDocument();
+  await expect(
+    Page({ searchParams: Promise.resolve({ demo: "automations", bookingId: expired }) }),
+  ).rejects.toThrow("Booking unavailable");
+  await expect(page(sentBack)).rejects.toThrow("Booking unavailable");
 });
 
 it("opens an authorized archived booking on the correct site and rejects calendar-only occupancy", async () => {

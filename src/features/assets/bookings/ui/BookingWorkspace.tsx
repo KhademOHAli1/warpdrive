@@ -12,6 +12,7 @@ import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { type FormattingPreferences, formatDateTime } from "@/lib/localeFormatting";
 import { useHydrated } from "@/lib/useHydrated";
 import { EditorSelect } from "../../ui/AssetEditorFields";
+import type { BookingAutomationAccess } from "../automations/contracts";
 import {
   type Booking,
   type BookingCommand,
@@ -310,6 +311,19 @@ function applyHandoverBooking(workspace: BookingsWorkspace, next: Booking): Book
   };
 }
 
+function scopedSelection(
+  workspace: BookingsWorkspace,
+  rows: Booking[],
+  selectedId: string | null,
+  linkedId: string | undefined,
+) {
+  const linkedMissing =
+    linkedId !== undefined &&
+    selectedId === linkedId &&
+    !workspace.bookings.some(({ id }) => id === linkedId);
+  return linkedMissing ? undefined : (rows.find(({ id }) => id === selectedId) ?? rows[0]);
+}
+
 export function BookingWorkspace({
   initial,
   initialBookingId,
@@ -320,6 +334,8 @@ export function BookingWorkspace({
   membershipAccess,
   submitFeed,
   handover,
+  automationAccess,
+  automationDemo,
 }: {
   initial: BookingsWorkspace;
   initialBookingId?: string;
@@ -330,6 +346,8 @@ export function BookingWorkspace({
   membershipAccess?: BookingMembershipAccess;
   submitFeed?: SubmitBookingFeed;
   handover?: BookingHandoverAccess;
+  automationAccess?: BookingAutomationAccess;
+  automationDemo?: boolean;
 }) {
   const preferences = useLocalePreferences();
   const t = bookingMessages[preferences.locale];
@@ -386,7 +404,7 @@ export function BookingWorkspace({
   const editor = action.editor?.siteId === site.id && site.role !== "viewer" ? action.editor : null;
   const atSite = workspace.bookings.filter(({ siteId }) => siteId === site.id);
   const rows = filterBookings(atSite, filters, workspace.viewer.id, preferences.locale);
-  const selected = rows.find(({ id }) => id === selectionId) ?? rows[0];
+  const selected = scopedSelection(workspace, rows, selectionId, initialBookingId);
 
   function focusLinkedTitle(title: HTMLHeadingElement | null) {
     if (
@@ -497,6 +515,7 @@ export function BookingWorkspace({
                 open={action.open}
                 words={t}
                 calendarHref={fixture ? undefined : bookingCalendarDownloadPath(selected.id)}
+                automationAccess={automationAccess}
                 handover={handover}
                 onHandoverBooking={(next) =>
                   setWorkspace((value) => applyHandoverBooking(value, next))
@@ -519,6 +538,8 @@ export function BookingWorkspace({
             <BookingSettings
               site={site}
               membershipAccess={membershipAccess}
+              automationAccess={automationAccess}
+              automationDemo={automationDemo}
               maintenance={workspace.maintenance.filter(({ siteId }) => siteId === site.id)}
               pending={action.pending}
               open={action.open}

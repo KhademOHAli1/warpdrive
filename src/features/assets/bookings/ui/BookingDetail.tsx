@@ -7,6 +7,8 @@ import { Button, buttonVariants } from "@/components/ui/Button";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatDateTime } from "@/lib/localeFormatting";
 import { useHydrated } from "@/lib/useHydrated";
+import { BookingAutomationNotices } from "../automations/BookingAutomationNotices";
+import type { BookingAutomationAccess } from "../automations/contracts";
 import { renderBookingCalendar } from "../calendar";
 import type { Booking, BookingSite, BookingsWorkspace } from "../contracts";
 import type { BookingHandoverAccess } from "../handover/contracts";
@@ -187,6 +189,7 @@ export function BookingDetail({
   pending,
   open,
   calendarHref,
+  automationAccess,
   handover,
   onHandoverBooking,
   titleRef,
@@ -198,6 +201,7 @@ export function BookingDetail({
   pending: boolean;
   open: OpenBookingEditor;
   calendarHref?: string;
+  automationAccess?: BookingAutomationAccess;
   handover?: BookingHandoverAccess;
   onHandoverBooking?: (booking: Booking) => void;
   titleRef?: Ref<HTMLHeadingElement>;
@@ -281,6 +285,14 @@ export function BookingDetail({
           disabled={pending}
           onBooking={(next) => onHandoverBooking?.(next)}
           onLock={setHandoverLocked}
+        />
+      )}
+      {automationAccess !== undefined && booking.requesterId === workspace.viewer.id && (
+        <BookingAutomationNotices
+          bookingId={booking.id}
+          version={booking.version}
+          timeZone={site.policy.timeZone}
+          read={automationAccess.readNotices}
         />
       )}
       <div className="space-y-2 p-4">

@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { formatDateOnly, formatDateTime } from "@/lib/localeFormatting";
+import type { BookingAutomationAccess } from "../automations/contracts";
+import { BookingAutomationSettings } from "../automations/ui/BookingAutomationSettings";
 import type { BookingMaintenance, BookingSite } from "../contracts";
 import type { OpenBookingEditor } from "./BookingDialog";
 import { type BookingMembershipAccess, BookingMembershipPanel } from "./BookingMembershipPanel";
@@ -210,6 +212,8 @@ export function BookingSettings({
   open,
   words,
   membershipAccess,
+  automationAccess,
+  automationDemo,
 }: {
   site: BookingSite;
   maintenance: BookingMaintenance[];
@@ -217,6 +221,8 @@ export function BookingSettings({
   open: OpenBookingEditor;
   words: BookingWords;
   membershipAccess?: BookingMembershipAccess;
+  automationAccess?: BookingAutomationAccess;
+  automationDemo?: boolean;
 }) {
   return (
     <div className="space-y-3">
@@ -224,6 +230,9 @@ export function BookingSettings({
       <MaintenanceSummary {...{ site, pending, open, words }} entries={maintenance} />
       {membershipAccess !== undefined && (
         <BookingMembershipPanel key={site.id} site={site} {...membershipAccess} />
+      )}
+      {automationAccess !== undefined && (
+        <BookingAutomationSettings site={site} access={automationAccess} demo={automationDemo} />
       )}
     </div>
   );

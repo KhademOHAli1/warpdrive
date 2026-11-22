@@ -4,12 +4,17 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { useLocale } from "@/features/i18n/LocaleProvider";
+import {
+  automationBookingScope,
+  type BookingAutomationDemoRole,
+  createBookingAutomationDemo,
+  createBookingAutomationFixture,
+} from "./automations/fixture";
 import type { BookingAvailabilityInput, BookingCommand, BookingResult } from "./contracts";
 import {
   createBookingFixture,
   createBookingHandoverDemo,
   type FixtureRole,
-  fixtureBookingScope,
   fixtureHandoverBookingId,
 } from "./fixtures";
 import type { BookingHandoverAccess } from "./handover/contracts";
@@ -36,6 +41,7 @@ const words = {
     manager: "Manager",
     base: "Base requester",
     self_service: "Self-service",
+    viewer: "Calendar viewer",
   },
   de: {
     preview: "Demo-Rolle",
@@ -45,6 +51,7 @@ const words = {
     manager: "Verwaltung",
     base: "Anfragende",
     self_service: "Selbstbedienung",
+    viewer: "Kalenderansicht",
   },
   fa: {
     preview: "نقش نمایشی",
@@ -54,6 +61,7 @@ const words = {
     manager: "مدیر",
     base: "درخواست‌کننده",
     self_service: "خودخدمت",
+    viewer: "نمایش تقویم",
   },
 } as const;
 
@@ -64,6 +72,7 @@ export function BookingsFixture({
   initialNow,
   initialBookingId,
   handoverDemo = false,
+  automationDemo = false,
 }: {
   actorId: string;
   actorName: string;
@@ -71,31 +80,57 @@ export function BookingsFixture({
   initialNow: string;
   initialBookingId?: string;
   handoverDemo?: boolean;
+  automationDemo?: boolean;
 }) {
   const t = words[useLocale()];
   const principal = useMemo(() => ({ id: actorId, name: actorName }), [actorId, actorName]);
-  const [role, setRole] = useState<FixtureRole>(admin ? "manager" : "base");
+  const [role, setRole] = useState<BookingAutomationDemoRole>(admin ? "manager" : "base");
   const [linkedBookingId, setLinkedBookingId] = useState(initialBookingId);
   const [initial] = useState(() => {
+    if (automationDemo) {
+      const demo = createBookingAutomationDemo(principal, admin, initialNow);
+      return {
+        state: demo.state,
+        handovers: null,
+        automation: createBookingAutomationFixture(demo),
+        clock: demo.clock,
+      };
+    }
     if (!handoverDemo) {
       return {
         state: createBookingFixture(principal, admin, initialNow),
         handovers: null,
+        automation: null,
         clock: initialNow,
       };
     }
     const demo = createBookingHandoverDemo(principal, admin, initialNow);
-    return { state: demo.state, handovers: createHandoverFixture(demo.assets), clock: demo.clock };
+    return {
+      state: demo.state,
+      handovers: createHandoverFixture(demo.assets),
+      automation: null,
+      clock: demo.clock,
+    };
   });
-  const state = useRef(initial.state);
+  const [{ readState, storeState }] = useState(() => {
+    let current = initial.state;
+    return {
+      readState: () => current,
+      storeState: (next: BookingState) => {
+        current = next;
+      },
+    };
+  });
   const handovers = useRef(initial.handovers);
   const [clock, setClock] = useState(initial.clock);
   const [view, setView] = useState(() => projectBookings(initial.state));
   const requests = useRef(new Map<string, { signature: string; bookingId: string | null }>());
   const scoped = useCallback(
-    () => (admin ? fixtureBookingScope(state.current, principal, role) : state.current),
-    [admin, principal, role],
+    () => (admin ? automationBookingScope(readState(), principal, role) : readState()),
+    [admin, principal, role, readState],
   );
+  const automation = initial.automation;
+  const automationAccess = useMemo(() => automation?.access(scoped), [automation, scoped]);
 
   const handover = useMemo<BookingHandoverAccess | undefined>(() => {
     if (!handoverDemo) return undefined;
@@ -117,7 +152,7 @@ export function BookingsFixture({
           makeId: () => crypto.randomUUID(),
         });
         if (!result.ok) return Promise.resolve(result);
-        state.current = result.state;
+        storeState(result.state);
         handovers.current = result.handovers;
         return Promise.resolve({ ok: true, value: result.value, booking: result.booking });
       },
@@ -140,10 +175,10 @@ export function BookingsFixture({
         );
       },
     };
-  }, [clock, handoverDemo, scoped]);
+  }, [clock, handoverDemo, scoped, storeState]);
 
   function advanceClock() {
-    const booking = state.current.bookings.find(({ id }) => id === fixtureHandoverBookingId);
+    const booking = readState().bookings.find(({ id }) => id === fixtureHandoverBookingId);
     if (booking !== undefined) {
       setClock(
         new Date(
@@ -153,8 +188,8 @@ export function BookingsFixture({
     }
   }
 
-  function preview(next: FixtureRole) {
-    setView(projectBookings(fixtureBookingScope(state.current, principal, next)));
+  function preview(next: BookingAutomationDemoRole) {
+    setView(projectBookings(automationBookingScope(readState(), principal, next)));
     setLinkedBookingId(undefined);
     setRole(next);
   }
@@ -208,7 +243,10 @@ export function BookingsFixture({
       capacity: demoCapacity(current),
     });
     if (!result.ok) return Promise.resolve(result);
-    state.current = result.state;
+    storeState(result.state);
+    automation?.recordBookingChange(
+      result.state.bookings.find(({ id }) => id === result.bookingId),
+    );
     requests.current.set(key, { signature, bookingId: result.bookingId });
     return Promise.resolve({
       ok: true,
@@ -222,7 +260,7 @@ export function BookingsFixture({
       {admin && (
         <fieldset className="mx-4 mt-4 flex flex-wrap items-center gap-2 sm:mx-6">
           <legend className="mb-1 text-sm text-muted-foreground">{t.preview}</legend>
-          {previewRoles.map((next) => (
+          {(automationDemo ? ([...previewRoles, "viewer"] as const) : previewRoles).map((next) => (
             <Button
               key={next}
               type="button"
@@ -246,6 +284,13 @@ export function BookingsFixture({
                 {t.returnToBookings}
               </Link>
             </>
+          ) : automationDemo ? (
+            <Link
+              href="/assets/bookings"
+              className={buttonVariants({ size: "sm", variant: "ghost" })}
+            >
+              {t.returnToBookings}
+            </Link>
           ) : (
             <Link
               href="/assets/bookings?demo=handover"
@@ -260,6 +305,8 @@ export function BookingsFixture({
         key={role}
         initial={view}
         initialBookingId={linkedBookingId}
+        automationAccess={automationAccess}
+        automationDemo={automationDemo}
         handover={handover}
         submit={submit}
         checkAvailability={checkAvailability}
