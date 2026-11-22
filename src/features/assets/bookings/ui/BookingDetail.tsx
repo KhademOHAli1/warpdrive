@@ -173,8 +173,9 @@ export function BookingDetail({
   open: OpenBookingEditor;
   words: BookingWords;
 }) {
+  const hydrated = useHydrated();
   const preferences = { ...useLocalePreferences(), timeZone: site.policy.timeZone };
-  const format = (value: string) => formatDateTime(value, preferences);
+  const format = (value: string) => (hydrated ? formatDateTime(value, preferences) : value);
   const timeline = [...booking.history].sort((a, b) => b.version - a.version);
   return (
     <section

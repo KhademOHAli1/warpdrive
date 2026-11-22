@@ -10,6 +10,7 @@ import { PILL_TAB, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components
 import { useLocalePreferences } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { type FormattingPreferences, formatDateTime } from "@/lib/localeFormatting";
+import { useHydrated } from "@/lib/useHydrated";
 import { EditorSelect } from "../../ui/AssetEditorFields";
 import {
   type Booking,
@@ -142,8 +143,9 @@ function BookingRows({
   select: (id: string) => void;
   words: BookingWords;
 }) {
+  const hydrated = useHydrated();
   const format = (value: string) =>
-    formatDateTime(value, { ...preferences, timeZone: site.policy.timeZone });
+    hydrated ? formatDateTime(value, { ...preferences, timeZone: site.policy.timeZone }) : value;
   return (
     <div className="min-w-0 overflow-x-auto rounded-lg border bg-card">
       <table aria-label={t.bookings} className="w-full min-w-[27rem] border-collapse text-sm">
