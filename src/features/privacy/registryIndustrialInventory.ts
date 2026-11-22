@@ -2,7 +2,7 @@ import { classifyInventory } from "./registryClassification";
 
 export const industrialInventoryEntry = classifyInventory(
   [
-    "sourceReview:src/features/inventory/releases/ui/ManufacturingReleasesFixture.tsx#6f06a85335cc354649efa038b33d8c49e32d2345c7aa5cf57e9a2e8a541596cf",
+    "sourceReview:src/features/inventory/releases/ui/ManufacturingReleasesFixture.tsx#fac2b98bcb8412ee71550f19db5ad331cbe8563f09696a0ebe214660a5a53abd",
     "sourceReview:src/features/inventory/releases/fixtures.ts#d31a68530b9339a96294b2d38d44fc6d8b4c58b5295f1bed1c10c92cd792a8a6",
     "sourceReview:src/features/inventory/InventoryFixture.tsx#933cefb7b78f659c2b0088e1171eb7fe3b6d38db37d3ffc75600881bb0826dff",
     "derived:src/features/inventory/fixtures.ts",

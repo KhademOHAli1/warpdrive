@@ -38,6 +38,20 @@ import { manufacturingReleaseMessages } from "./manufacturingReleaseMessages";
 type Labels = (typeof manufacturingReleaseMessages)["en"];
 type ProductReleaseState = Record<string, ReleaseFixtureState>;
 type EngineeringState = { effectiveRevision: string | null; controlled: boolean };
+
+function engineeringActorKey(actor: EngineeringFixtureActor | undefined) {
+  return actor === undefined
+    ? null
+    : JSON.stringify([
+        actor.id,
+        actor.name,
+        actor.canView,
+        actor.canPropose,
+        actor.canDecide,
+        [...actor.visibleSites].sort(),
+        [...actor.dispositionSites].sort(),
+      ]);
+}
 type FixtureContext = {
   products: ProductReleaseState;
   save: (itemId: string, state: ReleaseFixtureState) => void;
@@ -119,6 +133,12 @@ export function ManufacturingReleaseFixtureProvider({
   engineeringActor?: EngineeringFixtureActor;
 }) {
   const [products, setProducts] = useState<ProductReleaseState>({});
+  // Route revalidation can supply the same permissions in a new object.
+  const key = engineeringActorKey(engineeringActor);
+  const [previous, setPrevious] = useState({ key, actor: engineeringActor });
+  const scope = previous.key === key ? previous : { key, actor: engineeringActor };
+  if (scope !== previous) setPrevious(scope);
+  const { actor } = scope;
   const [engineeringStates, setEngineeringStates] = useState<Record<string, EngineeringState>>({});
   const [fixture] = useState(() =>
     createReleaseFixtureStore((itemId, state) =>
@@ -126,8 +146,8 @@ export function ManufacturingReleaseFixtureProvider({
     ),
   );
   const engineeringAccess = useMemo<EngineeringChangeAccess | undefined>(() => {
-    if (engineeringActor === undefined) return undefined;
-    const access = fixture.engineering.access(() => engineeringActor);
+    if (actor === undefined) return undefined;
+    const access = fixture.engineering.access(() => actor);
     function reflect(workspace: EngineeringChangeWorkspace) {
       const id = workspace.itemId;
       const effectiveRevision = workspace.effectiveRelease?.revision ?? null;
@@ -152,7 +172,7 @@ export function ManufacturingReleaseFixtureProvider({
         return result;
       },
     };
-  }, [engineeringActor, fixture]);
+  }, [actor, fixture]);
   const context = useMemo<FixtureContext>(
     () => ({
       products,
@@ -163,12 +183,12 @@ export function ManufacturingReleaseFixtureProvider({
       canEditIntake: canEditIntake === true,
       engineeringAccess,
       engineeringStates,
-      canEditRelease: engineeringActor?.canPropose ?? true,
-      canApproveRelease: engineeringActor?.canDecide ?? true,
+      canEditRelease: actor?.canPropose ?? true,
+      canApproveRelease: actor?.canDecide ?? true,
       effectiveRevision: fixture.engineering.effectiveRevision,
       hasChangeControl: fixture.engineering.hasChangeControl,
     }),
-    [products, fixture, canEditIntake, engineeringAccess, engineeringStates, engineeringActor],
+    [products, fixture, canEditIntake, engineeringAccess, engineeringStates, actor],
   );
   return <FixtureContext.Provider value={context}>{children}</FixtureContext.Provider>;
 }
