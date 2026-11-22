@@ -69,6 +69,7 @@ export type AssetTagOwnerMessage = {
 };
 
 export type AssetTagWorkspace = {
+  readAt?: number;
   sites: AssetTagSite[];
   targets: AssetTagTarget[];
   batches: AssetTagBatch[];

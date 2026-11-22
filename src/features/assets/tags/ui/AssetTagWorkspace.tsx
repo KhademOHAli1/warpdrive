@@ -35,6 +35,7 @@ import {
 import { TagImportDialog } from "./TagImportDialog";
 import { OwnerInbox, SiteScans, TagDetail, TagsTable } from "./TagPanels";
 import { type AssetTagWords, assetTagWords } from "./tagMessages";
+import { latestTagWorkspace } from "./workspaceSnapshot";
 
 type Tab = "register" | "scans" | "messages";
 type Filters = { query: string; batch: string; state: string };
@@ -211,11 +212,13 @@ export function AssetTagWorkspace({
 
   if (source !== initial) {
     setSource(initial);
-    if (JSON.stringify(source) !== JSON.stringify(initial)) setWorkspace(initial);
+    if (initial.readAt !== undefined || JSON.stringify(source) !== JSON.stringify(initial)) {
+      setWorkspace((current) => latestTagWorkspace(current, initial));
+    }
   }
 
   function onSaved({ value, batchId, tagId }: Extract<AssetTagResult, { ok: true }>) {
-    setWorkspace(value);
+    setWorkspace((current) => latestTagWorkspace(current, value));
     setOverlay(null);
     if (batchId !== null) {
       const batchTags = value.tags.filter((tag) => tag.batchId === batchId);

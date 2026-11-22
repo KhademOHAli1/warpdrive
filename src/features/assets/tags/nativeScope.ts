@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
@@ -191,6 +192,15 @@ async function projectTagCodes(tx: Db, sites: AssetSite[], targets: SiteAssetTar
 }
 
 export async function readTagWorkspace(tx: Db, sites: AssetSite[]): Promise<AssetTagWorkspace> {
+  // The caller holds the tag and equipment fences while collecting this snapshot.
+  const clock = await tx.execute<{ microseconds: string }>(
+    sql`SELECT (extract(epoch FROM clock_timestamp()) * 1000000)::bigint::text AS microseconds`,
+  );
+  const readAt = Number(clock.rows[0]?.microseconds);
+  if (!Number.isSafeInteger(readAt)) {
+    throw new AppError(ERROR_IDS.DB_INVARIANT, "Invalid equipment tag snapshot timestamp");
+  }
+
   const allTargets = await readSiteAssetTargets(tx, sites);
   const targets = allTargets.filter((target) => !target.archived).map(targetDto);
   const { tags, managerIds, viewerAssignmentIds } = await projectTagCodes(tx, sites, allTargets);
@@ -229,6 +239,7 @@ export async function readTagWorkspace(tx: Db, sites: AssetSite[]): Promise<Asse
     .where(inArray(assetTagOwnerMessages.siteId, managerIds))
     .orderBy(desc(assetTagOwnerMessages.at), desc(assetTagOwnerMessages.id));
   return {
+    readAt,
     sites,
     targets,
     tags,
