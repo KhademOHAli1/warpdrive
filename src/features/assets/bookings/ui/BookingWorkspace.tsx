@@ -325,7 +325,8 @@ export function BookingWorkspace({
 
   if (source !== initial) {
     setSource(initial);
-    setWorkspace(initial);
+    // Keep the command response when the server payload only changes object identity.
+    if (JSON.stringify(source) !== JSON.stringify(initial)) setWorkspace(initial);
   }
 
   function onSaved({ value, bookingId }: Extract<BookingResult, { ok: true }>) {

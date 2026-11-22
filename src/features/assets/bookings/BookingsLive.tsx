@@ -24,7 +24,10 @@ export function BookingsLive({
   const [memberships, setMemberships] = useState(initialMemberships);
   if (membershipSource !== initialMemberships) {
     setMembershipSource(initialMemberships);
-    setMemberships(initialMemberships);
+    // Server Actions may reserialize the previous page snapshot alongside a newer command result.
+    if (JSON.stringify(membershipSource) !== JSON.stringify(initialMemberships)) {
+      setMemberships(initialMemberships);
+    }
   }
 
   return (
@@ -36,7 +39,7 @@ export function BookingsLive({
       checkAvailability={(input) => checkAvailabilityAction(actorId, input, readCsrfToken())}
       submitFeed={(input) => executeBookingFeedAction(actorId, input, readCsrfToken())}
       membershipAccess={
-        memberships === undefined
+        initialMemberships === undefined || memberships === undefined
           ? undefined
           : {
               workspace: memberships,
