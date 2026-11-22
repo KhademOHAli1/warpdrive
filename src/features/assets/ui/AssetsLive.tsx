@@ -11,21 +11,27 @@ export function AssetsLive({
   initial,
   actorId,
   initialAssetId,
+  initialKitId,
   bookingsAvailable,
   physicalLabelsAvailable,
+  assetTagsAvailable,
 }: {
   initial: AssetsWorkspace;
   actorId: string;
   initialAssetId: string | null;
+  initialKitId: string | null;
   bookingsAvailable: boolean;
   physicalLabelsAvailable: boolean;
+  assetTagsAvailable?: boolean;
 }) {
   return (
     <AssetsRegister
       initial={initial}
       initialAssetId={initialAssetId}
+      initialKitId={initialKitId}
       bookingsAvailable={bookingsAvailable}
       physicalLabelsAvailable={physicalLabelsAvailable}
+      assetTagsAvailable={assetTagsAvailable}
       submit={(command) => executeAssetAction(actorId, command, readCsrfToken())}
       submitCustody={
         initial.custody === undefined

@@ -1,23 +1,28 @@
 import { and, asc, inArray } from "drizzle-orm";
 import type { Db } from "@/db/client";
+import type { AssetSite } from "@/features/assets/contracts";
 import { assetKits } from "@/features/assets/kits/schema";
 import { assetRecords } from "@/features/assets/schema";
 import { assetSites } from "@/features/assets/service";
 import type { HydratedActor } from "@/server/hydrateActor";
 import type { LabelTarget, LabelTargetRef } from "./contracts";
 
-/** Resolves only records visible under the caller's directory and Assets register locks. */
-export async function readAssetLabelTargets(
+export type SiteAssetTarget = LabelTarget & {
+  kind: "asset" | "kit";
+  siteId: string;
+  archived: boolean;
+};
+
+/** Projects physical identities from site grants resolved under the directory and Assets locks. */
+export async function readSiteAssetTargets(
   tx: Db,
-  actor: HydratedActor,
+  sites: readonly AssetSite[],
   refs?: readonly LabelTargetRef[],
-): Promise<LabelTarget[]> {
-  if (!actor.isActive || actor.projectsGuestOnly === true) return [];
+): Promise<SiteAssetTarget[]> {
   const assetIds = refs?.filter(({ kind }) => kind === "asset").map(({ id }) => id);
   const kitIds = refs?.filter(({ kind }) => kind === "kit").map(({ id }) => id);
   if (assetIds?.length === 0 && kitIds?.length === 0) return [];
 
-  const sites = await assetSites(tx, actor);
   if (sites.length === 0) return [];
   const siteIds = sites.map(({ id }) => id);
   const sitesById = new Map(sites.map((site) => [site.id, site]));
@@ -62,13 +67,15 @@ export async function readAssetLabelTargets(
   return [
     ...assets.map((asset) => ({ ...asset, kind: "asset" as const })),
     ...kits.map((kit) => ({ ...kit, kind: "kit" as const, archivedAt: null })),
-  ].flatMap(({ id, siteId, code, title, kind, archivedAt }): LabelTarget[] => {
+  ].flatMap(({ id, siteId, code, title, kind, archivedAt }): SiteAssetTarget[] => {
     const site = sitesById.get(siteId);
     if (site === undefined) return [];
     return [
       {
         id,
         kind,
+        siteId,
+        archived: archivedAt !== null,
         title,
         subtitle: `${code} · ${site.name}`,
         href: kind === "asset" ? `/assets?assetId=${id}` : null,
@@ -76,4 +83,22 @@ export async function readAssetLabelTargets(
       },
     ];
   });
+}
+
+/** Resolves only records visible under the caller's directory and Assets register locks. */
+export async function readAssetLabelTargets(
+  tx: Db,
+  actor: HydratedActor,
+  refs?: readonly LabelTargetRef[],
+): Promise<LabelTarget[]> {
+  if (!actor.isActive || actor.projectsGuestOnly === true) return [];
+  const targets = await readSiteAssetTargets(tx, await assetSites(tx, actor), refs);
+  return targets.map(({ id, kind, title, subtitle, href, canManage }) => ({
+    id,
+    kind,
+    title,
+    subtitle,
+    href,
+    canManage,
+  }));
 }

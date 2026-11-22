@@ -1,7 +1,8 @@
 import { env } from "@/config/env";
+import { resolveAssetTagFromLabelScan } from "@/features/assets/tags/service";
 import { guardCsrf } from "@/features/identity/actions/shared";
 import { createContext } from "@/server/trpc/context";
-import type { LabelResult, ScanResult } from "./contracts";
+import { type LabelResult, type ScanResult, scanInput } from "./contracts";
 import { resolveLabel, runLabelCommand } from "./service";
 
 const unavailable = { ok: false, error: "unavailable" } as const;
@@ -29,13 +30,12 @@ export async function resolvePhysicalLabelAction(
   csrf: string | null,
 ): Promise<ScanResult> {
   const current = await labelSession(expectedActorId, csrf);
-  return current === null
-    ? unavailable
-    : resolveLabel(
-        current.db,
-        current.session,
-        input,
-        new URL(env.BASE_URL).origin,
-        AbortSignal.timeout(15_000),
-      );
+  if (current === null) return unavailable;
+  const parsed = scanInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  const origin = new URL(env.BASE_URL).origin;
+  const signal = AbortSignal.timeout(15_000);
+  const { db, session } = current;
+  const tag = await resolveAssetTagFromLabelScan(db, session, parsed.data, origin, signal);
+  return tag ?? resolveLabel(db, session, parsed.data, origin, signal);
 }

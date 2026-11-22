@@ -8,6 +8,7 @@ export * from "@/features/assets/commissioning/schema";
 export * from "@/features/assets/custody/schema";
 export * from "@/features/assets/kits/schema";
 export * from "@/features/assets/schema";
+export * from "@/features/assets/tags/schema";
 export * from "@/features/billing/schema";
 export * from "@/features/company-profile/schema";
 export * from "@/features/inventory/catalog/schema";

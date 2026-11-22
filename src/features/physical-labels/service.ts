@@ -1,7 +1,12 @@
 import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
+import { env } from "@/config/env";
 import type { Db } from "@/db/client";
 import { assetActor, lockAssetRegister } from "@/features/assets/service";
+import { parseLegacyTagIdentifier } from "@/features/assets/tags/legacyImport";
+import { lockTagNamespace } from "@/features/assets/tags/nativeScope";
+import { assetTagCodes } from "@/features/assets/tags/schema";
+import { parseAssetTagIdentifier } from "@/features/assets/tags/tagCodes";
 import { withCurrentAuthority } from "@/features/auth/currentAuthority";
 import type { NativeSessionRef } from "@/features/auth/currentNativeActor";
 import { lockInventoryCatalog } from "@/features/inventory/catalog/policy";
@@ -125,6 +130,26 @@ function prepareChange(command: LabelCommand): Change | null {
   return { type: command.type, target: command.target, label };
 }
 
+async function registerOutsideEquipmentTags(
+  tx: Db,
+  actorId: string,
+  target: LabelTargetRef,
+  label: NormalizedLabel,
+) {
+  if (parseAssetTagIdentifier(label.value, new URL(env.BASE_URL).origin) !== null) fail("invalid");
+  await lockTagNamespace(tx, "write");
+  const legacy = label.key.startsWith("text:") ? parseLegacyTagIdentifier(label.value) : null;
+  if (legacy !== null) {
+    const [assigned] = await tx
+      .select({ id: assetTagCodes.id })
+      .from(assetTagCodes)
+      .where(eq(assetTagCodes.legacyId, legacy.id))
+      .limit(1);
+    if (assigned !== undefined) fail("conflict");
+  }
+  return registerLabel(tx, actorId, target, label);
+}
+
 async function applyChange(tx: Db, actor: HydratedActor, change: Change, signal: AbortSignal) {
   if (change.type === "retire") {
     const row = await findLabel(tx, change.labelId);
@@ -138,7 +163,7 @@ async function applyChange(tx: Db, actor: HydratedActor, change: Change, signal:
   const id =
     change.type === "issue"
       ? await issueLabel(tx, actor.id, target)
-      : await registerLabel(tx, actor.id, target, change.label);
+      : await registerOutsideEquipmentTags(tx, actor.id, target, change.label);
   return id ?? fail("conflict");
 }
 

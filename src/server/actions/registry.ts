@@ -18,6 +18,11 @@ import { executeBookingMembershipAction } from "@/features/assets/bookings/membe
 import { executeCommissionAssetAction } from "@/features/assets/commissioning/actions.backend";
 import { executeCustodyAction } from "@/features/assets/custody/actions.backend";
 import { executeKitAction } from "@/features/assets/kits/actions.backend";
+import {
+  executeAssetTagAction,
+  resolveAssetTagAction,
+  sendAssetTagContactAction,
+} from "@/features/assets/tags/actions.backend";
 import * as actions9 from "@/features/auth/csrfRefresh.backend";
 import * as actions10 from "@/features/collaboration/actions.backend";
 import * as actions11 from "@/features/collaboration/commentActions.backend";
@@ -175,6 +180,9 @@ export const commandHandlers = {
     executeBookingMembershipAction,
   "features/assets/custody/webActions.executeCustodyAction": executeCustodyAction,
   "features/assets/kits/webActions.executeKitAction": executeKitAction,
+  "features/assets/tags/webActions.executeAssetTagAction": executeAssetTagAction,
+  "features/assets/tags/webActions.resolveAssetTagAction": resolveAssetTagAction,
+  "features/assets/tags/webActions.sendAssetTagContactAction": sendAssetTagContactAction,
   "features/assets/commissioning/webActions.executeCommissionAssetAction":
     executeCommissionAssetAction,
   "features/operations-access/actions.executeOperationsAccessAction": executeOperationsAccessAction,

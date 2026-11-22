@@ -9,17 +9,19 @@ export type SubmitKit = (command: KitCommand) => Promise<KitResult>;
 
 export function useKitWorkspace({
   submit,
+  initialSelectedId = null,
   onWorkspace,
   inFlightRef,
   fallbackFocus,
 }: {
   submit?: SubmitKit;
+  initialSelectedId?: string | null;
   onWorkspace: (workspace: AssetsWorkspace) => void;
   inFlightRef: RefObject<boolean>;
   fallbackFocus: RefObject<HTMLInputElement | null>;
 }) {
   const [editor, setEditor] = useState<KitEditor | null>(null);
-  const [selectedId, select] = useState<string | null>(null);
+  const [selectedId, select] = useState(initialSelectedId);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<KitError | "transport" | null>(null);
   const [saved, setSaved] = useState(false);

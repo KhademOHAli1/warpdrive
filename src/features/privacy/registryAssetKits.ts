@@ -24,7 +24,7 @@ export const assetKitsEntry = classifyInventory(
     "sourceReview:src/features/assets/kits/ui/KitsRegister.tsx#dcd1ec5cc70529e11abeb728ba6b2defc460226142b7ad4465d9f6bef03730ce",
     "sourceReview:src/features/assets/kits/ui/kitView.ts#64ce594cdf2b7b91dd267e250bc7fc23a3de9288a229755f5d1a56e335a73d9c",
     "sourceReview:src/features/assets/kits/ui/messages.ts#f38dd1d488baf15c5296894ea603c2975f44edfb6756a5ab3bd95b13e0194919",
-    "sourceReview:src/features/assets/kits/ui/useKitWorkspace.ts#fdd502a64182440b9ebb4e62b610d0430ea638a02c219a069473e6db862d2b51",
+    "sourceReview:src/features/assets/kits/ui/useKitWorkspace.ts#fe28da29f69dc7960fbc5821f23d1418a42d9bcea18cf5be5e75822dc04fd4fa",
     "sourceReview:src/features/assets/kits/usage.ts#2f27f0e6eb83c954148118101bfbcb09d7504a6fe9aada7c676235b53d3a2ae0",
     "sourceReview:src/features/assets/kits/webActions.ts#1affbb390e4ab8a2aeaccc5e682f443f88ade34ffca6c5376ea2a3cb419f82fc",
     "sourceReview:src/features/assets/projection.ts#4d392ea81e87f4190894b5366dce8f6d2c3dae631948ef29778e5ad6a6567916",

@@ -131,6 +131,7 @@ export const frontendRouter = router({
               newsletterConfigured: newsletterConfigured(),
               inventoryAvailable: actor.isActive,
               assetsAvailable,
+              assetTagsAvailable: assetsAvailable,
               bookingsAvailable,
               physicalLabelsAvailable: actor.isActive && !actor.projectsGuestOnly,
             };

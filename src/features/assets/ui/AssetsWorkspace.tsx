@@ -68,10 +68,15 @@ function defaultFilters(site: string): Filters {
   };
 }
 
-function initialFilters(workspace: AssetsWorkspace, assetId: string | null): Filters {
+function initialFilters(
+  workspace: AssetsWorkspace,
+  assetId: string | null,
+  kitId: string | null,
+): Filters {
   const asset = workspace.records.find(({ id }) => id === assetId);
+  const kit = workspace.kits?.records.find(({ id }) => id === kitId);
   return {
-    ...defaultFilters(asset?.siteId ?? workspace.sites[0]?.id ?? ""),
+    ...defaultFilters(asset?.siteId ?? kit?.siteId ?? workspace.sites[0]?.id ?? ""),
     status: asset !== undefined && asset.archivedAt !== null ? "archived" : "active",
   };
 }
@@ -532,8 +537,10 @@ export function AssetsRegister({
   submitKit,
   fixture,
   initialAssetId = null,
+  initialKitId = null,
   bookingsAvailable = fixture,
   physicalLabelsAvailable = fixture,
+  assetTagsAvailable = fixture,
 }: {
   initial: AssetsWorkspace;
   submit: (command: AssetCommand) => Promise<AssetResult>;
@@ -541,16 +548,20 @@ export function AssetsRegister({
   submitKit?: SubmitKit;
   fixture: boolean;
   initialAssetId?: string | null;
+  initialKitId?: string | null;
   bookingsAvailable?: boolean;
   physicalLabelsAvailable?: boolean;
+  assetTagsAvailable?: boolean;
 }) {
   const locale = useLocale();
   const t = assetMessages[locale];
   const custodyWords = custodyMessages[locale];
   const [source, setSource] = useState(initial);
   const [workspace, setWorkspace] = useState(initial);
-  const [tab, setTab] = useState<RegisterTab>("register");
-  const [filters, setFilters] = useState(() => initialFilters(initial, initialAssetId));
+  const [tab, setTab] = useState<RegisterTab>(() => (initialKitId === null ? "register" : "kits"));
+  const [filters, setFilters] = useState(() =>
+    initialFilters(initial, initialAssetId, initialKitId),
+  );
   const [selectedId, setSelectedId] = useState(initialAssetId);
   const [editor, setEditor] = useState<AssetEditor | null>(null);
   const [pending, setPending] = useState(false);
@@ -569,6 +580,7 @@ export function AssetsRegister({
   const kitSearchInput = useRef<HTMLInputElement | null>(null);
   const kit = useKitWorkspace({
     submit: submitKit,
+    initialSelectedId: initialKitId,
     onWorkspace: setWorkspace,
     inFlightRef: inFlight,
     fallbackFocus: kitSearchInput,
@@ -712,7 +724,7 @@ export function AssetsRegister({
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {physicalLabelsAvailable && <LabelRegistryLink />}
-            {fixture && <AssetTagsLink />}
+            {assetTagsAvailable && <AssetTagsLink />}
             {bookingsAvailable && (
               <Link
                 href="/assets/bookings"

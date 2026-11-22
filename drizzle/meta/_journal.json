@@ -1044,6 +1044,13 @@
       "when": 1795309357094,
       "tag": "0148_physical_label_registry",
       "breakpoints": true
+    },
+    {
+      "idx": 149,
+      "version": "7",
+      "when": 1795312276989,
+      "tag": "0149_asset_tag_lifecycle",
+      "breakpoints": true
     }
   ]
 }

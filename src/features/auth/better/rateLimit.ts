@@ -69,7 +69,7 @@ function bucketKey(kind: string, identity: string): string {
   return createHash("sha256").update(`warpdrive-auth-v1|${kind}|${identity}`).digest("base64url");
 }
 
-async function takeBucket(
+export async function takeRateLimitBucket(
   db: Db,
   key: string,
   limit: number,
@@ -111,7 +111,7 @@ export function createAuthRateLimiter(trustedHeader: TrustedProxyHeader) {
     // account attempts cannot avoid the IP/global abuse limit. Every increment is atomic in PG.
     if (ip === null) {
       if (
-        !(await takeBucket(
+        !(await takeRateLimitBucket(
           db,
           bucketKey("unknown-ip", "global"),
           AUTH_RATE_LIMITS.unknownIpRequests,
@@ -119,13 +119,13 @@ export function createAuthRateLimiter(trustedHeader: TrustedProxyHeader) {
         ))
       )
         return false;
-    } else if (!(await takeBucket(db, bucketKey(`${category}:ip`, ip), limit, signal)))
+    } else if (!(await takeRateLimitBucket(db, bucketKey(`${category}:ip`, ip), limit, signal)))
       return false;
     const identity = subject?.trim().toLowerCase();
     if (
       identity !== undefined &&
       identity.length > 0 &&
-      !(await takeBucket(db, bucketKey(`${category}:subject`, identity), limit, signal))
+      !(await takeRateLimitBucket(db, bucketKey(`${category}:subject`, identity), limit, signal))
     )
       return false;
     return true;
