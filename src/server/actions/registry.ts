@@ -84,6 +84,10 @@ import { executeLocationsAction } from "@/features/locations/actions.backend";
 import * as actions59 from "@/features/notifications/actions.backend";
 import * as actions60 from "@/features/oauth/revokeAction.backend";
 import { executeOperationsAccessAction } from "@/features/operations-access/actions.backend";
+import {
+  executePhysicalLabelAction,
+  resolvePhysicalLabelAction,
+} from "@/features/physical-labels/actions.backend";
 import * as actions61 from "@/features/pipelines/pipelineEditActions.backend";
 import * as actions62 from "@/features/pipelines/pipelineLifecycleActions.backend";
 import * as actions63 from "@/features/privacy/requestActions.backend";
@@ -162,6 +166,8 @@ export const commandHandlers = {
   "features/inventory/warehouse/stocktakes/actions.executeStocktakeAction": executeStocktakeAction,
   "features/locations/actions.executeLocationsAction": executeLocationsAction,
   "features/assets/webActions.executeAssetAction": executeAssetAction,
+  "features/physical-labels/webActions.executePhysicalLabelAction": executePhysicalLabelAction,
+  "features/physical-labels/webActions.resolvePhysicalLabelAction": resolvePhysicalLabelAction,
   "features/assets/bookings/webActions.executeBookingAction": executeBookingAction,
   "features/assets/bookings/webActions.checkAvailabilityAction": checkAvailabilityAction,
   "features/assets/bookings/feedWebActions.executeBookingFeedAction": executeBookingFeedAction,

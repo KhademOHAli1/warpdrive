@@ -39,7 +39,8 @@ export default async function InventoryPage({
       />
     );
   }
-  if ((await getBootstrap()).shell?.inventoryAvailable !== true) notFound();
+  const { shell } = await getBootstrap();
+  if (shell?.inventoryAvailable !== true) notFound();
 
   const result = await coreClient()
     .inventory.workspace.query({ dealId: parsed.data ?? null })
@@ -54,6 +55,7 @@ export default async function InventoryPage({
       result={result}
       openReleases={openReleases}
       initialItemId={selected.data}
+      physicalLabelsAvailable={shell.physicalLabelsAvailable === true}
     />
   );
 }

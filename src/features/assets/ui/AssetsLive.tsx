@@ -12,17 +12,20 @@ export function AssetsLive({
   actorId,
   initialAssetId,
   bookingsAvailable,
+  physicalLabelsAvailable,
 }: {
   initial: AssetsWorkspace;
   actorId: string;
   initialAssetId: string | null;
   bookingsAvailable: boolean;
+  physicalLabelsAvailable: boolean;
 }) {
   return (
     <AssetsRegister
       initial={initial}
       initialAssetId={initialAssetId}
       bookingsAvailable={bookingsAvailable}
+      physicalLabelsAvailable={physicalLabelsAvailable}
       submit={(command) => executeAssetAction(actorId, command, readCsrfToken())}
       submitCustody={
         initial.custody === undefined

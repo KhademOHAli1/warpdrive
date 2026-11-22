@@ -1037,6 +1037,13 @@
       "when": 1795306671941,
       "tag": "0147_asset_bookings",
       "breakpoints": true
+    },
+    {
+      "idx": 148,
+      "version": "7",
+      "when": 1795309357094,
+      "tag": "0148_physical_label_registry",
+      "breakpoints": true
     }
   ]
 }

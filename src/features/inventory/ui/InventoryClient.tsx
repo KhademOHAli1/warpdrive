@@ -31,6 +31,24 @@ function workspaceArea(view: "items" | "orders", current: "items" | "orders") {
     : "border-transparent text-muted-foreground";
 }
 
+function InventoryHeadingActions({
+  fixture,
+  showLabels,
+  demoLabel,
+}: {
+  fixture: boolean;
+  showLabels: boolean;
+  demoLabel: string;
+}) {
+  if (!fixture && !showLabels) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {showLabels && <LabelRegistryLink />}
+      {fixture && <Badge variant="outline">{demoLabel}</Badge>}
+    </div>
+  );
+}
+
 export function InventoryClient({
   initial,
   submit,
@@ -38,6 +56,7 @@ export function InventoryClient({
   openReleases = false,
   initialItemId,
   catalogLinks,
+  physicalLabelsAvailable = initial.fixture,
 }: {
   initial: InventoryWorkspace;
   submit: (command: InventoryCommand) => Promise<InventoryResult>;
@@ -45,6 +64,7 @@ export function InventoryClient({
   openReleases?: boolean;
   initialItemId?: string;
   catalogLinks?: ReactNode;
+  physicalLabelsAvailable?: boolean;
 }) {
   const locale = useLocale();
   const numberingSystem = useNumberingSystem();
@@ -115,12 +135,11 @@ export function InventoryClient({
         title={workspace.deal === null ? t.inventory : t.inventoryOrders}
         description={workspace.deal === null ? undefined : workspace.deal.name}
         actions={
-          workspace.fixture ? (
-            <div className="flex flex-wrap items-center gap-2">
-              {workspace.deal === null && <LabelRegistryLink />}
-              <Badge variant="outline">{t.demo}</Badge>
-            </div>
-          ) : undefined
+          <InventoryHeadingActions
+            fixture={workspace.fixture}
+            showLabels={physicalLabelsAvailable && workspace.deal === null}
+            demoLabel={t.demo}
+          />
         }
       />
       <nav aria-label={t.sections} className="mb-4 flex gap-4 border-b has-[a]:flex-wrap">

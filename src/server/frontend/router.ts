@@ -132,6 +132,7 @@ export const frontendRouter = router({
               inventoryAvailable: actor.isActive,
               assetsAvailable,
               bookingsAvailable,
+              physicalLabelsAvailable: actor.isActive && !actor.projectsGuestOnly,
             };
           })();
     return {

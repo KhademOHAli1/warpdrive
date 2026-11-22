@@ -2,7 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { inventoryFixturesEnabled } from "@/features/inventory/availability";
 import { isInternalLabelCode, physicalLabelScanPath } from "@/features/physical-labels/formats";
 import { LabelScannerFixture } from "@/features/physical-labels/LabelScannerFixture";
-import { createContext } from "@/frontend/context";
+import { LabelScannerLive } from "@/features/physical-labels/LabelsLive";
+import { createContext, getBootstrap } from "@/frontend/context";
 
 export default async function OperationsScanPage({
   searchParams,
@@ -20,7 +21,11 @@ export default async function OperationsScanPage({
         : `${physicalLabelScanPath}?code=${encodeURIComponent(initialCode)}`;
     redirect(`/login?returnTo=${encodeURIComponent(destination)}`);
   }
-  if (!actor.isActive || actor.projectsGuestOnly || !inventoryFixturesEnabled()) notFound();
+  if (!actor.isActive || actor.projectsGuestOnly) notFound();
+  if (!inventoryFixturesEnabled()) {
+    if ((await getBootstrap()).shell?.physicalLabelsAvailable !== true) notFound();
+    return <LabelScannerLive key={actor.id} actorId={actor.id} initialCode={initialCode} />;
+  }
   return (
     <LabelScannerFixture
       key={actor.id}

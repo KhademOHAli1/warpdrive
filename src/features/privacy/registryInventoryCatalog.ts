@@ -13,7 +13,7 @@ export const inventoryCatalogEntry = classifyInventory(
     "sourceReview:src/app/(app)/inventory/catalog/page.tsx#2cba72a9a244266d24b6653ef94887c454ba754d55addc90d38953c90fe9a77c",
     "sourceReview:src/features/inventory/catalog/changes.ts#59fbb48e46fbe467b45eba1dc3565626af37c8007928b0685ea2e618df84748f",
     "sourceReview:src/features/inventory/catalog/parameters.ts#7c773048a3f008de1aa3611ba5539039a7c7007fe3d94cde2a89cd6d424dadf8",
-    "sourceReview:src/features/inventory/catalog/policy.ts#40cfa255d93e29fe1039d85ea97d0475ec5cc7de1dcf33ee9d9729b5cebe5c00",
+    "sourceReview:src/features/inventory/catalog/policy.ts#d576e26841f62256c9ebe678f8f8a36c7efc65cf0521d4d8c7be8271a289564c",
     "sourceReview:src/features/inventory/catalog/reads.ts#e5edb5b6a009c21e4292a6f3e9c121ebd0c56137e458f02c13bd75579ae1589d",
     "sourceReview:src/features/inventory/catalog/router.ts#74833f46969094c438cb69d3450960c896c067afc66ff608d3a90ba88bdca61e",
     "sourceReview:src/features/inventory/catalog/schema.ts#3d7046e341c3f8996c69792e599837d7bdf5e9ca6b98c79cb888cffd093bdd70",

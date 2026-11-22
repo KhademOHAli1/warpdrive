@@ -16,11 +16,13 @@ export function InventoryLive({
   result,
   openReleases,
   initialItemId,
+  physicalLabelsAvailable,
 }: {
   actorId: string;
   result: InventoryResult;
   openReleases?: boolean;
   initialItemId?: string;
+  physicalLabelsAvailable?: boolean;
 }) {
   const router = useRouter();
   const { locale } = useLocalePreferences();
@@ -43,6 +45,7 @@ export function InventoryLive({
       ProductReleases={ManufacturingReleasesLive}
       openReleases={openReleases}
       initialItemId={initialItemId}
+      physicalLabelsAvailable={physicalLabelsAvailable}
       catalogLinks={initial.deal === null && <InventoryCatalogLinks />}
       submit={(command) =>
         executeInventoryAction(actorId, command, initial.deal?.id ?? null, readCsrfToken())

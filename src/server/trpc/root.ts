@@ -20,6 +20,7 @@ import { notificationsRouter } from "@/features/notifications/router";
 import { oauthRouter } from "@/features/oauth/router";
 import { operationsRouter } from "@/features/operations/router";
 import { operationsAccessRouter } from "@/features/operations-access/router";
+import { physicalLabelsRouter } from "@/features/physical-labels/router";
 import { pipelineRouter } from "@/features/pipelines/pipelineRouter";
 import { projectDocumentsRouter } from "@/features/projects/documents/router";
 import { internalProjectsRouter } from "@/features/projects/router";
@@ -49,6 +50,7 @@ export const appRouter = router({
   calendars: calendarsRouter,
   import: importRouter,
   labels: labelsRouter,
+  physicalLabels: physicalLabelsRouter,
   mailLabels: mailLabelsRouter,
   lead: leadRouter,
   email: emailRouter,

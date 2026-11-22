@@ -51,6 +51,7 @@ export default async function AssetsPage({
       initial={result.value}
       initialAssetId={assetId}
       bookingsAvailable={shell?.bookingsAvailable === true}
+      physicalLabelsAvailable={shell?.physicalLabelsAvailable === true}
     />
   );
 }

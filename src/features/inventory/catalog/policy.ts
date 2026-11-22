@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { AppError, ERROR_IDS } from "@/constants/errorIds";
 import type { Db } from "@/db/client";
 import { inventoryItems } from "../schema";
@@ -67,8 +67,14 @@ export async function catalogItemPolicy(tx: Db, itemId: string): Promise<Catalog
   return row === undefined ? null : policy(row);
 }
 
-export async function catalogItemPolicies(tx: Db): Promise<Map<string, CatalogItemPolicy>> {
-  return new Map((await policyRows(tx)).map((row) => [row.id, policy(row)]));
+export async function catalogItemPolicies(
+  tx: Db,
+  itemIds?: string[],
+): Promise<Map<string, CatalogItemPolicy>> {
+  const rows = await policyRows(tx).where(
+    itemIds === undefined ? undefined : inArray(inventoryItems.id, itemIds),
+  );
+  return new Map(rows.map((row) => [row.id, policy(row)]));
 }
 
 /** Bind old Inventory create to the business code namespace in the caller's write transaction. */

@@ -61,11 +61,8 @@ async function currentDirectoryActor(tx: Db, who: NativeSessionRef, signal: Abor
   return accepted === undefined ? null : current.actor;
 }
 
-async function projectDirectory(
-  tx: Db,
-  actorId: string,
-  isAdmin: boolean,
-): Promise<LocationsWorkspace> {
+/** Directory readers and cross-module projections use the same site scope under the directory lock. */
+export async function readDirectorySiteScope(tx: Db, actorId: string, isAdmin: boolean) {
   const grants = await tx
     .select()
     .from(directorySiteGrants)
@@ -78,10 +75,29 @@ async function projectDirectory(
     .from(directorySites)
     .where(isAdmin ? undefined : inArray(directorySites.id, grantedSiteIds))
     .orderBy(asc(directorySites.code));
+  const managedSiteIds = isAdmin
+    ? sites.map(({ id }) => id)
+    : grants.filter(({ role }) => role === "manager").map(({ siteId }) => siteId);
+  return { sites, grants, managedSiteIds };
+}
+
+async function projectDirectory(
+  tx: Db,
+  actorId: string,
+  isAdmin: boolean,
+): Promise<LocationsWorkspace> {
+  const { sites, grants, managedSiteIds } = await readDirectorySiteScope(tx, actorId, isAdmin);
   const locations = await tx
     .select()
     .from(directoryLocations)
-    .where(isAdmin ? undefined : inArray(directoryLocations.siteId, grantedSiteIds))
+    .where(
+      isAdmin
+        ? undefined
+        : inArray(
+            directoryLocations.siteId,
+            sites.map(({ id }) => id),
+          ),
+    )
     .orderBy(asc(directoryLocations.siteId), asc(directoryLocations.code));
   const eligibleUsers = isAdmin
     ? await tx
@@ -90,9 +106,6 @@ async function projectDirectory(
         .where(and(acceptedStaff(), eq(users.isAdmin, false)))
         .orderBy(asc(users.name), asc(users.id))
     : [];
-  const managedSiteIds = isAdmin
-    ? sites.map(({ id }) => id)
-    : grants.filter(({ role }) => role === "manager").map(({ siteId }) => siteId);
   return {
     directory: { sites, locations },
     canManageSites: isAdmin,

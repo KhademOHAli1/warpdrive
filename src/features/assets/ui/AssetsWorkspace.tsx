@@ -532,6 +532,7 @@ export function AssetsRegister({
   fixture,
   initialAssetId = null,
   bookingsAvailable = fixture,
+  physicalLabelsAvailable = fixture,
 }: {
   initial: AssetsWorkspace;
   submit: (command: AssetCommand) => Promise<AssetResult>;
@@ -540,6 +541,7 @@ export function AssetsRegister({
   fixture: boolean;
   initialAssetId?: string | null;
   bookingsAvailable?: boolean;
+  physicalLabelsAvailable?: boolean;
 }) {
   const locale = useLocale();
   const t = assetMessages[locale];
@@ -708,7 +710,7 @@ export function AssetsRegister({
         title={t.title}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {fixture && <LabelRegistryLink />}
+            {physicalLabelsAvailable && <LabelRegistryLink />}
             {bookingsAvailable && (
               <Link
                 href="/assets/bookings"

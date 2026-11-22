@@ -11,7 +11,7 @@ export const sharedLocationsEntry = classifyInventory(
     "sourceReview:src/features/locations/LocationsDirectory.tsx#f4d462ddeb23d88168a7b307adacaec3b8c9f459c4b473d66d22999697f4c93f",
     "sourceReview:src/features/locations/router.ts#728197737102fe9225dec9084037dc4742f57ef01c9321ce758934f460cef399",
     "sourceReview:src/features/locations/schema.ts#42bab566fc010e28fed905d1f4205d5d31c42a1839c1384cc07137677860f82b",
-    "sourceReview:src/features/locations/service.ts#8677b0903de49ef545fa9e7cc19814036d11724fb9e7955cc577b78bbcd90403",
+    "sourceReview:src/features/locations/service.ts#f958732ce1c7a5a87098e9baeb85fb359914bf4a4c306d7fec13a1feb2f0ef14",
     "table:directory_command_receipts",
     "table:directory_locations",
     "table:directory_site_grants",
