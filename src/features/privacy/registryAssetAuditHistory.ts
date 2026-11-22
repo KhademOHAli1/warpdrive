@@ -13,16 +13,14 @@ export const assetAuditHistoryEntry = classifyInventory(
       "authorized audit titles and frozen equipment placement",
       "finding counts and attributed correction evidence",
     ],
-    subjectRelation:
-      "Correction events relate to the auditor who recorded the count or undo.",
+    subjectRelation: "Correction events relate to the auditor who recorded the count or undo.",
     purpose:
       "Reconcile original and corrected equipment counts and open the matching audit from an equipment record.",
     disclosure:
       "The same actor must currently be authorized to read the equipment and that audit. The history omits general audit notes, private files and unattributed scans.",
     retention:
       "The explicit Web fixture uses synthetic completed equipment counts. It applies no durable write.",
-    externalEffects:
-      "Results can focus an exact completed demo audit using its stable link.",
+    externalEffects: "Results can focus an exact completed demo audit using its stable link.",
     erasureTask: "DPL-15 / DPL-18 / DPL-21",
   },
 );
