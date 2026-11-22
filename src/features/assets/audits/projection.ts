@@ -22,7 +22,7 @@ import {
   canManageAudit,
 } from "./state";
 
-function findingResult(
+export function findingResult(
   { expected, counted }: AuditFinding,
   completed: boolean,
 ): EquipmentAuditResultStatus {

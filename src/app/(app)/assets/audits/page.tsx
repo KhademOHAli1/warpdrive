@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { EquipmentAuditsFixture } from "@/features/assets/audits/EquipmentAuditsFixture";
 import { EquipmentAuditsLive } from "@/features/assets/audits/EquipmentAuditsLive";
+import { auditDraftFixtureId } from "@/features/assets/audits/fixtureData";
+import { assetAuditHistoryFixtureId } from "@/features/assets/audits/history/fixture";
 import { inventoryFixturesEnabled } from "@/features/inventory/availability";
 import { createContext, getBootstrap } from "@/frontend/context";
 import { coreClient } from "@/frontend/trpc";
@@ -20,19 +22,27 @@ export default async function EquipmentAuditsPage({
   if (actor === null) redirect("/login");
   if (!actor.isActive || actor.projectsGuestOnly) notFound();
   const { auditId } = await searchParams;
+  const selected = auditFocus.safeParse(auditId);
+  if (!selected.success) notFound();
   if (inventoryFixturesEnabled()) {
+    const manager = actor.type === "admin";
+    if (
+      selected.data !== undefined &&
+      (!manager ||
+        (selected.data !== auditDraftFixtureId && selected.data !== assetAuditHistoryFixtureId))
+    ) {
+      notFound();
+    }
     return (
       <EquipmentAuditsFixture
-        key={actor.id}
+        key={`${actor.id}:${selected.data ?? ""}`}
         actor={{ id: actor.id, name: actor.name }}
-        manager={actor.type === "admin"}
+        manager={manager}
         initialNow={new Date().toISOString()}
-        initialAuditId={typeof auditId === "string" ? auditId : undefined}
+        initialAuditId={selected.data}
       />
     );
   }
-  const selected = auditFocus.safeParse(auditId);
-  if (!selected.success) notFound();
   const { shell } = await getBootstrap();
   if (shell?.assetAuditsAvailable !== true) notFound();
   const result = await coreClient()

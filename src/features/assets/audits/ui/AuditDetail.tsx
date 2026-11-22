@@ -369,12 +369,14 @@ export function AuditDetail({
   pending,
   open,
   scan,
+  titleRef,
   words: t,
 }: {
   detail: EquipmentAuditDetail;
   pending: boolean;
   open: OpenAuditEditor;
   scan: AuditScannerAction;
+  titleRef?: (title: HTMLHeadingElement | null) => void;
   words: AuditWords;
 }) {
   const canCount = detail.canCount && !detail.archived && detail.status === "active";
@@ -387,7 +389,11 @@ export function AuditDetail({
       <header className="space-y-3 p-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold wrap-anywhere">
+            <h2
+              ref={titleRef}
+              tabIndex={titleRef === undefined ? undefined : -1}
+              className="text-lg font-semibold wrap-anywhere"
+            >
               <bdi>{detail.title}</bdi>
             </h2>
             <p className="text-sm text-muted-foreground">

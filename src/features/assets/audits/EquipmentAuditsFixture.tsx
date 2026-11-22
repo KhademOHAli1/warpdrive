@@ -7,11 +7,13 @@ import { lookupFixtureEquipment } from "../bookings/handover/fixtureLookup";
 import type { EquipmentAuditAccess } from "./contracts";
 import {
   type AuditFixtureRole,
+  auditDraftFixtureId,
   auditFixtureData,
   auditFixtureParticipants,
   changeLiveAuditDemoEquipment,
 } from "./fixtureData";
 import { auditFixturePhotoFingerprint } from "./fixturePhoto";
+import { assetAuditHistoryFixture, assetAuditHistoryFixtureId } from "./history/fixture";
 import { lookupAuditEquipment, projectAuditDetail, projectAuditWorkspace } from "./projection";
 import { type AuditFixtureActor, createAuditFixtureState } from "./state";
 import { applyAuditCommand, attachAuditPhoto } from "./transitions";
@@ -79,7 +81,7 @@ function beginDemo(
   const empty = createAuditFixtureState(data.assets, data.roster);
   if (!manager) return empty;
   const ids = [
-    "4936a1c4-c439-4fa8-817e-79b04281be31",
+    auditDraftFixtureId,
     "f8fd1b3b-57c1-415b-88d2-6f3bbe926bef",
     "c687642c-c93d-4972-8384-8d97fdc156fc",
   ];
@@ -130,7 +132,9 @@ export function EquipmentAuditsFixture({
   const [data] = useState(auditFixtureData);
   const [role, setRole] = useState<AuditFixtureRole>("manager");
   const [initial] = useState(() =>
-    beginDemo(data, activeActor(actor, manager, "manager", data), initialNow, manager),
+    manager && initialAuditId === assetAuditHistoryFixtureId
+      ? assetAuditHistoryFixture(data).state
+      : beginDemo(data, activeActor(actor, manager, "manager", data), initialNow, manager),
   );
   const state = useRef(initial);
   const [workspace, setWorkspace] = useState(() =>

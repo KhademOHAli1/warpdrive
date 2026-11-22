@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { assetAuditHistoryFixture } from "../audits/history/fixture";
+import { projectAssetAuditHistory } from "../audits/history/projection";
 import type { AssetCommand, AssetResult, AssetsWorkspace } from "../contracts";
 import {
   type CustodyCommand,
@@ -36,24 +38,33 @@ export function AssetsFixture({
         : [],
     },
   }));
-  const [{ currentRegister, media, discovery, updateRegister }] = useState(() => {
-    let current = initial;
-    const media = createAssetMediaFixture(initial);
-    function applyRegister(next: AssetsWorkspace) {
-      current = next;
-      media.updateRegister(next);
-    }
-    const discovery = createAssetDiscoveryFixture(initial, applyRegister);
-    return {
-      currentRegister: () => current,
-      media,
-      discovery,
-      updateRegister: (next: AssetsWorkspace) => {
-        applyRegister(next);
-        discovery.updateRegister(next);
-      },
-    };
-  });
+  const [{ currentRegister, media, discovery, auditHistoryAccess, updateRegister }] = useState(
+    () => {
+      let current = initial;
+      const media = createAssetMediaFixture(initial);
+      const audit = canManage ? assetAuditHistoryFixture() : null;
+      function applyRegister(next: AssetsWorkspace) {
+        current = next;
+        media.updateRegister(next);
+      }
+      const discovery = createAssetDiscoveryFixture(initial, applyRegister);
+      return {
+        currentRegister: () => current,
+        media,
+        discovery,
+        auditHistoryAccess: (assetId: string) =>
+          Promise.resolve(
+            audit === null
+              ? ({ ok: false, error: "unavailable" } as const)
+              : projectAssetAuditHistory(audit.state, audit.manager, current, assetId),
+          ),
+        updateRegister: (next: AssetsWorkspace) => {
+          applyRegister(next);
+          discovery.updateRegister(next);
+        },
+      };
+    },
+  );
   useEffect(() => () => media.dispose(), [media]);
   const kitReceipts = useRef(new Map<string, { signature: string; kitId: string }>());
   const receipts = useRef(
@@ -120,6 +131,7 @@ export function AssetsFixture({
       submitCustody={submitCustody}
       submitKit={submitKit}
       mediaAccess={media.access}
+      auditHistoryAccess={auditHistoryAccess}
       discoveryAccess={discovery.access}
       fixture
     />

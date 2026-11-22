@@ -16,6 +16,7 @@ import { useLocale } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { LabelRegistryLink } from "@/features/physical-labels/ui/LabelRegistryLink";
 import { useHydrated } from "@/lib/useHydrated";
+import type { AssetAuditHistoryAccess } from "../audits/history/contracts";
 import {
   type AssetCommand,
   type AssetError,
@@ -442,6 +443,7 @@ function RegisterResults({
   words: t,
   custodyWords,
   mediaAccess,
+  auditHistoryAccess,
   presentation,
   metadata,
 }: {
@@ -462,6 +464,7 @@ function RegisterResults({
   words: AssetWords;
   custodyWords: CustodyWords;
   mediaAccess?: AssetMediaAccess;
+  auditHistoryAccess?: AssetAuditHistoryAccess;
   presentation?: AssetTablePresentation;
   metadata: AssetRegisterBatchState;
 }) {
@@ -535,6 +538,7 @@ function RegisterResults({
             custodyWords={custodyWords}
             openCustody={canManage ? custody.open : undefined}
             mediaAccess={mediaAccess}
+            auditHistoryAccess={auditHistoryAccess}
           />
         </div>
       ) : (
@@ -572,6 +576,7 @@ export function AssetsRegister({
   assetTagsAvailable = fixture,
   auditsAvailable = fixture,
   mediaAccess,
+  auditHistoryAccess,
   discoveryAccess,
 }: {
   initial: AssetsWorkspace;
@@ -586,6 +591,7 @@ export function AssetsRegister({
   assetTagsAvailable?: boolean;
   auditsAvailable?: boolean;
   mediaAccess?: AssetMediaAccess;
+  auditHistoryAccess?: AssetAuditHistoryAccess;
   discoveryAccess?: AssetRegisterDiscoveryAccess;
 }) {
   const locale = useLocale();
@@ -891,6 +897,7 @@ export function AssetsRegister({
               words={t}
               custodyWords={custodyWords}
               mediaAccess={mediaAccess}
+              auditHistoryAccess={auditHistoryAccess}
               metadata={batch}
               presentation={discovery.presentation}
             />

@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useLocale } from "@/features/i18n/LocaleProvider";
 import { useHydrated } from "@/lib/useHydrated";
+import { AssetAuditHistory } from "../audits/history/AssetAuditHistory";
+import type { AssetAuditHistoryAccess } from "../audits/history/contracts";
 import type { AssetField, AssetRecord, AssetSite, AssetsWorkspace, AssetValue } from "../contracts";
 import type { CustodyOpener } from "../custody/ui/CustodyDialogs";
 import { AssetCustodyPanel } from "../custody/ui/CustodyPanels";
@@ -72,6 +74,7 @@ export function AssetDetail({
   custodyWords,
   openCustody,
   mediaAccess,
+  auditHistoryAccess,
 }: {
   record: AssetRecord;
   workspace: AssetsWorkspace;
@@ -83,6 +86,7 @@ export function AssetDetail({
   custodyWords: CustodyWords;
   openCustody?: CustodyOpener;
   mediaAccess?: AssetMediaAccess;
+  auditHistoryAccess?: AssetAuditHistoryAccess;
 }) {
   const kitWords = kitMessages[useLocale()];
   const hydrated = useHydrated();
@@ -308,6 +312,10 @@ export function AssetDetail({
         canManage={canManageMedia}
         className="p-4"
       />
+
+      {auditHistoryAccess !== undefined && (
+        <AssetAuditHistory assetId={record.id} read={auditHistoryAccess} />
+      )}
 
       <div className="p-4">
         <h3 className="mb-2 font-semibold">{t.history}</h3>

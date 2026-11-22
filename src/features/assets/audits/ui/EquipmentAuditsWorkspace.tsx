@@ -417,6 +417,73 @@ function withSavedAudit(view: AuditView, outcome: Extract<EquipmentAuditWrite, {
   };
 }
 
+function AuditResults({
+  visible,
+  sites,
+  activeId,
+  linkedMissing,
+  select,
+  reading,
+  pending,
+  open,
+  scan,
+  titleRef,
+  words: t,
+}: {
+  visible: EquipmentAuditSummary[];
+  sites: EquipmentAuditSite[];
+  activeId: string | undefined;
+  linkedMissing: boolean;
+  select: (auditId: string) => void;
+  reading: ReturnType<typeof useReadAudit>;
+  pending: boolean;
+  open: OpenAuditEditor;
+  scan: (detail: EquipmentAuditDetail, code: string, trigger: HTMLElement) => Promise<ScanResponse>;
+  titleRef?: (title: HTMLHeadingElement | null) => void;
+  words: AuditWords;
+}) {
+  if (linkedMissing || visible.length === 0) {
+    return (
+      <p
+        role={linkedMissing ? "status" : undefined}
+        className="rounded-lg border bg-card p-4 text-sm text-muted-foreground"
+      >
+        {linkedMissing ? t.unavailable : t.noAudits}
+      </p>
+    );
+  }
+  const result = reading.result;
+  return (
+    <div className="grid items-start gap-3 xl:grid-cols-[minmax(15rem,2fr)_minmax(0,5fr)]">
+      <AuditList audits={visible} sites={sites} {...{ activeId, select }} words={t} />
+      {result?.ok === true ? (
+        <AuditDetail
+          key={result.value.id}
+          detail={result.value}
+          pending={pending}
+          open={open}
+          scan={(code, trigger) => scan(result.value, code, trigger)}
+          titleRef={titleRef}
+          words={t}
+        />
+      ) : (
+        <div className="rounded-lg border bg-card p-4 text-sm">
+          {result?.ok === false ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <p role="alert">{auditErrorText(result.error, t)}</p>
+              <Button size="sm" variant="outline" onClick={reading.refresh}>
+                {t.refresh}
+              </Button>
+            </div>
+          ) : (
+            <p role="status">{t.loading}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function EquipmentAuditsWorkspace({
   initial,
   access,
@@ -433,11 +500,18 @@ export function EquipmentAuditsWorkspace({
   const { locale } = useLocalePreferences();
   const t = auditMessages[locale];
   const searchInput = useRef<HTMLInputElement | null>(null);
+  const focusedLink = useRef<string | undefined>(undefined);
   const [view, setView] = useState(() => initialAuditView(initial, initialAuditId));
   if (view.source !== initial) setView(withServerWorkspace(view, initial, initialAuditId));
   const { workspace, filters, selected, saved } = view;
   const visible = matchesAudits(workspace, filters, locale);
-  const active = visible.find(({ id }) => id === selected) ?? visible[0];
+  const linkedMissing =
+    initialAuditId !== undefined &&
+    selected === initialAuditId &&
+    !workspace.audits.some(({ id }) => id === initialAuditId);
+  const active = linkedMissing
+    ? undefined
+    : (visible.find(({ id }) => id === selected) ?? visible[0]);
   const reading = useReadAudit(active, access.read, workspace.readAt, saved);
   const detail = reading.result?.ok === true ? reading.result.value : null;
   const managing = workspace.sites.find(
@@ -463,6 +537,18 @@ export function EquipmentAuditsWorkspace({
       if (detail !== null) void editor.attach(detail, file, rowId);
     },
   };
+  function focusLinkedTitle(title: HTMLHeadingElement | null) {
+    if (
+      title === null ||
+      initialAuditId === undefined ||
+      detail?.id !== initialAuditId ||
+      focusedLink.current === initialAuditId
+    )
+      return;
+    focusedLink.current = initialAuditId;
+    title.focus();
+  }
+
   return (
     <section data-audit-workspace className={`${BLOCK_CLASS} ph-no-capture min-w-0 space-y-3`}>
       <PageHeading
@@ -500,42 +586,25 @@ export function EquipmentAuditsWorkspace({
           {t.saved}
         </p>
       )}
-      {visible.length === 0 ? (
-        <p className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">{t.noAudits}</p>
-      ) : (
-        <div className="grid items-start gap-3 xl:grid-cols-[minmax(15rem,2fr)_minmax(0,5fr)]">
-          <AuditList
-            audits={visible}
-            sites={workspace.sites}
-            activeId={active?.id}
-            select={(selected) => setView((current) => ({ ...current, selected }))}
-            words={t}
-          />
-          {detail !== null ? (
-            <AuditDetail
-              key={detail.id}
-              detail={detail}
-              pending={editor.busy}
-              open={editor.open}
-              scan={(code, trigger) => stageScan(detail, code, trigger, access, editor.open)}
-              words={t}
-            />
-          ) : (
-            <div className="rounded-lg border bg-card p-4 text-sm">
-              {reading.result?.ok === false ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <p role="alert">{auditErrorText(reading.result.error, t)}</p>
-                  <Button size="sm" variant="outline" onClick={reading.refresh}>
-                    {t.refresh}
-                  </Button>
-                </div>
-              ) : (
-                <p role="status">{t.loading}</p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+      <AuditResults
+        visible={visible}
+        sites={workspace.sites}
+        activeId={active?.id}
+        linkedMissing={linkedMissing}
+        select={(selected) => setView((current) => ({ ...current, selected }))}
+        reading={reading}
+        pending={editor.busy}
+        open={editor.open}
+        scan={(selectedDetail, code, trigger) =>
+          stageScan(selectedDetail, code, trigger, access, editor.open)
+        }
+        titleRef={
+          detail?.id === initialAuditId && initialAuditId !== undefined
+            ? focusLinkedTitle
+            : undefined
+        }
+        words={t}
+      />
       {dialog !== null && dialogSite !== undefined && (
         <AuditEditorView
           key={`${dialog.type}:${detail?.id ?? ""}`}

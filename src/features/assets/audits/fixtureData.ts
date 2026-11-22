@@ -12,6 +12,7 @@ const participants = {
 } as const;
 
 export const auditFixtureParticipants = participants;
+export const auditDraftFixtureId = "4936a1c4-c439-4fa8-817e-79b04281be31";
 export type AuditFixtureRole = "manager" | keyof typeof participants;
 
 function withDemoPlacements(assets: AssetsWorkspace): AssetsWorkspace {
