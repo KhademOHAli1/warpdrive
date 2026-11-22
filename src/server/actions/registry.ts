@@ -29,6 +29,10 @@ import { executeCommissionAssetAction } from "@/features/assets/commissioning/ac
 import { executeCustodyAction } from "@/features/assets/custody/actions.backend";
 import { executeKitAction } from "@/features/assets/kits/actions.backend";
 import {
+  readAssetMediaAction,
+  selectAssetMediaCoverAction,
+} from "@/features/assets/media/actions.backend";
+import {
   executeAssetTagAction,
   resolveAssetTagAction,
   sendAssetTagContactAction,
@@ -196,6 +200,8 @@ export const commandHandlers = {
     executeBookingMembershipAction,
   "features/assets/custody/webActions.executeCustodyAction": executeCustodyAction,
   "features/assets/kits/webActions.executeKitAction": executeKitAction,
+  "features/assets/media/webActions.readAssetMediaAction": readAssetMediaAction,
+  "features/assets/media/webActions.selectAssetMediaCoverAction": selectAssetMediaCoverAction,
   "features/assets/tags/webActions.executeAssetTagAction": executeAssetTagAction,
   "features/assets/tags/webActions.resolveAssetTagAction": resolveAssetTagAction,
   "features/assets/tags/webActions.sendAssetTagContactAction": sendAssetTagContactAction,

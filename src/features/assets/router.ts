@@ -8,7 +8,10 @@ export const assetsRouter = router({
   audits: assetAuditsRouter,
   bookings: assetBookingsRouter,
   tags: assetTagsRouter,
-  workspace: protectedProcedure.query(({ ctx }) =>
-    readAssetsWorkspace(ctx.db, ctx.session, AbortSignal.timeout(15_000)),
-  ),
+  workspace: protectedProcedure.query(async ({ ctx }) => {
+    const result = await readAssetsWorkspace(ctx.db, ctx.session, AbortSignal.timeout(15_000));
+    return result.ok && result.value.sites.length > 0
+      ? { ...result, value: { ...result.value, mediaAvailable: true as const } }
+      : result;
+  }),
 });

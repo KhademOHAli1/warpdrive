@@ -192,6 +192,7 @@ describe("equipment photos and supporting files fixture", () => {
       for (const command of [
         upload(firstAsset, 0, incorrect, "photo"),
         upload(firstAsset, 0, image("../Meter.png"), "photo"),
+        upload(firstAsset, 0, image(`${"a".repeat(177)}.png`), "photo"),
         upload(fleet, 0, pdf(), "document"),
       ]) {
         expect(await access.upload(command)).toEqual({ ok: false, error: "invalid" });

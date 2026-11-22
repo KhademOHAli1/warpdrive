@@ -9,6 +9,7 @@ export * from "@/features/assets/bookings/schema";
 export * from "@/features/assets/commissioning/schema";
 export * from "@/features/assets/custody/schema";
 export * from "@/features/assets/kits/schema";
+export * from "@/features/assets/media/schema";
 export * from "@/features/assets/schema";
 export * from "@/features/assets/tags/schema";
 export * from "@/features/billing/schema";

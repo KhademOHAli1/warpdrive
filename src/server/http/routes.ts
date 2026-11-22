@@ -9,6 +9,7 @@ import * as route6 from "@/app/(app)/settings/import/[batchId]/errors.csv/route.
 import * as equipmentAuditEvidence from "@/app/api/assets/audits/[auditId]/evidence/route.backend";
 import * as privateBookingCalendar from "@/app/api/assets/bookings/[bookingId]/calendar.ics/route.backend";
 import * as subscriptionBookingCalendar from "@/app/api/assets/bookings/feeds/[feedId]/calendar.ics/route.backend";
+import * as assetMedia from "@/app/api/assets/media/[targetType]/[targetId]/route.backend";
 import * as route25 from "@/app/api/auth/[...all]/route.backend";
 import * as route22 from "@/app/api/auth-management/route.backend";
 import * as route10 from "@/app/api/auth-management/user/route.backend";
@@ -50,6 +51,11 @@ export const httpRoutes = [
     pattern: /^\/api\/assets\/audits\/([^/]+)\/evidence\/?$/,
     params: [{ name: "auditId" }],
     handlers: equipmentAuditEvidence,
+  },
+  {
+    pattern: /^\/api\/assets\/media\/([^/]+)\/([^/]+)\/?$/,
+    params: [{ name: "targetType" }, { name: "targetId" }],
+    handlers: assetMedia,
   },
   {
     pattern: /^\/api\/inventory\/releases\/([^/]+)\/files\/([^/]+)\/?$/,

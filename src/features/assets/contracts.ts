@@ -164,6 +164,7 @@ export type AssetsWorkspace = {
   records: AssetRecord[];
   custody?: CustodyWorkspace;
   kits?: KitWorkspace;
+  mediaAvailable?: true;
 };
 export type AssetError = "unavailable" | "invalid" | "stale" | "conflict" | "stock" | "state";
 export type AssetResult =

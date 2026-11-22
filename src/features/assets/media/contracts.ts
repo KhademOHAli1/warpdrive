@@ -1,5 +1,6 @@
 export const assetPhotoMaxBytes = 5 * 1024 * 1024;
 export const assetDocumentMaxBytes = 10 * 1024 * 1024;
+export const assetMediaFilenameMaxLength = 180;
 export const assetMediaPhotoTypes = ["image/jpeg", "image/png"] as const;
 export const assetMediaDocumentType = "application/pdf" as const;
 

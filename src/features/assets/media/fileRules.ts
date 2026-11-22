@@ -5,6 +5,7 @@ import {
   type AssetMediaTarget,
   assetDocumentMaxBytes,
   assetMediaDocumentType,
+  assetMediaFilenameMaxLength,
   assetPhotoMaxBytes,
 } from "./contracts";
 
@@ -40,6 +41,11 @@ export function assetMediaUploadMetadata(input: {
     !Number.isSafeInteger(sizeBytes) ||
     sizeBytes <= 0 ||
     sizeBytes > limit
+  )
+    return null;
+  if (
+    input.name.length > assetMediaFilenameMaxLength ||
+    /[\p{Cc}\p{Bidi_Control}]/u.test(input.name)
   )
     return null;
   const name = validateDisplayFilename(input.name);
