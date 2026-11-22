@@ -27,7 +27,7 @@ function defaultPolicy(): BookingPolicy {
   };
 }
 
-async function readRoles(tx: Db, actorId: string) {
+export async function readBookingRoles(tx: Db, actorId: string) {
   const memberships = await tx
     .select({ siteId: assetBookingMemberships.siteId, role: assetBookingMemberships.role })
     .from(assetBookingMemberships)
@@ -44,7 +44,7 @@ async function readRoles(tx: Db, actorId: string) {
 export async function canBrowseBookings(tx: Db, actor: HydratedActor) {
   if (!actor.isActive || actor.projectsGuestOnly === true) return false;
   if (actor.type === "admin") return true;
-  return (await readRoles(tx, actor.id)).size > 0;
+  return (await readBookingRoles(tx, actor.id)).size > 0;
 }
 
 type ParticipantRow = BookingParticipant & { siteId: string };
@@ -91,7 +91,7 @@ async function participants(tx: Db, siteIds: string[]) {
 
 export async function bookingSites(tx: Db, actor: HydratedActor): Promise<BookingSite[]> {
   const admin = actor.type === "admin";
-  const roles = admin ? new Map<string, BookingRole>() : await readRoles(tx, actor.id);
+  const roles = admin ? new Map<string, BookingRole>() : await readBookingRoles(tx, actor.id);
   if (!admin && roles.size === 0) return [];
   const directory = await tx
     .select({

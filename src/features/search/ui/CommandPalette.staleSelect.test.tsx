@@ -3,13 +3,21 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { pushMock, useQueryMock } = vi.hoisted(() => ({
+const { pushMock, useQueryMock, useEquipmentMock, useOperationsMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
   useQueryMock: vi.fn(),
+  useEquipmentMock: vi.fn(),
+  useOperationsMock: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 vi.mock("@/lib/trpc-client", () => ({
-  trpc: { search: { query: { useQuery: useQueryMock }, equipment: { useQuery: () => ({}) } } },
+  trpc: {
+    search: {
+      query: { useQuery: useQueryMock },
+      equipment: { useQuery: useEquipmentMock },
+      operations: { useQuery: useOperationsMock },
+    },
+  },
 }));
 
 import { CommandPalette } from "./CommandPalette";
@@ -22,6 +30,8 @@ afterEach(() => {
 beforeEach(() => {
   pushMock.mockClear();
   useQueryMock.mockReset();
+  useEquipmentMock.mockReset().mockReturnValue({});
+  useOperationsMock.mockReset().mockReturnValue({});
 });
 
 const ACME = {
@@ -86,5 +96,72 @@ describe("CommandPalette stale selection", () => {
     fireEvent.keyDown(input, { key: "Enter" });
 
     expect(pushMock).toHaveBeenCalledWith("/contacts/orgs/org-1");
+  });
+});
+
+describe("CommandPalette native Operations search", () => {
+  const matches = [
+    { id: "site-booking", kind: "booking", primary: "Acme reservation", secondary: null },
+    { id: "workshop", kind: "location", primary: "Acme workshop", secondary: null },
+  ];
+
+  it("enables the separately registered query and opens a checked result by keyboard", () => {
+    vi.useFakeTimers();
+    useQueryMock.mockReturnValue({ data: ACME });
+    useOperationsMock.mockReturnValue({ data: matches, fetchStatus: "idle" });
+    render(<CommandPalette operationsAvailable />);
+    fireEvent(window, new Event(OPEN_SEARCH_EVENT));
+    const input = screen.getByRole("searchbox", { name: "Search" });
+    type(input, "Acme", true);
+
+    expect(useOperationsMock).toHaveBeenLastCalledWith(
+      { q: "Acme" },
+      expect.objectContaining({ enabled: true, staleTime: 0 }),
+    );
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(pushMock).toHaveBeenCalledWith("/assets/bookings?bookingId=site-booking");
+  });
+
+  it.each([
+    { fetchStatus: "fetching" },
+    { fetchStatus: "paused" },
+    { fetchStatus: "idle", error: new Error("Current scope could not be checked") },
+    { fetchStatus: "idle", isPlaceholderData: true },
+  ])("withholds unconfirmed operations results while preserving CRM and Equipment", (state) => {
+    vi.useFakeTimers();
+    useQueryMock.mockReturnValue({ data: ACME });
+    useEquipmentMock.mockReturnValue({
+      data: [{ id: "meter", kind: "asset", primary: "Acme meter", secondary: null }],
+    });
+    useOperationsMock.mockReturnValue({ data: matches, fetchStatus: "idle" });
+    const { rerender } = render(<CommandPalette operationsAvailable equipmentAvailable />);
+    fireEvent(window, new Event(OPEN_SEARCH_EVENT));
+    const input = screen.getByRole("searchbox", { name: "Search" });
+    type(input, "Acme", true);
+    expect(screen.getByRole("option", { name: "Acme workshop" })).toBeVisible();
+
+    useOperationsMock.mockReturnValue({ data: matches, ...state });
+    rerender(<CommandPalette operationsAvailable equipmentAvailable />);
+    expect(screen.queryByRole("group", { name: "Locations" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Bookings" })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Acme Inc" })).toBeVisible();
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(pushMock).toHaveBeenCalledWith("/assets?assetId=meter");
+  });
+
+  it("does not request Operations without the bootstrap capability", () => {
+    vi.useFakeTimers();
+    useQueryMock.mockReturnValue({ data: ACME });
+    useOperationsMock.mockReturnValue({ data: matches, fetchStatus: "idle" });
+    const input = open();
+    type(input, "Acme", true);
+    expect(useOperationsMock).toHaveBeenLastCalledWith(
+      { q: "Acme" },
+      expect.objectContaining({ enabled: false }),
+    );
+    expect(screen.queryByRole("group", { name: "Locations" })).not.toBeInTheDocument();
   });
 });

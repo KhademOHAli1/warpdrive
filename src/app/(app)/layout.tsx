@@ -151,6 +151,9 @@ export default async function AppLayout({ children }: { children: ReactNode }): 
                     equipmentAvailable={
                       !inventoryFixtures && shell.equipmentSearchAvailable === true
                     }
+                    operationsAvailable={
+                      !inventoryFixtures && shell.operationsSearchAvailable === true
+                    }
                   />
                   <GlobalShortcuts />
                 </div>

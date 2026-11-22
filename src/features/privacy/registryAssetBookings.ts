@@ -74,7 +74,7 @@ export const assetBookingsEntry = classifyInventory(
     "sourceReview:src/features/assets/bookings/resources.ts#a5f5ddac6c898dd65d4c8d78e6c8a8dac18cdb0c5dd694ec3ef99e55eb8f5e8a",
     "sourceReview:src/features/assets/bookings/router.ts#843794bd3fbc5fe4a888843bc2c36b71a1553047a29dcd495583d5ab30b32ddd",
     "sourceReview:src/features/assets/bookings/schema.ts#53f1c4533d4a05c716568eb947a1615e9c12fb0116aafa60717c0fa6bed64b7f",
-    "sourceReview:src/features/assets/bookings/scope.ts#94c97d68c0a5ae1f76af4e0f35d1e9d7cab52f66f8365a0864f3d4ea73404718",
+    "sourceReview:src/features/assets/bookings/scope.ts#aecafd488bd52ccbb712d925329a317daa319cd1a8d3cf90120aac97388c2f86",
     "sourceReview:src/features/assets/bookings/service.ts#0248d8842d4cc7e43e4ce9f14db2fcfab2f012dd273af988602c551690f79b85",
     "sourceReview:src/features/assets/bookings/transitions.ts#3c7842728f6a25abc0dfa46930e526e026f0915f053b839d9a9dfa7b5440e3b6",
     "sourceReview:src/features/assets/bookings/ui/BookingCalendar.tsx#192240ea9324f5351ddda63c214c950c4eb37b13c3f50f7b3fc4af88a12b49ba",

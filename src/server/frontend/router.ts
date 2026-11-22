@@ -135,6 +135,7 @@ export const frontendRouter = router({
               inventoryAvailable: actor.isActive,
               assetsAvailable,
               equipmentSearchAvailable: assetsAvailable,
+              operationsSearchAvailable: actor.isActive && !actor.projectsGuestOnly,
               assetTagsAvailable: assetsAvailable,
               assetAuditsAvailable,
               bookingsAvailable,

@@ -17,6 +17,7 @@ vi.mock("@/lib/trpc-client", () => ({
   trpc: {
     search: {
       equipment: { useQuery: () => ({}) },
+      operations: { useQuery: () => ({}) },
       query: {
         useQuery: useQueryMock,
       },

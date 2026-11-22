@@ -8,7 +8,7 @@ import type { Locale } from "@/features/i18n/registry";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { trpc } from "@/lib/trpc-client";
 import type { SearchResult, SearchResults } from "@/types/search";
-import type { OperationsSearchFixtureEntry } from "../operationsContracts";
+import type { OperationsSearchFixtureEntry, OperationsSearchResult } from "../operationsContracts";
 import { searchOperationsFixture } from "../operationsFilter";
 import {
   EMPTY_EQUIPMENT_RESULTS,
@@ -38,6 +38,13 @@ const ROUTES: Record<ResultKind, (id: string) => string> = {
 // across renders (a fresh object each render would defeat the useActiveIndex
 // memoization and reset logic even when there is genuinely no data yet).
 const EMPTY_RESULTS: SearchResults = { deals: [], people: [], organizations: [], leads: [] };
+const EMPTY_OPERATION_RESULTS: OperationsSearchResult[] = [];
+const scopedSearchOptions = {
+  staleTime: 0,
+  gcTime: 0,
+  refetchOnWindowFocus: true,
+  retry: false,
+} as const;
 
 function searchPlaceholder(
   locale: Locale,
@@ -50,6 +57,27 @@ function searchPlaceholder(
   return fallback;
 }
 
+function useOperationsGroups(
+  fixtures: readonly OperationsSearchFixtureEntry[] | undefined,
+  q: string,
+  native: boolean,
+  ready: boolean,
+) {
+  const enabled = native && ready;
+  const query = trpc.search.operations.useQuery({ q }, { ...scopedSearchOptions, enabled });
+  // Paused, in-flight and failed queries cannot establish current Directory or Booking scope.
+  const checked =
+    enabled && query.fetchStatus === "idle" && !query.error && !query.isPlaceholderData;
+  const liveMatches = checked ? (query.data ?? EMPTY_OPERATION_RESULTS) : EMPTY_OPERATION_RESULTS;
+  return useMemo<OperationSearchGroups>(() => {
+    const matches = native ? liveMatches : searchOperationsFixture(fixtures, q);
+    return {
+      location: matches.filter(({ kind }) => kind === "location"),
+      booking: matches.filter(({ kind }) => kind === "booking"),
+    };
+  }, [fixtures, q, native, liveMatches]);
+}
+
 // -- CommandPalette --
 // Overlay that owns open/close state, the hotkey, and the window event listener.
 // Mount once in the app layout so it is always available.
@@ -57,18 +85,21 @@ export function CommandPalette({
   fixtureEquipment,
   fixtureOperations,
   equipmentAvailable = false,
+  operationsAvailable = false,
 }: {
   fixtureEquipment?: readonly EquipmentSearchEntry[];
   fixtureOperations?: readonly OperationsSearchFixtureEntry[];
   equipmentAvailable?: boolean;
+  operationsAvailable?: boolean;
 }) {
   const t = useAppTranslations("shell.search");
   const shell = useAppTranslations("shell");
   const locale = useLocale();
   const liveEquipment = fixtureEquipment === undefined && equipmentAvailable;
+  const liveOperations = fixtureOperations === undefined && operationsAvailable;
   const placeholder = searchPlaceholder(
     locale,
-    (fixtureOperations?.length ?? 0) > 0,
+    liveOperations || (fixtureOperations?.length ?? 0) > 0,
     liveEquipment || fixtureEquipment !== undefined,
     shell("searchPlaceholder"),
   );
@@ -103,21 +134,24 @@ export function CommandPalette({
 
   const typed = q.trim().length > 0;
   const searched = debounced.trim().length > 0;
+  const debouncing = q.trim() !== debounced.trim();
+  const operations = useOperationsGroups(
+    fixtureOperations,
+    debounced,
+    liveOperations,
+    open && searched && !debouncing,
+  );
   const { data, error } = trpc.search.query.useQuery({ q: debounced }, { enabled: searched });
   const equipmentRead = trpc.search.equipment.useQuery(
     { q: debounced },
     {
+      ...scopedSearchOptions,
       enabled: open && searched && liveEquipment,
-      staleTime: 0,
-      gcTime: 0,
-      refetchOnWindowFocus: true,
-      retry: false,
     },
   );
   // A query in flight has not yet said the customer is absent, and "No organizations" read that way
   // is how a duplicate record gets created. Nothing zero-result renders until data arrives, and a
   // debounce still pending counts as in flight.
-  const debouncing = q.trim() !== debounced.trim();
   const failed = !debouncing && error != null;
   const pending = typed && !failed && (data === undefined || debouncing);
 
@@ -131,13 +165,6 @@ export function CommandPalette({
     liveEquipment && searched && !debouncing && !equipmentRead.isFetching && !equipmentRead.error
       ? (equipmentRead.data ?? EMPTY_EQUIPMENT_RESULTS)
       : fixtureResults;
-  const operations = useMemo<OperationSearchGroups>(() => {
-    const matches = searchOperationsFixture(fixtureOperations, debounced);
-    return {
-      location: matches.filter(({ kind }) => kind === "location"),
-      booking: matches.filter(({ kind }) => kind === "booking"),
-    };
-  }, [fixtureOperations, debounced]);
   const { flat, active, moveDown, moveUp } = useActiveIndex(results, equipment, operations);
   const selection = flat[active];
   const activeKey = selection === undefined ? undefined : resultKey(selection.kind, selection.r.id);

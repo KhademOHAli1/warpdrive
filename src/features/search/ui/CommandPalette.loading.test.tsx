@@ -9,7 +9,13 @@ const { pushMock, useQueryMock } = vi.hoisted(() => ({
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 vi.mock("@/lib/trpc-client", () => ({
-  trpc: { search: { query: { useQuery: useQueryMock }, equipment: { useQuery: () => ({}) } } },
+  trpc: {
+    search: {
+      query: { useQuery: useQueryMock },
+      equipment: { useQuery: () => ({}) },
+      operations: { useQuery: () => ({}) },
+    },
+  },
 }));
 
 import { STRINGS } from "@/constants/strings";

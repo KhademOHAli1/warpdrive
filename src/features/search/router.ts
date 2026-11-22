@@ -1,5 +1,6 @@
 import { protectedProcedure, router } from "@/server/trpc/trpc";
 import { searchEquipment } from "./equipmentQuery";
+import { searchOperations } from "./operationsQuery";
 import { searchAll } from "./query";
 import { searchInput } from "./schemas";
 
@@ -16,4 +17,7 @@ export const searchRouter = router({
   equipment: protectedProcedure
     .input(searchInput)
     .query(({ ctx, input }) => searchEquipment(ctx.db, ctx.session, input.q, SIG())),
+  operations: protectedProcedure
+    .input(searchInput)
+    .query(({ ctx, input }) => searchOperations(ctx.db, ctx.session, input.q, SIG())),
 });
