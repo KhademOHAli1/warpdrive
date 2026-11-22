@@ -15,6 +15,7 @@ import {
   savedPerformanceInventoryEntry,
   settledForecastOutcomesInventoryEntry,
 } from "./registryAnalytics";
+import { assetBookingsEntry } from "./registryAssetBookings";
 import { assetCommissioningEntry } from "./registryAssetCommissioning";
 import { assetCustodyEntry } from "./registryAssetCustody";
 import { assetKitsEntry } from "./registryAssetKits";
@@ -143,6 +144,7 @@ export const registryEntries: RegistryEntry[] = [
   assetRegisterEntry,
   assetCustodyEntry,
   assetKitsEntry,
+  assetBookingsEntry,
   assetCommissioningEntry,
   manufacturingReleasesEntry,
   bomPlanningEntry,

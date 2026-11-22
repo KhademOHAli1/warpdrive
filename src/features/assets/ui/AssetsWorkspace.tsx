@@ -1,10 +1,11 @@
 "use client";
 
-import { Plus, Search, X } from "lucide-react";
+import { CalendarDays, Plus, Search, X } from "lucide-react";
+import Link from "next/link";
 import { type MouseEvent, type ReactNode, type RefObject, useId, useRef, useState } from "react";
 import { PageHeading } from "@/components/shell/PageHeading";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { Select, type SelectOption } from "@/components/ui/Select";
@@ -529,6 +530,7 @@ export function AssetsRegister({
   submitKit,
   fixture,
   initialAssetId = null,
+  bookingsAvailable = fixture,
 }: {
   initial: AssetsWorkspace;
   submit: (command: AssetCommand) => Promise<AssetResult>;
@@ -536,6 +538,7 @@ export function AssetsRegister({
   submitKit?: SubmitKit;
   fixture: boolean;
   initialAssetId?: string | null;
+  bookingsAvailable?: boolean;
 }) {
   const locale = useLocale();
   const t = assetMessages[locale];
@@ -703,14 +706,25 @@ export function AssetsRegister({
       <PageHeading
         title={t.title}
         actions={
-          <AssetHeaderActions
-            manageSiteId={manageSiteId}
-            tab={management.tab}
-            fixture={fixture}
-            pending={busy}
-            onEdit={showEditor}
-            words={t}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            {bookingsAvailable && (
+              <Link
+                href="/assets/bookings"
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                <CalendarDays size={14} aria-hidden="true" />
+                {t.bookings}
+              </Link>
+            )}
+            <AssetHeaderActions
+              manageSiteId={manageSiteId}
+              tab={management.tab}
+              fixture={fixture}
+              pending={busy}
+              onEdit={showEditor}
+              words={t}
+            />
+          </div>
         }
       />
       {saved && (

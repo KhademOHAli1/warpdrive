@@ -1,5 +1,6 @@
 const en = {
   title: "Assets",
+  bookings: "Bookings",
   register: "Register",
   categories: "Categories",
   models: "Models",
@@ -93,6 +94,7 @@ export type AssetWords = Record<keyof typeof en, string>;
 
 const de: AssetWords = {
   title: "Assets",
+  bookings: "Buchungen",
   register: "Register",
   categories: "Kategorien",
   models: "Modelle",
@@ -186,6 +188,7 @@ const de: AssetWords = {
 
 const fa: AssetWords = {
   title: "دارایی‌ها",
+  bookings: "رزروها",
   register: "فهرست دارایی‌ها",
   categories: "دسته‌بندی‌ها",
   models: "مدل‌ها",
