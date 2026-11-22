@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import type { InventoryCommand, InventoryWorkspace } from "./contracts";
 import { applyInventoryFixture } from "./fixtures";
+import type { EngineeringFixtureActor } from "./releases/changes/fixture";
 import {
   ManufacturingReleaseFixtureProvider,
   ManufacturingReleasesFixture,
@@ -15,11 +16,13 @@ export function InventoryFixture({
   openReleases,
   initialItemId,
   canEditIntake,
+  engineeringActor,
 }: {
   initial: InventoryWorkspace;
   openReleases: boolean;
   initialItemId?: string;
   canEditIntake?: boolean;
+  engineeringActor?: EngineeringFixtureActor;
 }) {
   const workspace = useRef(initial);
   function submit(command: InventoryCommand) {
@@ -29,7 +32,7 @@ export function InventoryFixture({
   }
 
   return (
-    <ManufacturingReleaseFixtureProvider canEditIntake={canEditIntake}>
+    <ManufacturingReleaseFixtureProvider {...{ canEditIntake, engineeringActor }}>
       <InventoryClient
         initial={initial}
         submit={submit}

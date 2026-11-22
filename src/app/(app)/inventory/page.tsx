@@ -5,8 +5,22 @@ import { inventoryFixturesEnabled } from "@/features/inventory/availability";
 import { inventoryFixture } from "@/features/inventory/fixtures";
 import { InventoryFixture } from "@/features/inventory/InventoryFixture";
 import { InventoryLive } from "@/features/inventory/InventoryLive";
-import { createContext, getBootstrap } from "@/frontend/context";
+import { createContext, type FrontendContext, getBootstrap } from "@/frontend/context";
 import { coreClient } from "@/frontend/trpc";
+
+function releaseFixtureActor(actor: NonNullable<FrontendContext["actor"]>) {
+  const canView = actor.isActive && !actor.projectsGuestOnly;
+  const canManage = canView && actor.type === "admin";
+  return {
+    id: actor.id,
+    name: actor.name,
+    canView,
+    canPropose: canManage,
+    canDecide: canManage,
+    visibleSites: canManage ? ["berlin", "dresden"] : [],
+    dispositionSites: canManage ? ["berlin"] : [],
+  };
+}
 
 export default async function InventoryPage({
   searchParams,
@@ -28,6 +42,7 @@ export default async function InventoryPage({
   const openReleases = tab === "releases" && parsed.data === undefined;
   if (inventoryFixturesEnabled()) {
     const initial = inventoryFixture(parsed.data);
+    const engineeringActor = releaseFixtureActor(actor);
     if (selected.data !== undefined && !initial.items.some(({ id }) => id === selected.data))
       notFound();
     return (
@@ -36,7 +51,8 @@ export default async function InventoryPage({
         initial={initial}
         openReleases={openReleases}
         initialItemId={selected.data}
-        canEditIntake={actor.isActive && actor.type === "admin" && !actor.projectsGuestOnly}
+        canEditIntake={engineeringActor.canPropose}
+        engineeringActor={engineeringActor}
       />
     );
   }

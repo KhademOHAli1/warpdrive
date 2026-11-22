@@ -51,6 +51,7 @@ export type ReleaseFixtureError =
   | "invalidFileType"
   | "artifactNotFound"
   | "missingRequiredArtifacts"
+  | "changeControlRequired"
   | "noActiveRelease";
 
 export type ReleaseFixtureResult = Result<ReleaseFixtureState, ReleaseFixtureError>;

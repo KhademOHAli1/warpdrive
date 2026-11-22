@@ -18,6 +18,9 @@ import { useLocale, useNumberingSystem } from "@/features/i18n/LocaleProvider";
 import { BLOCK_CLASS } from "@/features/observability/replayMasking";
 import { cn } from "@/lib/utils";
 import type { InventoryItem } from "../../contracts";
+import type { EngineeringChangeAccess, EngineeringChangeWorkspace } from "../changes/contracts";
+import { createEngineeringChangeFixture, type EngineeringFixtureActor } from "../changes/fixture";
+import { EngineeringChangePanel } from "../changes/ui/EngineeringChangePanel";
 import type {
   ManufacturingRelease,
   ReleaseArtifact,
@@ -34,19 +37,26 @@ import { manufacturingReleaseMessages } from "./manufacturingReleaseMessages";
 
 type Labels = (typeof manufacturingReleaseMessages)["en"];
 type ProductReleaseState = Record<string, ReleaseFixtureState>;
+type EngineeringState = { effectiveRevision: string | null; controlled: boolean };
 type FixtureContext = {
   products: ProductReleaseState;
   save: (itemId: string, state: ReleaseFixtureState) => void;
   register: (item: Pick<InventoryItem, "id" | "sku">, state: ReleaseFixtureState) => void;
   intakeAccess?: ExportIntakeAccess;
   canEditIntake: boolean;
+  engineeringAccess?: EngineeringChangeAccess;
+  engineeringStates: Record<string, EngineeringState>;
+  canEditRelease: boolean;
+  canApproveRelease: boolean;
+  effectiveRevision: (itemId: string, fallback: string | null) => string | null;
+  hasChangeControl: (itemId: string) => boolean;
 };
 
 const FixtureContext = createContext<FixtureContext | null>(null);
 
 const releaseFixtureId = (itemId: string, revision: string) => `${itemId}:${revision}`;
 
-function createReleaseIntakeStore() {
+function createReleaseFixtureStore(persist: (itemId: string, state: ReleaseFixtureState) => void) {
   const registry = new Map<string, { sku: string; state: ReleaseFixtureState }>();
   const intake = createExportIntakeFixture({
     failFirstReady: true,
@@ -63,8 +73,31 @@ function createReleaseIntakeStore() {
   });
   const unavailable = (): Promise<ExportIntakeResult<never>> =>
     Promise.resolve({ ok: false, issues: [{ code: "unavailable" }] });
+  function save(itemId: string, state: ReleaseFixtureState) {
+    const product = registry.get(itemId);
+    if (product !== undefined) registry.set(itemId, { ...product, state });
+    persist(itemId, state);
+  }
+  const engineering = createEngineeringChangeFixture({
+    product: (itemId) => registry.get(itemId),
+    sealPackage(itemId, candidate, approvedAt) {
+      const product = registry.get(itemId);
+      if (product === undefined || !product.state.releases.includes(candidate)) return false;
+      save(itemId, {
+        ...product.state,
+        releases: product.state.releases.map((release) =>
+          release === candidate
+            ? { ...release, status: "released", releasedAt: approvedAt }
+            : release,
+        ),
+      });
+      return true;
+    },
+  });
   return {
     intake,
+    engineering,
+    save,
     readOnly: {
       list: intake.list,
       submit: unavailable,
@@ -73,35 +106,69 @@ function createReleaseIntakeStore() {
     register: (item: Pick<InventoryItem, "id" | "sku">, state: ReleaseFixtureState) => {
       if (!registry.has(item.id)) registry.set(item.id, { sku: item.sku, state });
     },
-    change(itemId: string, state: ReleaseFixtureState) {
-      const product = registry.get(itemId);
-      if (product !== undefined) registry.set(itemId, { ...product, state });
-    },
   };
 }
 
 export function ManufacturingReleaseFixtureProvider({
   children,
   canEditIntake,
+  engineeringActor,
 }: {
   children: ReactNode;
   canEditIntake?: boolean;
+  engineeringActor?: EngineeringFixtureActor;
 }) {
   const [products, setProducts] = useState<ProductReleaseState>({});
-  const [intake] = useState(createReleaseIntakeStore);
+  const [engineeringStates, setEngineeringStates] = useState<Record<string, EngineeringState>>({});
+  const [fixture] = useState(() =>
+    createReleaseFixtureStore((itemId, state) =>
+      setProducts((current) => ({ ...current, [itemId]: state })),
+    ),
+  );
+  const engineeringAccess = useMemo<EngineeringChangeAccess | undefined>(() => {
+    if (engineeringActor === undefined) return undefined;
+    const access = fixture.engineering.access(() => engineeringActor);
+    function reflect(workspace: EngineeringChangeWorkspace) {
+      const id = workspace.itemId;
+      const effectiveRevision = workspace.effectiveRelease?.revision ?? null;
+      const controlled = fixture.engineering.hasChangeControl(id);
+      setEngineeringStates((states) => {
+        const prior = states[id];
+        if (prior?.effectiveRevision === effectiveRevision && prior.controlled === controlled)
+          return states;
+        return { ...states, [id]: { effectiveRevision, controlled } };
+      });
+    }
+    return {
+      ...access,
+      async read(itemId, signal) {
+        const result = await access.read(itemId, signal);
+        if (result.ok && signal?.aborted !== true) reflect(result.value);
+        return result;
+      },
+      async execute(command) {
+        const result = await access.execute(command);
+        if (result.ok) reflect(result.value);
+        return result;
+      },
+    };
+  }, [engineeringActor, fixture]);
   const context = useMemo<FixtureContext>(
     () => ({
       products,
-      save: (itemId, state) => {
-        intake.change(itemId, state);
-        setProducts((current) => ({ ...current, [itemId]: state }));
-      },
-      register: intake.register,
+      save: fixture.save,
+      register: fixture.register,
       intakeAccess:
-        canEditIntake === undefined ? undefined : canEditIntake ? intake.intake : intake.readOnly,
+        canEditIntake === undefined ? undefined : canEditIntake ? fixture.intake : fixture.readOnly,
       canEditIntake: canEditIntake === true,
+      engineeringAccess,
+      engineeringStates,
+      canEditRelease: engineeringActor?.canPropose ?? true,
+      canApproveRelease: engineeringActor?.canDecide ?? true,
+      effectiveRevision: fixture.engineering.effectiveRevision,
+      hasChangeControl: fixture.engineering.hasChangeControl,
     }),
-    [products, intake, canEditIntake],
+    [products, fixture, canEditIntake, engineeringAccess, engineeringStates, engineeringActor],
   );
   return <FixtureContext.Provider value={context}>{children}</FixtureContext.Provider>;
 }
@@ -127,22 +194,39 @@ function ProductReleaseFixture({ item, store }: { item: InventoryItem; store: Fi
     register(item, initial);
   }, [initial, item, register]);
   const state = store.products[item.id] ?? initial;
+  const engineering = store.engineeringStates[item.id];
+  const activeRevision =
+    engineering?.controlled === true ? engineering.effectiveRevision : state.activeRevision;
   const [requestedRevision, setRequestedRevision] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const selected =
-    state.releases.find(
-      ({ revision }) => revision === (requestedRevision ?? state.activeRevision),
-    ) ?? state.releases[0];
+    state.releases.find(({ revision }) => revision === (requestedRevision ?? activeRevision)) ??
+    state.releases[0];
 
   const run: RunRelease = (command) => {
-    const result = applyReleaseFixture(state, command);
+    if (command.type === "approve" && !store.canApproveRelease) return null;
+    if (command.type !== "approve" && command.type !== "previewBuild" && !store.canEditRelease)
+      return null;
+    if (command.type === "approve" && store.hasChangeControl(item.id)) {
+      setFeedback({ type: "failure", error: "changeControlRequired" });
+      return null;
+    }
+    const current =
+      command.type === "previewBuild"
+        ? { ...state, activeRevision: store.effectiveRevision(item.id, state.activeRevision) }
+        : state;
+    const result = applyReleaseFixture(current, command);
     if (!result.ok) {
       setFeedback({ type: "failure", error: result.error });
       return null;
     }
-    store.save(item.id, result.value);
+    const next =
+      command.type === "previewBuild"
+        ? { ...result.value, activeRevision: state.activeRevision }
+        : result.value;
+    store.save(item.id, next);
     setFeedback({ type: "success", action: command.type });
-    return result.value;
+    return next;
   };
 
   function selectRevision(revision: string) {
@@ -164,15 +248,15 @@ function ProductReleaseFixture({ item, store }: { item: InventoryItem; store: Fi
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/30 px-3 py-2">
         <div className="min-w-0">
           <h4 className="text-xs font-medium text-muted-foreground">{t.activeRelease}</h4>
-          {state.activeRevision !== null ? (
+          {activeRevision !== null ? (
             <bdi className="break-all text-sm font-semibold">
-              {t.shortRevision} {state.activeRevision}
+              {t.shortRevision} {activeRevision}
             </bdi>
           ) : (
             <p className="text-sm">{t.noActiveRelease}</p>
           )}
         </div>
-        {state.activeRevision !== null && (
+        {activeRevision !== null && (
           <Button variant="outline" size="sm" onClick={() => run({ type: "previewBuild" })}>
             <PackageCheck className="size-4" aria-hidden="true" /> {t.previewBuild}
           </Button>
@@ -194,15 +278,17 @@ function ProductReleaseFixture({ item, store }: { item: InventoryItem; store: Fi
         selectRevision={selectRevision}
         t={t}
       />
-      <CreateDraftForm
-        t={t}
-        create={(value) => {
-          const revision = value.trim().toUpperCase();
-          if (run({ type: "createDraft", revision }) === null) return false;
-          setRequestedRevision(revision);
-          return true;
-        }}
-      />
+      {store.canEditRelease && (
+        <CreateDraftForm
+          t={t}
+          create={(value) => {
+            const revision = value.trim().toUpperCase();
+            if (run({ type: "createDraft", revision }) === null) return false;
+            setRequestedRevision(revision);
+            return true;
+          }}
+        />
+      )}
       {selected !== undefined && (
         <ReleasePackage
           key={selected.revision}
@@ -212,7 +298,12 @@ function ProductReleaseFixture({ item, store }: { item: InventoryItem; store: Fi
           t={t}
           intakeAccess={store.intakeAccess}
           canEditIntake={store.canEditIntake}
+          canEditDraft={store.canEditRelease}
+          canApproveManually={store.canApproveRelease && engineering?.controlled !== true}
         />
+      )}
+      {store.engineeringAccess !== undefined && (
+        <EngineeringChangePanel access={store.engineeringAccess} itemId={item.id} />
       )}
       <BuildPins builds={state.builds} selectRevision={selectRevision} t={t} />
     </section>
@@ -298,6 +389,8 @@ function ReleasePackage({
   t,
   intakeAccess,
   canEditIntake,
+  canEditDraft,
+  canApproveManually,
 }: {
   release: ManufacturingRelease;
   item: Pick<InventoryItem, "id" | "sku">;
@@ -305,6 +398,8 @@ function ReleasePackage({
   t: Labels;
   intakeAccess?: ExportIntakeAccess;
   canEditIntake: boolean;
+  canEditDraft: boolean;
+  canApproveManually: boolean;
 }) {
   const headingId = useId();
   const missingId = useId();
@@ -326,13 +421,13 @@ function ReleasePackage({
         artifacts={release.artifacts}
         t={t}
         remove={
-          isDraft
+          isDraft && canEditDraft
             ? (artifactId) =>
                 run({ type: "removeArtifact", revision: release.revision, artifactId })
             : undefined
         }
       />
-      {isDraft && <DraftArtifactForm revision={release.revision} run={run} t={t} />}
+      {isDraft && canEditDraft && <DraftArtifactForm revision={release.revision} run={run} t={t} />}
       <ExportIntakePanel
         access={intakeAccess}
         canEdit={isDraft && canEditIntake}
@@ -350,14 +445,16 @@ function ReleasePackage({
               {t.missingFiles} · {missing.map((kind) => t.kinds[kind]).join(", ")}
             </p>
           )}
-          <Button
-            size="sm"
-            aria-describedby={missing.length > 0 ? missingId : undefined}
-            disabled={missing.length > 0}
-            onClick={() => run({ type: "approve", revision: release.revision })}
-          >
-            {t.approve}
-          </Button>
+          {canApproveManually && (
+            <Button
+              size="sm"
+              aria-describedby={missing.length > 0 ? missingId : undefined}
+              disabled={missing.length > 0}
+              onClick={() => run({ type: "approve", revision: release.revision })}
+            >
+              {t.approve}
+            </Button>
+          )}
         </>
       )}
     </section>

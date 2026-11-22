@@ -83,6 +83,7 @@ const en: ReleaseLabels = {
     invalidFileType: "Use ZIP for PCB fabrication and CSV for the manufacturing BOM.",
     artifactNotFound: "This file could not be found.",
     missingRequiredArtifacts: "Add the required files before approval.",
+    changeControlRequired: "Use engineering change review to approve this release.",
     noActiveRelease: "Approve a release before previewing a build.",
   },
 };
@@ -141,6 +142,7 @@ const de: ReleaseLabels = {
       "Verwenden Sie ZIP für Leiterplattendaten und CSV für die Fertigungsstückliste.",
     artifactNotFound: "Diese Datei wurde nicht gefunden.",
     missingRequiredArtifacts: "Fügen Sie die benötigten Dateien vor der Freigabe hinzu.",
+    changeControlRequired: "Geben Sie diese Revision über die technische Änderung frei.",
     noActiveRelease: "Geben Sie eine Revision frei, bevor Sie einen Auftrag simulieren.",
   },
 };
@@ -197,6 +199,7 @@ const fa: ReleaseLabels = {
     invalidFileType: "برای ساخت برد از ZIP و برای فهرست مواد تولید از CSV استفاده کنید.",
     artifactNotFound: "این فایل پیدا نشد.",
     missingRequiredArtifacts: "پیش از تأیید، فایل‌های لازم را اضافه کنید.",
+    changeControlRequired: "برای تأیید این نسخه از بازبینی تغییر مهندسی استفاده کنید.",
     noActiveRelease: "پیش از پیش‌نمایش ساخت یک نسخه را تأیید کنید.",
   },
 };

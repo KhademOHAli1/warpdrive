@@ -33,6 +33,7 @@ import { classifications, classifyInventory } from "./registryClassification";
 import { exportStorageClassification } from "./registryClassificationsExportStorage";
 import { companyWorkInventoryEntry } from "./registryCompanyWork";
 import { customerReturnsEntry } from "./registryCustomerReturns";
+import { engineeringChangesEntry } from "./registryEngineeringChanges";
 import { exportIntakeEntry } from "./registryExportIntake";
 import { archiveCodecIds1 } from "./registryIdsArchiveCodec1";
 import { authenticationIds1 } from "./registryIdsAuthentication1";
@@ -165,6 +166,7 @@ export const registryEntries: RegistryEntry[] = [
   assetCommissioningEntry,
   manufacturingReleasesEntry,
   exportIntakeEntry,
+  engineeringChangesEntry,
   bomPlanningEntry,
   productionBuildsEntry,
   qualityInspectionsEntry,
