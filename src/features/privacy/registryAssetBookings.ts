@@ -16,7 +16,7 @@ export const assetBookingsEntry = classifyInventory(
     "sourceReview:src/features/assets/bookings/availability.ts#548553e34e9765100dc23f7c9789b6a58c5619985b61a8c7d72061185f0d7fe4",
     "sourceReview:src/features/assets/bookings/calendar.ts#95a99e02841e899871f41b25cfb9b9ed02cc9c9599424e9f4177dcd764491b7d",
     "sourceReview:src/features/assets/bookings/contracts.ts#8b19d3d0c65e8465e65758f5948390f93128a0ce1715c8de4ec4931fed206bfd",
-    "sourceReview:src/features/assets/bookings/fixtures.ts#2227e1add5edae33ee8b97a33a12402192d404d263ebc4399b5bdfe740b55b75",
+    "sourceReview:src/features/assets/bookings/fixtures.ts#adb1bbadb05302941a5e3b31ab456a3cc19c177414126838c8b2453a8ac3b82a",
     "sourceReview:src/features/assets/bookings/resources.ts#a5f5ddac6c898dd65d4c8d78e6c8a8dac18cdb0c5dd694ec3ef99e55eb8f5e8a",
     "sourceReview:src/features/assets/bookings/transitions.ts#252049b3caf10d4b5220ec978e16df2171fe9c6181df05d403f4ed501208c66d",
     "sourceReview:src/features/assets/bookings/ui/BookingCalendar.tsx#3bf5b328326c77002bb0da8d9516d4bab643da7b188bb96e69e432ced9db09b3",

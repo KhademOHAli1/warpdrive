@@ -89,6 +89,8 @@ function demoWindow(now: string, offset: number): BookingWindow {
 }
 
 function featuredBooking(state: BookingState, requester: Actor, now: string): Booking {
+  const timeZone = "Europe/Berlin";
+  const seededAt = wallTimeToInstant(instantCivilDate(now, timeZone), "00:00", timeZone).iso;
   const resource = state.resources.find(({ code }) => code === "METER-101");
   if (resource === undefined) throw new AppError(ERROR_IDS.DB_INVARIANT, "Missing demo meter");
   const {
@@ -114,7 +116,7 @@ function featuredBooking(state: BookingState, requester: Actor, now: string): Bo
     window: demoWindow(now, 2),
     status: "pending",
     archived: false,
-    updatedAt: now,
+    updatedAt: seededAt,
     version: 2,
     lines: [
       {
@@ -131,8 +133,8 @@ function featuredBooking(state: BookingState, requester: Actor, now: string): Bo
       },
     ],
     history: [
-      { version: 2, at: now, actor: requester.name, kind: "submitted", reason: null },
-      { version: 1, at: now, actor: requester.name, kind: "created", reason: null },
+      { version: 2, at: seededAt, actor: requester.name, kind: "submitted", reason: null },
+      { version: 1, at: seededAt, actor: requester.name, kind: "created", reason: null },
     ],
   };
 }
