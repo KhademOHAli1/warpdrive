@@ -42,6 +42,7 @@ import {
   listWorkflowAllEnginesAction,
   unarchiveWorkflowV2Action,
 } from "../actions";
+import { websiteEnquiryLeadTemplate } from "../websiteEnquiryLeadTemplate";
 
 interface Page {
   rows: WorkflowV2LibraryEntry[];
@@ -99,6 +100,7 @@ export function UnifiedWorkflowLibrary({
   const [reload, setReload] = useState(0);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
+  const [template, setTemplate] = useState("blank");
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [unknownCreate, setUnknownCreate] = useState(false);
   const [pending, setPending] = useState(false);
@@ -148,7 +150,11 @@ export function UnifiedWorkflowLibrary({
     setPending(true);
     setError(null);
     try {
-      const result = await createWorkflowV2Action({ name }, readCsrfToken());
+      const input =
+        template === "website-enquiry"
+          ? { name, definition: websiteEnquiryLeadTemplate }
+          : { name };
+      const result = await createWorkflowV2Action(input, readCsrfToken());
       if (result.ok) {
         setCreatedId(result.value.id);
         router.push(`/workflows/${result.value.id}`);
@@ -209,6 +215,7 @@ export function UnifiedWorkflowLibrary({
               size="sm"
               onClick={() => {
                 setName("");
+                setTemplate("blank");
                 setCreatedId(null);
                 setUnknownCreate(false);
                 setCreating(true);
@@ -417,6 +424,16 @@ export function UnifiedWorkflowLibrary({
                 void create();
               }}
             >
+              <Select
+                ariaLabel={L.workflowTemplate}
+                value={template}
+                options={[
+                  { value: "blank", label: L.blankWorkflow },
+                  { value: "website-enquiry", label: L.websiteEnquiryLead },
+                ]}
+                disabled={pending || unknownCreate || createdId !== null}
+                onChange={setTemplate}
+              />
               <Input
                 aria-label={L.name}
                 autoFocus
